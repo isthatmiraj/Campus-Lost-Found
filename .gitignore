@@ -1,0 +1,18 @@
+target/
+.idea/
+.vscode/
+*.iml
+
+# Local backups
+*.backup
+*.backup2
+*.bak
+*.pre-svg
+*.icons-backup
+
+# Local environment and runtime data
+.env
+.env.*
+!.env.example
+uploads/
+data/

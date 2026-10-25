@@ -1,0 +1,6 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ include file="partials.jspf" %>
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Register · CampusFind</title><link rel="stylesheet" href="<%=ctx%>/css/style.css"></head><body>
+<%@ include file="nav.jspf" %><main class="narrow panel"><p class="eyebrow">JOIN YOUR CAMPUS</p><h1>Create account</h1><p class="muted">Use your name and email to get started.</p>
+<% if (request.getAttribute("error") != null) { %><div class="alert"><%=WebUtil.h((String)request.getAttribute("error"))%></div><% } %>
+<form method="post" action="<%=ctx%>/register"><label>Full name<input name="name" required minlength="2" maxlength="100" autocomplete="name"></label><label>Email<input type="email" name="email" required maxlength="150" autocomplete="email"></label><label>Password<input type="password" name="password" required minlength="10" maxlength="200" autocomplete="new-password"><small>Use at least 10 characters.</small></label><button class="btn" type="submit">Create account</button></form><p>Already registered? <a href="<%=ctx%>/login">Log in</a></p></main></body></html>
