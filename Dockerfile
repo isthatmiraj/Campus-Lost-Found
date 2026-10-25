@@ -8,12 +8,4 @@ FROM tomcat:10.1-jdk17-temurin
 RUN rm -rf /usr/local/tomcat/webapps/*
 COPY --from=build /app/target/campus-lost-found.war /usr/local/tomcat/webapps/ROOT.war
 ENV CATALINA_OPTS="-Dcampus.data.dir=/data"
-EXPOSE 8080FROM tomcat:10.1-jdk17-temurin
-
-RUN rm -rf /usr/local/tomcat/webapps/*
-
-COPY target/campus-lost-found.war /usr/local/tomcat/webapps/ROOT.war
-
-ENV CATALINA_OPTS="-Dcampus.data.dir=/data"
-
 EXPOSE 8080
