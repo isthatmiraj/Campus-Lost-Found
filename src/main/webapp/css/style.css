@@ -227,18 +227,44 @@ th { background: #f8fafc; color: var(--muted); font-size: 10px; letter-spacing: 
     gap: 8px;
   }
 
+
   .searchbar {
+    display: flex;
     flex-direction: column;
+    align-items: stretch;
     gap: 8px;
     padding: 10px;
   }
 
-  .searchbar input,
+  .searchbar input:not([type="date"]),
   .searchbar select {
+    box-sizing: border-box;
+    display: block;
     width: 100%;
     min-width: 0;
+    height: 44px;
+    min-height: 44px;
+    padding: 10px 12px;
+    flex: none;
+  }
+
+  .searchbar input[type="date"] {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    height: 44px;
     min-height: 44px;
   }
+
+  .searchbar .date-filter {
+    width: 100%;
+  }
+
+  .searchbar button,
+  .searchbar .btn {
+    min-height: 44px;
+  }
+
 
   input,
   select,
@@ -663,3 +689,41 @@ html[data-theme="dark"] .theme-toggle:hover {
   width: 20px;
   height: 20px;
 }
+
+/* Fix oversized advanced search fields on mobile */
+@media (max-width: 580px) {
+  .searchbar.advanced-search {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .searchbar.advanced-search > input,
+  .searchbar.advanced-search > select,
+  .searchbar.advanced-search > .date-filter,
+  .searchbar.advanced-search > button,
+  .searchbar.advanced-search > a {
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+    min-height: 44px;
+    margin: 0;
+  }
+
+  .searchbar.advanced-search > .date-filter {
+    height: auto;
+  }
+
+  .searchbar.advanced-search > .date-filter input {
+    box-sizing: border-box;
+    width: 100%;
+    height: 44px;
+    min-height: 44px;
+    margin-top: 4px;
+  }
+}
+
