@@ -109,6 +109,33 @@ public final class DataStore {
         append(usersFile, row(user.getId(), user.getName(), user.getEmail(), user.getPasswordHash(), user.getRole()));
         return user;
     }
+public synchronized void updatePasswordHash(String userId, String passwordHash)
+        throws IOException {
+    List<String> lines = readLines(usersFile);
+    List<String> updated = new ArrayList<>();
+    boolean found = false;
+
+    for (String line : lines) {
+        if (line.isBlank()) {
+            updated.add(line);
+            continue;
+        }
+
+        String[] f = fields(line);
+        if (f.length == 5 && f[0].equals(userId)) {
+            updated.add(row(f[0], f[1], f[2], passwordHash, f[4]));
+            found = true;
+        } else {
+            updated.add(line);
+        }
+    }
+
+    if (!found) {
+        throw new IllegalArgumentException("User not found.");
+    }
+
+    replace(usersFile, updated);
+}
     public synchronized void ensureAdmin(String email, String passwordHash) throws IOException {
         if (email != null && !email.isBlank() && findUserByEmail(email) == null) {
             createUser("Administrator", email.trim().toLowerCase(Locale.ROOT), passwordHash, "ADMIN");

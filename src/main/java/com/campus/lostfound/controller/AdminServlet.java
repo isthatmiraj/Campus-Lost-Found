@@ -37,6 +37,46 @@ public class AdminServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (!WebUtil.admin(req)) { resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Admin access required."); return; }
         String action = req.getParameter("action");
+if ("resetUserPassword".equals(action)) {
+    String targetUserId = req.getParameter("userId");
+    String newPassword = req.getParameter("newPassword");
+    String confirmPassword = req.getParameter("confirmPassword");
+
+    if (targetUserId == null || targetUserId.isBlank()) {
+        throw new IllegalArgumentException("Choose a user.");
+    }
+
+    if (newPassword == null || newPassword.length() < 10 || newPassword.length() > 200) {
+        throw new IllegalArgumentException("Password must be between 10 and 200 characters.");
+    }
+
+    if (!newPassword.equals(confirmPassword)) {
+        throw new IllegalArgumentException("Passwords do not match.");
+    }
+
+    User target = DataStore.get().findUserById(targetUserId);
+    if (target == null) {
+        throw new IllegalArgumentException("User not found.");
+    }
+
+    if (target.isAdmin() && targetUserId.equals(WebUtil.userId(req))) {
+        throw new IllegalArgumentException("You cannot reset your own password from this page.");
+    }
+
+    DataStore.get().updatePasswordHash(
+        targetUserId,
+        com.campus.lostfound.util.PasswordUtil.hash(newPassword)
+    );
+
+    WorkflowStore.get().audit(
+        WebUtil.userId(req),
+        "USER_PASSWORD_RESET",
+        "Password reset for user " + targetUserId
+    );
+
+    resp.sendRedirect(req.getContextPath() + "/admin?passwordReset=1");
+    return;
+}
         try {
             if ("resolveFlag".equals(action)) { String flagId=req.getParameter("flagId"); String flagStatus=req.getParameter("flagStatus"); CommunityStore.get().resolveFlag(flagId,flagStatus); WorkflowStore.get().audit(WebUtil.userId(req),"FLAG_"+flagStatus,"Flag "+flagId); resp.sendRedirect(req.getContextPath()+"/admin?flagUpdated=1"); return; }
             if ("deleteUser".equals(action)) {
