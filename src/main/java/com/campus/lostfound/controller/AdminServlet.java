@@ -78,6 +78,50 @@ if ("resetUserPassword".equals(action)) {
     return;
 }
         try {
+            if ("reviewItem".equals(action)) {
+                String itemId = req.getParameter("itemId");
+                String decision = req.getParameter("decision");
+
+                if (itemId == null || itemId.isBlank()) {
+                    throw new IllegalArgumentException("Choose an item to review.");
+                }
+                if (!"APPROVED".equals(decision) && !"REJECTED".equals(decision)) {
+                    throw new IllegalArgumentException("Choose approve or reject.");
+                }
+
+                Item item = DataStore.get().findItem(itemId);
+                if (item == null) {
+                    throw new IllegalArgumentException("Item not found.");
+                }
+                if (!"PENDING".equals(item.getApprovalStatus())) {
+                    throw new IllegalArgumentException("This report has already been reviewed.");
+                }
+
+                DataStore.get().setItemApprovalStatus(itemId, decision);
+
+                String title = item.getTitle() == null ? "your report" : item.getTitle();
+                String message = "Your item report '" + title + "' was "
+                        + decision.toLowerCase(Locale.ROOT) + ".";
+                if ("REJECTED".equals(decision)) {
+                    message += " It will not appear in public listings.";
+                }
+
+                WorkflowStore.get().notifyUser(
+                    item.getReporterId(),
+                    message,
+                    "/dashboard"
+                );
+
+                WorkflowStore.get().audit(
+                    WebUtil.userId(req),
+                    "ITEM_" + decision,
+                    "Item " + itemId + ": " + title
+                );
+
+                resp.sendRedirect(req.getContextPath() + "/admin?itemReviewed=1");
+                return;
+            }
+
             if ("resolveFlag".equals(action)) { String flagId=req.getParameter("flagId"); String flagStatus=req.getParameter("flagStatus"); CommunityStore.get().resolveFlag(flagId,flagStatus); WorkflowStore.get().audit(WebUtil.userId(req),"FLAG_"+flagStatus,"Flag "+flagId); resp.sendRedirect(req.getContextPath()+"/admin?flagUpdated=1"); return; }
             if ("deleteUser".equals(action)) {
                 String targetUserId = req.getParameter("userId");

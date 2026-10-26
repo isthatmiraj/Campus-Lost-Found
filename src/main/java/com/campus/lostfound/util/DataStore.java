@@ -197,9 +197,14 @@ public synchronized void updatePasswordHash(String userId, String passwordHash)
         for (String line : readLines(itemsFile)) {
             if (line.isBlank()) continue;
             String[] f = fields(line);
-            if (f.length == 9) out.add(new Item(f[0],f[1],f[2],f[3],f[4],f[5],f[6],f[7],f[8]));
-            else if (f.length == 10) out.add(new Item(f[0],f[1],f[2],f[3],f[4],f[5],f[6],f[7],f[8],f[9]));
-            else if (f.length >= 11) out.add(new Item(f[0],f[1],f[2],f[3],f[4],f[5],f[6],f[7],f[8],f[9],f[10]));
+            if (f.length == 9)
+                out.add(new Item(f[0],f[1],f[2],f[3],f[4],f[5],f[6],f[7],f[8]));
+            else if (f.length == 10)
+                out.add(new Item(f[0],f[1],f[2],f[3],f[4],f[5],f[6],f[7],f[8],f[9]));
+            else if (f.length == 11)
+                out.add(new Item(f[0],f[1],f[2],f[3],f[4],f[5],f[6],f[7],f[8],f[9],f[10]));
+            else if (f.length >= 12)
+                out.add(new Item(f[0],f[1],f[2],f[3],f[4],f[5],f[6],f[7],f[8],f[9],f[10],f[11]));
         }
         Collections.reverse(out);
         return out;
@@ -216,9 +221,10 @@ public synchronized void updatePasswordHash(String userId, String passwordHash)
     public synchronized Item createItem(String reporterId, String title, String description, String category,
                                         String type, String location, String date, String contactPhone, String photoName) throws IOException {
         Item item = new Item(UUID.randomUUID().toString(), reporterId, title, description, category,
-                type, location, date, "OPEN", contactPhone, photoName);
+                type, location, date, "OPEN", contactPhone, photoName, "PENDING");
         append(itemsFile, row(item.getId(), item.getReporterId(), item.getTitle(), item.getDescription(),
-                item.getCategory(), item.getType(), item.getLocation(), item.getDate(), item.getStatus(), item.getContactPhone(), item.getPhotoName()));
+                item.getCategory(), item.getType(), item.getLocation(), item.getDate(),
+                item.getStatus(), item.getContactPhone(), item.getPhotoName(), item.getApprovalStatus()));
         return item;
     }
 
@@ -230,21 +236,71 @@ public synchronized void updatePasswordHash(String userId, String passwordHash)
         List<String> lines = readLines(itemsFile);
         List<String> updated = new ArrayList<>();
         boolean found = false;
+
         for (String line : lines) {
-            if (line.isBlank()) { updated.add(line); continue; }
+            if (line.isBlank()) {
+                updated.add(line);
+                continue;
+            }
+
             String[] f = fields(line);
-            if ((f.length == 9 || f.length == 10 || f.length >= 11) && f[0].equals(itemId)) {
+            if (f.length >= 9 && f[0].equals(itemId)) {
+                // Preserve legacy reports as approved when adding the new field.
+                if (f.length < 12) {
+                    String legacyApproval = "APPROVED";
+                    f = java.util.Arrays.copyOf(f, 12);
+                    f[11] = legacyApproval;
+                }
                 f[8] = status;
                 updated.add(row(f));
                 found = true;
-            } else updated.add(line);
+            } else {
+                updated.add(line);
+            }
         }
+
         if (!found) throw new IllegalArgumentException("Item not found.");
         replace(itemsFile, updated);
     }
+
+    public synchronized void setItemApprovalStatus(String itemId, String approvalStatus) throws IOException {
+        if (!"APPROVED".equals(approvalStatus) && !"REJECTED".equals(approvalStatus))
+            throw new IllegalArgumentException("Invalid item approval status.");
+
+        List<String> lines = readLines(itemsFile);
+        List<String> updated = new ArrayList<>();
+        boolean found = false;
+
+        for (String line : lines) {
+            if (line.isBlank()) {
+                updated.add(line);
+                continue;
+            }
+
+            String[] f = fields(line);
+            if (f.length >= 9 && f[0].equals(itemId)) {
+                if (f.length < 12) {
+                    f = java.util.Arrays.copyOf(f, 12);
+                    // Legacy reports are treated as approved before this change.
+                    if (f.length > 11 && f[11] == null) f[11] = "APPROVED";
+                }
+                f[11] = approvalStatus;
+                updated.add(row(f));
+                found = true;
+            } else {
+                updated.add(line);
+            }
+        }
+
+        if (!found) throw new IllegalArgumentException("Item not found.");
+        replace(itemsFile, updated);
+    }
+
     public synchronized Claim createClaim(String itemId, String claimantId, String proof) throws IOException {
         Item item = findItem(itemId);
         if (item == null) throw new IllegalArgumentException("Item not found.");
+        if (!"APPROVED".equals(item.getApprovalStatus()))
+            throw new IllegalArgumentException("This item has not been approved for public claims.");
         if (!"FOUND".equals(item.getType())) throw new IllegalArgumentException("Claims can only be submitted for found items.");
         if (!"OPEN".equals(item.getStatus())) throw new IllegalArgumentException("This item is not open for claims.");
         if (item.getReporterId().equals(claimantId)) throw new IllegalArgumentException("You cannot claim an item you reported.");

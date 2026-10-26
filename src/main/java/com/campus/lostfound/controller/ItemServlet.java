@@ -34,7 +34,9 @@ public class ItemServlet extends HttpServlet {
             req.getRequestDispatcher("/WEB-INF/views/report-item.jsp").forward(req, resp);
             return;
         }
-        List<Item> items = DataStore.get().allItems();
+        List<Item> items = DataStore.get().allItems().stream()
+                .filter(i -> "APPROVED".equals(i.getApprovalStatus()))
+                .collect(Collectors.toList());
         String q = clean(req.getParameter("q")).toLowerCase(Locale.ROOT);
         String type = clean(req.getParameter("type")).toUpperCase(Locale.ROOT);
         String category = clean(req.getParameter("category"));
@@ -108,7 +110,7 @@ public class ItemServlet extends HttpServlet {
             String photoName = savePhoto(photoPart);
             DataStore.get().createItem(WebUtil.userId(req), title, description, category, type, location, date, contactPhone, photoName);
             WorkflowStore.get().audit(WebUtil.userId(req), "ITEM_REPORTED", title + " (" + type + ")");
-            resp.sendRedirect(req.getContextPath() + "/items?posted=1");
+            resp.sendRedirect(req.getContextPath() + "/items?submitted=1");
         } catch (IllegalArgumentException e) {
             req.setAttribute("error", e.getMessage() == null ? "Please check the submitted details." : e.getMessage());
             req.getRequestDispatcher("/WEB-INF/views/report-item.jsp").forward(req, resp);
