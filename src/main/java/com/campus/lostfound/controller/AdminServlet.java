@@ -98,9 +98,26 @@ if ("resetUserPassword".equals(action)) {
             Claim claim = null; for (Claim c : DataStore.get().allClaims()) if (c.getId().equals(claimId)) { claim = c; break; }
             if (claim == null) throw new IllegalArgumentException("Claim not found.");
             Item item = DataStore.get().findItem(claim.getItemId());
+            User claimant = DataStore.get().findUserById(claim.getClaimantId());
+            String claimantName = claimant == null ? "A user" : claimant.getName();
+
             DataStore.get().reviewClaim(claimId, decision);
-            WorkflowStore.get().notifyUser(claim.getClaimantId(), "Your claim was " + decision.toLowerCase(Locale.ROOT) + (item == null ? "." : " for: " + item.getTitle()), "/dashboard");
-            if (item != null) WorkflowStore.get().notifyUser(item.getReporterId(), "A claim was " + decision.toLowerCase(Locale.ROOT) + " for your item: " + item.getTitle(), "/dashboard");
+
+            WorkflowStore.get().notifyUser(
+                claim.getClaimantId(),
+                "Your claim was " + decision.toLowerCase(Locale.ROOT)
+                    + (item == null ? "." : " for: " + item.getTitle()),
+                "/dashboard"
+            );
+
+            if (item != null) {
+                WorkflowStore.get().notifyUser(
+                    item.getReporterId(),
+                    claimantName + "'s claim was " + decision.toLowerCase(Locale.ROOT)
+                        + " for your item: " + item.getTitle(),
+                    "/dashboard"
+                );
+            }
             if ("APPROVED".equals(decision) && item != null) WorkflowStore.get().createHandover(item.getId(), item.getReporterId(), claim.getClaimantId());
             WorkflowStore.get().audit(WebUtil.userId(req), "CLAIM_" + decision, "Claim " + claimId);
             resp.sendRedirect(req.getContextPath() + "/admin?updated=1");

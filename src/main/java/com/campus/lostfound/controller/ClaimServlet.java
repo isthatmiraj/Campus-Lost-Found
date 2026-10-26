@@ -2,6 +2,7 @@ package com.campus.lostfound.controller;
 
 import com.campus.lostfound.model.Claim;
 import com.campus.lostfound.model.Item;
+import com.campus.lostfound.model.User;
 import com.campus.lostfound.util.DataStore;
 import com.campus.lostfound.util.WebUtil;
 import com.campus.lostfound.util.WorkflowStore;
@@ -33,8 +34,24 @@ public class ClaimServlet extends HttpServlet {
         String proof = req.getParameter("proof") == null ? "" : req.getParameter("proof").trim();
         try {
             if (proof.length() < 5 || proof.length() > 1000) throw new IllegalArgumentException("Please provide a short ownership clue (5–1000 characters).");
-            Item item = DataStore.get().createClaim(itemId, WebUtil.userId(req), proof) == null ? null : DataStore.get().findItem(itemId);
-            if (item != null) WorkflowStore.get().notifyUser(item.getReporterId(), "A new ownership claim was submitted for: " + item.getTitle(), "/admin");
+            String claimantId = WebUtil.userId(req);
+            User claimant = DataStore.get().findUserById(claimantId);
+            String claimantName = claimant == null ? "A user" : claimant.getName();
+
+            Item item = DataStore.get().createClaim(itemId, claimantId, proof) == null
+                    ? null : DataStore.get().findItem(itemId);
+
+            if (item != null) {
+                String message = claimantName + " submitted an ownership claim for: " + item.getTitle();
+
+                WorkflowStore.get().notifyUser(item.getReporterId(), message, "/dashboard");
+
+                for (User user : DataStore.get().allUsers()) {
+                    if (user.isAdmin()) {
+                        WorkflowStore.get().notifyUser(user.getId(), message, "/admin");
+                    }
+                }
+            }
             WorkflowStore.get().audit(WebUtil.userId(req), "CLAIM_SUBMITTED", "Item " + itemId);
             resp.sendRedirect(req.getContextPath() + "/my-claims?submitted=1");
         } catch (IllegalArgumentException e) {
