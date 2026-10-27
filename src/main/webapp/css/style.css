@@ -727,3 +727,63 @@ html[data-theme="dark"] .theme-toggle:hover {
   }
 }
 
+
+/* Admin table action buttons — desktop and mobile */
+.table-wrap td:last-child {
+  min-width: 175px;
+  vertical-align: middle;
+}
+
+.table-wrap td:last-child form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 9px;
+}
+
+.table-wrap td:last-child form:last-child {
+  margin-bottom: 0;
+}
+
+.table-wrap td:last-child button,
+.table-wrap td:last-child .btn {
+  min-height: 38px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+/* Make destructive actions clearly different */
+.btn-danger,
+button.btn-danger {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #be123c;
+}
+
+.btn-danger:hover,
+button.btn-danger:hover {
+  background: #ffe4e6;
+  border-color: #fda4af;
+}
+
+/* Keep action groups tidy on smaller screens */
+@media (max-width: 580px) {
+  .table-wrap td:last-child {
+    min-width: 190px;
+  }
+
+  .table-wrap td:last-child form {
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .table-wrap td:last-child button,
+  .table-wrap td:last-child .btn {
+    min-height: 42px;
+  }
+}
