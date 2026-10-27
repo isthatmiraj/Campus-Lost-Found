@@ -787,3 +787,43 @@ button.btn-danger:hover {
     min-height: 42px;
   }
 }
+
+/* CampusFind admin actions — phone layout */
+@media (max-width: 580px) {
+  .table-wrap td:last-child {
+    min-width: 170px;
+    padding: 14px 12px;
+  }
+
+  .table-wrap td:last-child form {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin: 0 0 12px;
+  }
+
+  .table-wrap td:last-child form:last-child {
+    margin-bottom: 0;
+  }
+
+  .table-wrap td:last-child form button,
+  .table-wrap td:last-child form .btn {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 44px;
+    margin: 0;
+    justify-content: center;
+    white-space: normal;
+  }
+
+  .table-wrap td:last-child form button + button {
+    margin-top: 2px;
+  }
+
+  .table-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
