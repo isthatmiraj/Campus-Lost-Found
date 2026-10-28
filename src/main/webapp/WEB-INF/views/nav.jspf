@@ -1,33 +1,99 @@
+
 <%@ page import="com.campus.lostfound.util.WebUtil" %>
-<script>(function(){try{var t=localStorage.getItem("campusfind-theme");if(t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();</script><header class="topbar"><a class="brand" href="<%=request.getContextPath()%>/items"><span class="brand-mark">C</span> CampusFind</a><nav><a href="<%=request.getContextPath()%>/items">Browse</a>
-<% if (WebUtil.loggedIn(request)) { %><a href="<%=request.getContextPath()%>/report-item">Report item</a><a href="<%=request.getContextPath()%>/my-claims">My claims</a><a href="<%=request.getContextPath()%>/saved-items">Saved items</a><a href="<%=request.getContextPath()%>/dashboard">Dashboard <% try { long n=com.campus.lostfound.util.WorkflowStore.get().unreadCount(WebUtil.userId(request)); if(n>0){ %>(<%=n%>)<% } } catch(Exception ignored){} %></a><% if (WebUtil.admin(request)) { %><a href="<%=request.getContextPath()%>/admin">Admin</a><% } %><form class="inline" method="post" action="<%=request.getContextPath()%>/logout"><button class="link-button" type="submit">Log out</button></form><span class="user-chip"><%=WebUtil.h((String)session.getAttribute("name"))%></span><% } else { %><a href="<%=request.getContextPath()%>/login">Log in</a><a class="nav-cta" href="<%=request.getContextPath()%>/register">Sign up</a><% } %><button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch theme" title="Switch theme"><span id="theme-icon" aria-hidden="true"></span></button></nav></header><script>
-(function () {
-  var b = document.getElementById("theme-toggle");
-  var icon = document.getElementById("theme-icon");
-  if (!b || !icon) return;
-
-  var moon = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/></svg>';
-  var sun = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>';
-
-  function updateIcon() {
-    var dark = document.documentElement.getAttribute("data-theme") === "dark";
-    icon.innerHTML = dark ? sun : moon;
-    b.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
-    b.setAttribute("title", dark ? "Switch to light mode" : "Switch to dark mode");
-  }
-
-  updateIcon();
-
-  b.addEventListener("click", function () {
-    var dark = document.documentElement.getAttribute("data-theme") === "dark";
-    if (dark) {
-      document.documentElement.removeAttribute("data-theme");
-      localStorage.setItem("campusfind-theme", "light");
-    } else {
-      document.documentElement.setAttribute("data-theme", "dark");
-      localStorage.setItem("campusfind-theme", "dark");
-    }
-    updateIcon();
-  });
+<script>
+(function() {
+    try {
+        var t = localStorage.getItem("campusfind-theme");
+        if (t === "dark") {
+            document.documentElement.setAttribute("data-theme", "dark");
+        }
+    } catch (e) {}
 })();
 </script>
+
+<header class="topbar">
+    <a class="brand" href="<%=request.getContextPath()%>/items">
+        <span class="brand-mark">C</span> CampusFind
+    </a>
+
+    <nav>
+        <a href="<%=request.getContextPath()%>/items">Browse</a>
+
+        <% if (WebUtil.loggedIn(request)) { %>
+            <a href="<%=request.getContextPath()%>/report-item">Report item</a>
+            <a href="<%=request.getContextPath()%>/my-claims">My claims</a>
+            <a href="<%=request.getContextPath()%>/saved-items">Saved items</a>
+
+            <a href="<%=request.getContextPath()%>/dashboard">
+                Dashboard
+                <% try {
+                    long n = com.campus.lostfound.util.WorkflowStore
+                        .get().unreadCount(WebUtil.userId(request));
+                    if (n > 0) {
+                %>
+                    (<%=n%>)
+                <%  }
+                } catch (Exception ignored) {} %>
+            </a>
+
+            <a href="<%=request.getContextPath()%>/chat/inbox">Inbox</a>
+
+            <% if (WebUtil.admin(request)) { %>
+                <a href="<%=request.getContextPath()%>/admin">Admin</a>
+            <% } %>
+
+            <form class="inline" method="post"
+                  action="<%=request.getContextPath()%>/logout">
+                <button class="link-button" type="submit">Log out</button>
+            </form>
+
+            <span class="user-chip">
+                <%=WebUtil.h((String)session.getAttribute("name"))%>
+            </span>
+        <% } else { %>
+            <a href="<%=request.getContextPath()%>/login">Log in</a>
+            <a class="nav-cta" href="<%=request.getContextPath()%>/register">Sign up</a>
+        <% } %>
+
+        <button type="button" class="theme-toggle" id="theme-toggle"
+                aria-label="Switch theme" title="Switch theme">
+            <span id="theme-icon" aria-hidden="true"></span>
+        </button>
+    </nav>
+</header>
+
+<script>
+(function () {
+    var b = document.getElementById("theme-toggle");
+    var icon = document.getElementById("theme-icon");
+    if (!b || !icon) return;
+
+    var moon = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/></svg>';
+
+    var sun = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>';
+
+    function updateIcon() {
+        var dark = document.documentElement.getAttribute("data-theme") === "dark";
+        icon.innerHTML = dark ? sun : moon;
+        b.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+        b.setAttribute("title", dark ? "Switch to light mode" : "Switch to dark mode");
+    }
+
+    updateIcon();
+
+    b.addEventListener("click", function () {
+        var dark = document.documentElement.getAttribute("data-theme") === "dark";
+
+        if (dark) {
+            document.documentElement.removeAttribute("data-theme");
+            localStorage.setItem("campusfind-theme", "light");
+        } else {
+            document.documentElement.setAttribute("data-theme", "dark");
+            localStorage.setItem("campusfind-theme", "dark");
+        }
+
+        updateIcon();
+    });
+})();
+</script>
+
