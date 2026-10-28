@@ -25,16 +25,13 @@
                 body
             });
 
-            if (!response.ok) {
-                throw new Error(
-                    response.status === 403
-                        ? 'Session expired or security token invalid. Refresh the page and try again.'
-                        : response.status === 400
-                            ? 'This item cannot start a chat. It may not be approved and open.'
-                            : 'Server returned error ' + response.status
-                );
-            }
-
+if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+        'HTTP ' + response.status + ': ' +
+        (errorText || 'No error details returned by server')
+    );
+}
             const data = await response.json();
             if (!data.conversationId) throw new Error('No conversation ID was returned.');
 
