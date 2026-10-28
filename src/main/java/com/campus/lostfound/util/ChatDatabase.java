@@ -24,6 +24,15 @@ public final class ChatDatabase {
             throw new SQLException("Invalid PostgreSQL JDBC URL.");
         }
 
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new SQLException(
+                "PostgreSQL JDBC driver is missing from the deployed application.",
+                e
+            );
+        }
+
         return DriverManager.getConnection(url, user, password);
     }
 }
