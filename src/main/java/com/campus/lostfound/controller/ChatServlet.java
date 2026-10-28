@@ -174,12 +174,17 @@ public class ChatServlet extends HttpServlet {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (IllegalArgumentException e) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-        } catch (Exception e) {
-            getServletContext().log("Chat POST request failed", e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Unable to process chat request.");
-        }
-    }
+} catch (Exception e) {
+    getServletContext().log("Chat POST request failed: "
+            + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
+
+    resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    resp.setContentType("text/plain;charset=UTF-8");
+    resp.getWriter().write(
+            "Chat error: " + e.getClass().getSimpleName()
+            + " — " + (e.getMessage() == null
+                    ? "No details available" : e.getMessage()));
+}    }
 
     private boolean validCsrf(HttpServletRequest req) {
         HttpSession session = req.getSession(false);
