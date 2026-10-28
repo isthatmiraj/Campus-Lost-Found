@@ -7,9 +7,13 @@ import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
+import java.security.SecureRandom;
+import java.util.Base64;
 
 @WebFilter("/*")
 public class SessionValidationFilter implements Filter {
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response,
@@ -34,11 +38,23 @@ public class SessionValidationFilter implements Filter {
                     return;
                 }
             } catch (IOException e) {
-                throw new ServletException("Unable to validate the current user session.", e);
+                throw new ServletException(
+                        "Unable to validate the current user session.", e);
+            }
+
+            // Create a CSRF token for authenticated sessions if missing.
+            if (session.getAttribute("csrfToken") == null) {
+                byte[] bytes = new byte[32];
+                SECURE_RANDOM.nextBytes(bytes);
+
+                String token = Base64.getUrlEncoder()
+                        .withoutPadding()
+                        .encodeToString(bytes);
+
+                session.setAttribute("csrfToken", token);
             }
         }
 
         chain.doFilter(request, response);
     }
 }
-

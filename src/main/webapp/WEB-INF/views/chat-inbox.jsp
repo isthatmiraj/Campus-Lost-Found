@@ -1,0 +1,346 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="java.util.List" %>
+<%@ page import="com.campus.lostfound.util.WebUtil" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Messages | CampusFind</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, sans-serif;
+            background: #f5f7fb;
+            color: #172033;
+        }
+
+        .page {
+            max-width: 1000px;
+            margin: 42px auto;
+            padding: 0 20px;
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 26px;
+        }
+
+        .eyebrow {
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 7px 0;
+            font-size: clamp(28px, 5vw, 38px);
+            letter-spacing: -1.2px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin: 0;
+        }
+
+        .back {
+            text-decoration: none;
+            color: #334155;
+            border: 1px solid #dce2eb;
+            background: white;
+            padding: 11px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .panel {
+            border: 1px solid #e4e9f1;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 12px 36px rgba(30, 41, 59, .045);
+        }
+
+        .panel-head {
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #edf0f5;
+        }
+
+        .panel-head h2 {
+            font-size: 17px;
+            margin: 0;
+        }
+
+        .count {
+            font-size: 12px;
+            color: #475569;
+            background: #f1f5f9;
+            border-radius: 20px;
+            padding: 6px 10px;
+        }
+
+        #status {
+            padding: 20px 24px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .conversation {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 19px 24px;
+            text-decoration: none;
+            color: inherit;
+            border-bottom: 1px solid #f0f2f6;
+            transition: background .18s ease;
+        }
+
+        .conversation:hover { background: #f8faff; }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            flex: 0 0 48px;
+            display: grid;
+            place-items: center;
+            border-radius: 15px;
+            color: #4338ca;
+            background: #eef2ff;
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+        .details { flex: 1; min-width: 0; }
+
+        .item-title {
+            font-weight: 750;
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+
+        .participant {
+            color: #64748b;
+            font-size: 13px;
+            overflow-wrap: anywhere;
+        }
+
+        .meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .time {
+            font-size: 11px;
+            color: #94a3b8;
+            white-space: nowrap;
+        }
+
+        .open-label {
+            font-size: 12px;
+            color: #4f46e5;
+            font-weight: 700;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 55px 24px;
+        }
+
+        .empty-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 16px;
+            display: grid;
+            place-items: center;
+            border-radius: 20px;
+            background: #f1f5f9;
+            font-size: 26px;
+        }
+
+        .empty h3 { margin: 0 0 8px; }
+        .empty p {
+            margin: 0 auto 20px;
+            max-width: 340px;
+            color: #64748b;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .browse {
+            display: inline-block;
+            padding: 12px 17px;
+            border-radius: 12px;
+            background: #4f46e5;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        @media (max-width: 600px) {
+            .page { margin: 24px auto; padding: 0 12px; }
+            .top { align-items: flex-start; }
+            .back { padding: 9px 11px; font-size: 13px; }
+            .panel { border-radius: 16px; }
+            .panel-head { padding: 17px; }
+            .conversation { padding: 16px; gap: 11px; }
+            .avatar {
+                width: 42px;
+                height: 42px;
+                flex-basis: 42px;
+                border-radius: 13px;
+            }
+            .time { display: none; }
+            .item-title { font-size: 14px; }
+        }
+    </style>
+</head>
+
+<body>
+<main class="page">
+    <header class="top">
+        <div>
+            <div class="eyebrow">CampusFind · Inbox</div>
+            <h1>Your messages</h1>
+            <p class="subtitle">Conversations about lost and found items.</p>
+        </div>
+        <a class="back" href="<%= request.getContextPath() %>/items">Browse items</a>
+    </header>
+
+    <section class="panel">
+        <div class="panel-head">
+            <h2>Conversations</h2>
+            <span class="count" id="conversationCount">Loading…</span>
+        </div>
+
+        <div id="status" role="status" aria-live="polite">
+            Loading your conversations…
+        </div>
+
+        <div id="conversations"></div>
+    </section>
+</main>
+
+<script>
+(() => {
+    const context = '<%= request.getContextPath() %>';
+    const list = document.getElementById('conversations');
+    const status = document.getElementById('status');
+    const count = document.getElementById('conversationCount');
+
+    async function loadInbox() {
+        try {
+            const response = await fetch(context + '/chat/inbox-data', {
+                credentials: 'same-origin',
+                headers: { 'Accept': 'application/json' }
+            });
+
+            if (!response.ok) throw new Error('Inbox could not be loaded.');
+
+            const data = await response.json();
+            const conversations = data.conversations || [];
+
+            list.replaceChildren();
+            count.textContent = conversations.length +
+                (conversations.length === 1 ? ' conversation' : ' conversations');
+
+            if (conversations.length === 0) {
+                status.hidden = true;
+
+                const empty = document.createElement('div');
+                empty.className = 'empty';
+
+                const icon = document.createElement('div');
+                icon.className = 'empty-icon';
+                icon.textContent = '✉';
+
+                const heading = document.createElement('h3');
+                heading.textContent = 'No conversations yet';
+
+                const description = document.createElement('p');
+                description.textContent =
+                    'When you contact a reporter about an item, your conversation will appear here.';
+
+                const link = document.createElement('a');
+                link.className = 'browse';
+                link.href = context + '/items';
+                link.textContent = 'Explore listings';
+
+                empty.append(icon, heading, description, link);
+                list.appendChild(empty);
+                return;
+            }
+
+            status.hidden = true;
+
+            for (const conversation of conversations) {
+                const link = document.createElement('a');
+                link.className = 'conversation';
+                link.href = context + '/chat/room?conversationId=' +
+                    encodeURIComponent(conversation.id);
+
+                const avatar = document.createElement('div');
+                avatar.className = 'avatar';
+                avatar.textContent = 'C';
+
+                const details = document.createElement('div');
+                details.className = 'details';
+
+                const title = document.createElement('div');
+                title.className = 'item-title';
+                title.textContent = 'Item ' + conversation.itemId;
+
+                const participant = document.createElement('div');
+                participant.className = 'participant';
+                participant.textContent = 'Conversation about this listing';
+
+                details.append(title, participant);
+
+                const meta = document.createElement('div');
+                meta.className = 'meta';
+
+                const time = document.createElement('div');
+                time.className = 'time';
+
+                if (conversation.lastMessageAt) {
+                    const date = new Date(conversation.lastMessageAt);
+                    time.textContent = Number.isNaN(date.getTime())
+                        ? '' : date.toLocaleDateString();
+                }
+
+                const open = document.createElement('div');
+                open.className = 'open-label';
+                open.textContent = 'Open →';
+
+                meta.append(time, open);
+                link.append(avatar, details, meta);
+                list.appendChild(link);
+            }
+        } catch (error) {
+            status.hidden = false;
+            status.textContent =
+                'Could not load conversations. Please refresh and try again.';
+            count.textContent = 'Unavailable';
+        }
+    }
+
+    loadInbox();
+})();
+</script>
+</body>
+</html>
