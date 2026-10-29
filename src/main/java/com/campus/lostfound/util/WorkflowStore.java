@@ -1,47 +1,128 @@
 package com.campus.lostfound.util;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.sql.*;
 import java.time.Instant;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
-/** Additive workflow files. Existing users/items/claims formats are not changed. */
 public final class WorkflowStore {
     private static final WorkflowStore INSTANCE = new WorkflowStore();
-    private final Path dir, notifications, audit, handovers;
-    private WorkflowStore() {
-        dir = DataStore.get().getDataDirectory();
-        notifications = dir.resolve("notifications.txt"); audit = dir.resolve("audit.txt"); handovers = dir.resolve("handovers.txt");
-        try { Files.createDirectories(dir); for (Path p : List.of(notifications,audit,handovers)) if (Files.notExists(p)) Files.createFile(p); }
-        catch (IOException e) { throw new IllegalStateException("Cannot initialize workflow storage", e); }
-    }
+    private WorkflowStore() {}
     public static WorkflowStore get() { return INSTANCE; }
-    private String enc(String s) { return Base64.getUrlEncoder().withoutPadding().encodeToString((s==null?"":s).getBytes(StandardCharsets.UTF_8)); }
-    private String dec(String s) { return new String(Base64.getUrlDecoder().decode(s), StandardCharsets.UTF_8); }
-    private String row(String... f) { return Arrays.stream(f).map(this::enc).collect(Collectors.joining("|")); }
-    private String[] parse(String line) { return Arrays.stream(line.split("\\|",-1)).map(this::dec).toArray(String[]::new); }
-    private List<String> lines(Path p) throws IOException { return Files.readAllLines(p, StandardCharsets.UTF_8); }
-    private void append(Path p,String r) throws IOException { Files.writeString(p,r+System.lineSeparator(),StandardCharsets.UTF_8,StandardOpenOption.CREATE,StandardOpenOption.APPEND); }
-    public synchronized void audit(String actorId,String action,String detail) throws IOException { append(audit,row(Instant.now().toString(),actorId,action,detail)); }
-    public synchronized List<String[]> recentAudit(int limit) throws IOException { List<String[]> a=new ArrayList<>(); for(String l:lines(audit)) if(!l.isBlank()){String[] f=parse(l);if(f.length==4)a.add(f);} Collections.reverse(a);return a.subList(0,Math.min(limit,a.size())); }
-    public synchronized void notifyUser(String userId,String message,String url) throws IOException { if(userId!=null&&!userId.isBlank()) append(notifications,row(UUID.randomUUID().toString(),userId,message,url,Instant.now().toString(),"UNREAD")); }
-    public synchronized List<String[]> notificationsFor(String userId) throws IOException { List<String[]> a=new ArrayList<>();for(String l:lines(notifications))if(!l.isBlank()){String[] f=parse(l);if(f.length==6&&f[1].equals(userId))a.add(f);}Collections.reverse(a);return a; }
-    public synchronized long unreadCount(String userId) throws IOException { return notificationsFor(userId).stream().filter(n->"UNREAD".equals(n[5])).count(); }
-    public synchronized void markRead(String userId,String notificationId) throws IOException { List<String> out=new ArrayList<>();for(String l:lines(notifications)){if(l.isBlank()){out.add(l);continue;}String[] f=parse(l);if(f.length==6&&f[0].equals(notificationId)&&f[1].equals(userId))f[5]="READ";out.add(row(f));}replace(notifications,out); }
+
+    private IOException io(SQLException e) { return new IOException("PostgreSQL workflow operation failed: " + e.getMessage(), e); }
+
+    public synchronized void audit(String actorId, String action, String detail) throws IOException {
+        String sql = "INSERT INTO campus_audit_logs(created_at,actor_id,action,detail) VALUES(?,?,?,?)";
+        try(Connection c=ChatDatabase.getConnection();PreparedStatement p=c.prepareStatement(sql)){
+            p.setString(1,Instant.now().toString());p.setString(2,actorId==null?"":actorId);
+            p.setString(3,action);p.setString(4,detail==null?"":detail);p.executeUpdate();
+        }catch(SQLException e){throw io(e);}
+    }
+
+    public synchronized List<String[]> recentAudit(int limit) throws IOException {
+        if(limit<=0)return new ArrayList<>();
+        List<String[]> out=new ArrayList<>();
+        try(Connection c=ChatDatabase.getConnection();PreparedStatement p=c.prepareStatement(
+            "SELECT created_at,actor_id,action,detail FROM campus_audit_logs ORDER BY created_at DESC,id DESC LIMIT ?")){
+            p.setInt(1,limit);try(ResultSet r=p.executeQuery()){while(r.next())out.add(new String[]{
+                r.getString("created_at"),r.getString("actor_id"),r.getString("action"),r.getString("detail")});}
+            return out;
+        }catch(SQLException e){throw io(e);}
+    }
+
+    public synchronized void notifyUser(String userId,String message,String url) throws IOException {
+        if(userId==null||userId.isBlank())return;
+        String sql="INSERT INTO campus_notifications(id,user_id,message,target_url,created_at,status) VALUES(?,?,?,?,?,'UNREAD')";
+        try(Connection c=ChatDatabase.getConnection();PreparedStatement p=c.prepareStatement(sql)){
+            p.setString(1,UUID.randomUUID().toString());p.setString(2,userId);p.setString(3,message);
+            p.setString(4,url==null?"":url);p.setString(5,Instant.now().toString());p.executeUpdate();
+        }catch(SQLException e){throw io(e);}
+    }
+
+    public synchronized List<String[]> notificationsFor(String userId) throws IOException {
+        List<String[]> out=new ArrayList<>();
+        try(Connection c=ChatDatabase.getConnection();PreparedStatement p=c.prepareStatement(
+            "SELECT id,user_id,message,target_url,created_at,status FROM campus_notifications WHERE user_id=? ORDER BY created_at DESC")){
+            p.setString(1,userId);try(ResultSet r=p.executeQuery()){while(r.next())out.add(new String[]{
+                r.getString("id"),r.getString("user_id"),r.getString("message"),r.getString("target_url"),
+                r.getString("created_at"),r.getString("status")});}
+            return out;
+        }catch(SQLException e){throw io(e);}
+    }
+
+    public synchronized long unreadCount(String userId) throws IOException {
+        try(Connection c=ChatDatabase.getConnection();PreparedStatement p=c.prepareStatement(
+            "SELECT COUNT(*) FROM campus_notifications WHERE user_id=? AND status='UNREAD'")){
+            p.setString(1,userId);try(ResultSet r=p.executeQuery()){r.next();return r.getLong(1);}
+        }catch(SQLException e){throw io(e);}
+    }
+
+    public synchronized void markRead(String userId,String notificationId) throws IOException {
+        try(Connection c=ChatDatabase.getConnection();PreparedStatement p=c.prepareStatement(
+            "UPDATE campus_notifications SET status='READ' WHERE user_id=? AND id=?")){
+            p.setString(1,userId);p.setString(2,notificationId);p.executeUpdate();
+        }catch(SQLException e){throw io(e);}
+    }
+
     public synchronized void createHandover(String itemId,String ownerId,String claimantId) throws IOException {
-        for(String l:lines(handovers)){if(l.isBlank())continue;String[] f=parse(l);if(f.length==6&&f[0].equals(itemId)&&!"CANCELLED".equals(f[5]))return;}
-        append(handovers,row(itemId,ownerId,claimantId,"NO","NO","PENDING"));
+        String sql = """
+            INSERT INTO campus_handovers(item_id,owner_id,claimant_id,owner_confirm,claimant_confirm,status)
+            VALUES(?,?,?,'NO','NO','PENDING')
+            ON CONFLICT(item_id) DO UPDATE SET owner_id=EXCLUDED.owner_id,
+              claimant_id=EXCLUDED.claimant_id,owner_confirm='NO',
+              claimant_confirm='NO',status='PENDING'
+            WHERE campus_handovers.status='CANCELLED'
+            """;
+        try(Connection c=ChatDatabase.getConnection();PreparedStatement p=c.prepareStatement(sql)){
+            p.setString(1,itemId);p.setString(2,ownerId);p.setString(3,claimantId);p.executeUpdate();
+        }catch(SQLException e){
+            if("23505".equals(e.getSQLState()))return;
+            throw io(e);
+        }
     }
+
     public synchronized String confirmHandover(String itemId,String userId) throws IOException {
-        List<String> out=new ArrayList<>();String result=null;boolean found=false;
-        for(String l:lines(handovers)){if(l.isBlank()){out.add(l);continue;}String[] f=parse(l);if(f.length==6&&f[0].equals(itemId)&&"PENDING".equals(f[5])){
-            if(userId.equals(f[1]))f[3]="YES";else if(userId.equals(f[2]))f[4]="YES";else throw new IllegalArgumentException("Only the reporter and approved claimant can confirm this return.");
-            if("YES".equals(f[3])&&"YES".equals(f[4])){f[5]="RETURNED";result="RETURNED";}else result="PENDING";found=true;
-        }out.add(row(f));}
-        if(!found)throw new IllegalArgumentException("No pending return confirmation was found for this item.");replace(handovers,out);return result;
+        try(Connection c=ChatDatabase.getConnection()){
+            c.setAutoCommit(false);
+            try{
+                String owner,claimant,ownerConfirm,claimantConfirm;
+                try(PreparedStatement p=c.prepareStatement(
+                    "SELECT owner_id,claimant_id,owner_confirm,claimant_confirm FROM campus_handovers WHERE item_id=? AND status='PENDING' FOR UPDATE")){
+                    p.setString(1,itemId);try(ResultSet r=p.executeQuery()){
+                        if(!r.next())throw new IllegalArgumentException("No pending return confirmation was found for this item.");
+                        owner=r.getString(1);claimant=r.getString(2);ownerConfirm=r.getString(3);claimantConfirm=r.getString(4);
+                    }
+                }
+                if(userId.equals(owner))ownerConfirm="YES";
+                else if(userId.equals(claimant))claimantConfirm="YES";
+                else throw new IllegalArgumentException("Only the reporter and approved claimant can confirm this return.");
+                String status=("YES".equals(ownerConfirm)&&"YES".equals(claimantConfirm))?"RETURNED":"PENDING";
+                try(PreparedStatement p=c.prepareStatement(
+                    "UPDATE campus_handovers SET owner_confirm=?,claimant_confirm=?,status=? WHERE item_id=?")){
+                    p.setString(1,ownerConfirm);p.setString(2,claimantConfirm);p.setString(3,status);p.setString(4,itemId);p.executeUpdate();
+                }
+                c.commit();return status;
+            }catch(Exception e){
+                try{c.rollback();}catch(SQLException x){e.addSuppressed(x);}
+                if(e instanceof IOException)throw(IOException)e;
+                if(e instanceof RuntimeException)throw(RuntimeException)e;
+                throw new IOException(e);
+            }finally{try{c.setAutoCommit(true);}catch(SQLException ignored){}}
+        }catch(SQLException e){throw io(e);}
     }
-    public synchronized List<String[]> handoversFor(String userId) throws IOException {List<String[]> a=new ArrayList<>();for(String l:lines(handovers)){if(l.isBlank())continue;String[] f=parse(l);if(f.length==6&&(f[1].equals(userId)||f[2].equals(userId)))a.add(f);}Collections.reverse(a);return a;}
-    private void replace(Path p,List<String> rows) throws IOException {Path t=Files.createTempFile(dir,p.getFileName().toString(),".tmp");try{Files.write(t,rows,StandardCharsets.UTF_8,StandardOpenOption.TRUNCATE_EXISTING);try{Files.move(t,p,StandardCopyOption.REPLACE_EXISTING,StandardCopyOption.ATOMIC_MOVE);}catch(AtomicMoveNotSupportedException e){Files.move(t,p,StandardCopyOption.REPLACE_EXISTING);}}finally{Files.deleteIfExists(t);}}
+
+    public synchronized List<String[]> handoversFor(String userId) throws IOException {
+        List<String[]> out=new ArrayList<>();
+        try(Connection c=ChatDatabase.getConnection();PreparedStatement p=c.prepareStatement(
+            "SELECT item_id,owner_id,claimant_id,owner_confirm,claimant_confirm,status FROM campus_handovers WHERE owner_id=? OR claimant_id=? ORDER BY item_id DESC")){
+            p.setString(1,userId);p.setString(2,userId);try(ResultSet r=p.executeQuery()){while(r.next())out.add(new String[]{
+                r.getString("item_id"),r.getString("owner_id"),r.getString("claimant_id"),
+                r.getString("owner_confirm"),r.getString("claimant_confirm"),r.getString("status")});}
+            return out;
+        }catch(SQLException e){throw io(e);}
+    }
 }

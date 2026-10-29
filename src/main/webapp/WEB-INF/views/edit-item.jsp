@@ -63,7 +63,7 @@ Item item = (Item) request.getAttribute("item");
 
             <% if (item.getPhotoName() != null && !item.getPhotoName().isBlank()) { %>
                 <p>Current photo:</p>
-                <img src="<%=ctx%>/photo/<%=WebUtil.h(item.getPhotoName())%>"
+                <img src="<%=WebUtil.h(com.campus.lostfound.util.PhotoUtil.imageSrc(item.getPhotoName(),ctx))%>"
                      alt="Current listing photo" style="max-width:220px;height:auto">
             <% } %>
 

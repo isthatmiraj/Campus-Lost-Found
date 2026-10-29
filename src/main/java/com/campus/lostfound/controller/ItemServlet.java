@@ -4,6 +4,7 @@ import com.campus.lostfound.model.Item;
 import com.campus.lostfound.util.DataStore;
 import com.campus.lostfound.util.WebUtil;
 import com.campus.lostfound.util.WorkflowStore;
+import com.campus.lostfound.util.ImageKitStorage;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.Part;
@@ -12,9 +13,7 @@ import jakarta.servlet.http.*;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.io.ByteArrayInputStream;
 import java.util.UUID;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -234,12 +233,13 @@ public class ItemServlet extends HttpServlet {
     }
 
     private void deleteUploadedPhoto(String photoName) {
+        // Remote ImageKit files are intentionally not deleted automatically here. A failed
+        // edit submission must never risk deleting a photo still referenced by another record.
+        if (photoName == null || photoName.isBlank() || ImageKitStorage.isRemoteUrl(photoName)) return;
         try {
-            Path path = DataStore.get().getDataDirectory().resolve("uploads")
-                    .resolve(photoName).normalize();
-            if (path.getParent().equals(DataStore.get().getDataDirectory().resolve("uploads").normalize())) {
-                Files.deleteIfExists(path);
-            }
+            java.nio.file.Path uploads = DataStore.get().getDataDirectory().resolve("uploads").normalize();
+            java.nio.file.Path path = uploads.resolve(photoName).normalize();
+            if (path.getParent().equals(uploads)) java.nio.file.Files.deleteIfExists(path);
         } catch (IOException ignored) {
             // An orphaned image can be cleaned up later; never replace the original listing on failure.
         }
@@ -254,20 +254,23 @@ public class ItemServlet extends HttpServlet {
         else if ("image/png".equals(contentType)) extension = ".png";
         else throw new IllegalArgumentException("Please upload a JPG or PNG image.");
 
-        Path uploadDir = DataStore.get().getDataDirectory().resolve("uploads");
-        Files.createDirectories(uploadDir);
-        String photoName = UUID.randomUUID().toString() + extension;
-        Path destination = uploadDir.resolve(photoName).normalize();
-        if (!destination.getParent().equals(uploadDir.normalize())) throw new IllegalArgumentException("Invalid photo file.");
+        byte[] bytes;
         try (InputStream in = part.getInputStream()) {
+            bytes = in.readAllBytes();
+        }
+        try (InputStream in = new ByteArrayInputStream(bytes)) {
             BufferedImage image = ImageIO.read(in);
-            if (image == null || image.getWidth() < 1 || image.getHeight() < 1 || image.getWidth() > 8000 || image.getHeight() > 8000)
+            if (image == null || image.getWidth() < 1 || image.getHeight() < 1 ||
+                    image.getWidth() > 8000 || image.getHeight() > 8000) {
                 throw new IllegalArgumentException("The uploaded file is not a valid JPG or PNG image.");
+            }
         }
-        try (InputStream in = part.getInputStream()) {
-            Files.copy(in, destination, StandardCopyOption.REPLACE_EXISTING);
+        String fileName = "campusfind-" + UUID.randomUUID() + extension;
+        try {
+            return ImageKitStorage.upload(bytes, fileName, contentType);
+        } catch (IOException e) {
+            throw new IOException("Photo upload failed. Please try again; your listing has not been saved.", e);
         }
-        return photoName;
     }
     private String clean(String s) { return s == null ? "" : s.trim(); }
 }

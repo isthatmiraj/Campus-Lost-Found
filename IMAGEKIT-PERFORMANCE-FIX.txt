@@ -1,0 +1,10 @@
+CampusFind image/performance patch
+
+Changes:
+- Allows https://ik.imagekit.io in the Content-Security-Policy img-src directive.
+- Uses a small HikariCP connection pool for Neon PostgreSQL instead of creating a fresh DriverManager connection on every query.
+- Keeps existing CHAT_DB_URL, CHAT_DB_USER, CHAT_DB_PASSWORD and ImageKit environment variables unchanged.
+
+After applying, run: mvn clean package -DskipTests
+Check that the generated WAR contains HikariCP, then deploy through your usual GitHub/Render workflow.
+Do not rerun DataMigrationTool or ImageKitMigrationTool.
