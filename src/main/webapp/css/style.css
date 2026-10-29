@@ -931,3 +931,55 @@ button.btn-danger:hover {
         gap: .35rem;
     }
 }
+
+
+/* Listing edit review theme fixes */
+.edit-review-card {
+    background: var(--surface, #ffffff);
+    color: var(--text, #172033);
+    border-color: var(--line, #d8dce3);
+}
+
+.edit-review-card h3,
+.edit-review-card p,
+.edit-review-card strong,
+.edit-review-card label {
+    color: var(--text, #172033);
+}
+
+.edit-diff-row {
+    border-color: var(--line, #e5e7eb);
+}
+
+.edit-diff-row small {
+    color: var(--muted, #687386);
+}
+
+:root[data-theme="dark"] .edit-review-card {
+    background: var(--surface, #111b2e);
+    color: var(--text, #e5edf9);
+    border-color: var(--line, #293750);
+}
+
+:root[data-theme="dark"] .edit-review-card h3,
+:root[data-theme="dark"] .edit-review-card p,
+:root[data-theme="dark"] .edit-review-card strong,
+:root[data-theme="dark"] .edit-review-card label,
+:root[data-theme="dark"] .edit-review-card span,
+:root[data-theme="dark"] .edit-review-card div {
+    color: var(--text, #e5edf9);
+}
+
+:root[data-theme="dark"] .edit-diff-row {
+    border-color: var(--line, #293750);
+}
+
+:root[data-theme="dark"] .edit-diff-row small {
+    color: var(--muted, #9aabc5);
+}
+
+:root[data-theme="dark"] .edit-change {
+    background: #493817;
+    color: #ffe3a0;
+    border-color: #9b792e;
+}

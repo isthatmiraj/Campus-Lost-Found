@@ -55,7 +55,7 @@ Item item = (Item) request.getAttribute("item");
 
             <label for="contactPhone">Contact phone</label>
             <input id="contactPhone" name="contactPhone" type="tel" maxlength="30"
-                   value="<%=WebUtil.h(item.getContactPhone())%>" required>
+                   value="<%=WebUtil.h(item.getContactPhone())%>">
 
             <% if (item.getPhotoName() != null && !item.getPhotoName().isBlank()) { %>
                 <p>Current photo:</p>
