@@ -192,6 +192,58 @@ public synchronized void updatePasswordHash(String userId, String passwordHash)
             }
         }
     }
+    /** Deletes a listing, its associated claims, and its uploaded photo. */
+    public synchronized void deleteItem(String itemId) throws IOException {
+        Item target = findItem(itemId);
+        if (target == null) {
+            throw new IllegalArgumentException("Listing not found.");
+        }
+
+        List<String> keptItems = new ArrayList<>();
+        List<String> photoNames = new ArrayList<>();
+
+        for (String line : readLines(itemsFile)) {
+            if (line.isBlank()) {
+                keptItems.add(line);
+                continue;
+            }
+            String[] f = fields(line);
+            if (f.length >= 9 && f[0].equals(itemId)) {
+                if (f.length >= 11 && !f[10].isBlank()) {
+                    photoNames.add(f[10]);
+                }
+            } else {
+                keptItems.add(line);
+            }
+        }
+
+        List<String> keptClaims = new ArrayList<>();
+        for (String line : readLines(claimsFile)) {
+            if (line.isBlank()) {
+                keptClaims.add(line);
+                continue;
+            }
+            String[] f = fields(line);
+            if (f.length == 6 && f[1].equals(itemId)) {
+                continue;
+            }
+            keptClaims.add(line);
+        }
+
+        replace(itemsFile, keptItems);
+        replace(claimsFile, keptClaims);
+
+        Path uploads = dir.resolve("uploads").normalize();
+        for (String photoName : photoNames) {
+            if (photoName.matches("[a-fA-F0-9-]+\\.(jpg|png)")) {
+                Path photo = uploads.resolve(photoName).normalize();
+                if (photo.getParent().equals(uploads)) {
+                    Files.deleteIfExists(photo);
+                }
+            }
+        }
+    }
+
     public synchronized List<Item> allItems() throws IOException {
         List<Item> out = new ArrayList<>();
         for (String line : readLines(itemsFile)) {

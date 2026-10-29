@@ -78,6 +78,29 @@ if ("resetUserPassword".equals(action)) {
     return;
 }
         try {
+            if ("deleteItem".equals(action)) {
+                String itemId = req.getParameter("itemId");
+                if (itemId == null || itemId.isBlank()) {
+                    throw new IllegalArgumentException("Choose a listing to delete.");
+                }
+
+                Item item = DataStore.get().findItem(itemId);
+                if (item == null) {
+                    throw new IllegalArgumentException("Listing not found.");
+                }
+
+                String title = item.getTitle() == null ? "Untitled listing" : item.getTitle();
+                DataStore.get().deleteItem(itemId);
+                WorkflowStore.get().audit(
+                    WebUtil.userId(req),
+                    "ITEM_DELETED",
+                    "Listing " + itemId + ": " + title
+                );
+
+                resp.sendRedirect(req.getContextPath() + "/admin?itemDeleted=1");
+                return;
+            }
+
             if ("reviewItem".equals(action)) {
                 String itemId = req.getParameter("itemId");
                 String decision = req.getParameter("decision");
