@@ -7,7 +7,7 @@
 <h2>Registered users</h2><p class="muted">Deleting an account also deletes the items reported by that user and claims linked to that user or those items. You cannot delete your own signed-in account, and the last administrator is protected.</p><div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>User ID</th><th>Account actions</th></tr></thead><tbody><%for(User u:allUsers){%><tr><td><%=WebUtil.h(u.getName())%><%if(u.getId().equals(currentAdminId)){%><br><small>Signed-in account</small><%}%></td><td><%=WebUtil.h(u.getEmail())%></td><td><span class="status"><%=WebUtil.h(u.getRole())%></span></td><td><small><%=WebUtil.h(u.getId())%></small></td><td>
 
 <button class="btn btn-small" type="button"
-        onclick="const f=this.nextElementSibling; f.hidden=!f.hidden; this.textContent=f.hidden?'Reset Password':'Cancel';">
+        onclick="const f=this.nextElementSibling; const open=f.style.display==='none'; f.hidden=!open; f.style.display=open?'block':'none'; this.textContent=open?'Cancel':'Reset Password';">
     Reset Password
 </button>
 <form hidden style="display:none" method="post"
