@@ -38,8 +38,12 @@ Item item = (Item) request.getAttribute("item");
                    value="<%=WebUtil.h(item.getTitle())%>" required>
 
             <label for="category">Category</label>
-            <input id="category" name="category" type="text" minlength="2" maxlength="50"
-                   value="<%=WebUtil.h(item.getCategory())%>" required>
+            <select id="category" name="category" required>
+                <% String[] categories = {"Accessories", "Electronics", "Books & stationery", "Clothing", "Keys", "Cards & IDs", "Bags", "Other"}; %>
+                <% for (String categoryOption : categories) { %>
+                    <option value="<%=WebUtil.h(categoryOption)%>" <%=categoryOption.equals(item.getCategory()) ? "selected" : ""%>><%=WebUtil.h(categoryOption)%></option>
+                <% } %>
+            </select>
 
             <label for="location">Location</label>
             <input id="location" name="location" type="text" minlength="2" maxlength="150"
@@ -68,8 +72,8 @@ Item item = (Item) request.getAttribute("item");
             <small>Leave this empty to keep the current photo. Maximum upload size: 5 MB.</small>
 
             <div class="form-actions">
-                <button type="submit">Submit changes for approval</button>
-                <a href="<%=ctx%>/item?id=<%=WebUtil.h(item.getId())%>">Cancel</a>
+                <button class="btn" type="submit">Submit changes for approval</button>
+                <a class="btn btn-light" href="<%=ctx%>/item?id=<%=WebUtil.h(item.getId())%>">Cancel</a>
             </div>
         </form>
     </section>
