@@ -827,3 +827,37 @@ button.btn-danger:hover {
     -webkit-overflow-scrolling: touch;
   }
 }
+
+/* Align item detail actions consistently */
+.item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.item-actions > form {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.item-actions > form select,
+.item-actions > form button,
+.item-actions > button,
+.item-actions > a {
+  margin: 0;
+  align-self: center;
+}
+
+.item-actions #startChatButton {
+  position: static;
+  transform: none;
+}
+
+@media (max-width: 600px) {
+  .item-actions {
+    align-items: stretch;
+  }
+}
