@@ -861,3 +861,73 @@ button.btn-danger:hover {
     align-items: stretch;
   }
 }
+
+/* Listing edit approval */
+.edit-review-list {
+    display: grid;
+    gap: 1rem;
+    margin: 1rem 0 2rem;
+}
+
+.edit-review-card {
+    padding: 1.25rem;
+    border: 1px solid var(--border, #d8dce3);
+    border-radius: 14px;
+    background: var(--card, #fff);
+}
+
+.edit-review-card h3 {
+    margin-top: 0;
+}
+
+.edit-comparison {
+    display: grid;
+    gap: .75rem;
+    margin: 1rem 0;
+}
+
+.edit-diff-row {
+    display: grid;
+    grid-template-columns: minmax(100px, .6fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: .75rem;
+    padding: .75rem;
+    border-bottom: 1px solid var(--border, #e5e7eb);
+    overflow-wrap: anywhere;
+}
+
+.edit-diff-row small {
+    color: var(--muted, #687386);
+}
+
+.edit-change {
+    display: inline-block;
+    padding: .15rem .4rem;
+    border-radius: 5px;
+    background: #fff0c2;
+    color: #704b00;
+    border: 1px solid #e9c66b;
+    overflow-wrap: anywhere;
+}
+
+.edit-photo-comparison {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    margin: 1rem 0;
+}
+
+.edit-photo-comparison > div {
+    min-width: 130px;
+}
+
+.edit-change-photo {
+    outline: 3px solid #e9c66b;
+    outline-offset: 3px;
+}
+
+@media (max-width: 650px) {
+    .edit-diff-row {
+        grid-template-columns: 1fr;
+        gap: .35rem;
+    }
+}

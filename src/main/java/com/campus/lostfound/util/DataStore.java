@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public final class DataStore {
     private static final DataStore INSTANCE = new DataStore();
     private final Path dir;
-    private final Path usersFile, itemsFile, claimsFile;
+    private final Path usersFile, itemsFile, claimsFile, itemEditsFile;
 
     private DataStore() {
         String configured = System.getProperty("campus.data.dir");
@@ -24,11 +24,13 @@ public final class DataStore {
         usersFile = dir.resolve("users.txt");
         itemsFile = dir.resolve("items.txt");
         claimsFile = dir.resolve("claims.txt");
+        itemEditsFile = dir.resolve("item_edits.txt");
         try {
             Files.createDirectories(dir);
             createIfMissing(usersFile);
             createIfMissing(itemsFile);
             createIfMissing(claimsFile);
+            createIfMissing(itemEditsFile);
         } catch (IOException e) {
             throw new IllegalStateException("Cannot initialize data directory: " + dir, e);
         }
@@ -406,4 +408,135 @@ public synchronized void updatePasswordHash(String userId, String passwordHash)
             setItemStatus(reviewedItemId, anotherPending ? "CLAIM_PENDING" : "OPEN");
         }
     }
+
+    /** Stores proposed listing edits separately until an administrator reviews them. */
+    public synchronized void saveItemEditProposal(
+            String itemId, String reporterId, String title, String description,
+            String category, String type, String location, String date,
+            String contactPhone, String photoName) throws IOException {
+        Item item = findItem(itemId);
+        if (item == null) throw new IllegalArgumentException("Listing not found.");
+        if (!item.getReporterId().equals(reporterId))
+            throw new IllegalArgumentException("You can only edit your own listing.");
+        if (!"APPROVED".equals(item.getApprovalStatus()))
+            throw new IllegalArgumentException("Only approved listings can be edited.");
+
+        // One pending proposal per listing. Keep the original listing untouched.
+        List<String> lines = readLines(itemEditsFile);
+        List<String> updated = new ArrayList<>();
+        for (String line : lines) {
+            if (line.isBlank()) continue;
+            String[] f = fields(line);
+            if (f.length >= 11 && f[1].equals(itemId)) {
+                throw new IllegalArgumentException("This listing already has an edit awaiting review.");
+            }
+            updated.add(line);
+        }
+        String proposalId = UUID.randomUUID().toString();
+        append(itemEditsFile, row(proposalId, itemId, reporterId, title, description,
+                category, type, location, date, contactPhone, photoName, Instant.now().toString()));
+    }
+
+    /** Returns pending edit proposals as decoded field arrays.
+     * Fields: proposalId, itemId, reporterId, title, description, category,
+     * type, location, date, contactPhone, photoName, submittedAt.
+     */
+    public synchronized List<String[]> pendingItemEditProposals() throws IOException {
+        List<String[]> out = new ArrayList<>();
+        for (String line : readLines(itemEditsFile)) {
+            if (line.isBlank()) continue;
+            String[] f = fields(line);
+            if (f.length >= 12) out.add(f);
+        }
+        Collections.reverse(out);
+        return out;
+    }
+
+    public synchronized String[] findItemEditProposal(String proposalId) throws IOException {
+        for (String[] f : pendingItemEditProposals()) {
+            if (f[0].equals(proposalId)) return f;
+        }
+        return null;
+    }
+
+    /** Removes a proposal after a decision; does not touch the current listing. */
+    /** Applies a reviewed edit to the existing listing without changing its ID or owner. */
+    public synchronized Item applyItemEditProposal(String proposalId) throws IOException {
+        String[] proposal = findItemEditProposal(proposalId);
+        if (proposal == null) {
+            throw new IllegalArgumentException("Edit proposal not found.");
+        }
+
+        String itemId = proposal[1];
+        Item current = findItem(itemId);
+        if (current == null) {
+            throw new IllegalArgumentException("The original listing no longer exists.");
+        }
+        if (!current.getReporterId().equals(proposal[2])) {
+            throw new IllegalArgumentException("The proposal owner does not match the listing owner.");
+        }
+        if (!"APPROVED".equals(current.getApprovalStatus())) {
+            throw new IllegalArgumentException("The original listing is no longer approved.");
+        }
+
+        List<String> updated = new ArrayList<>();
+        boolean found = false;
+
+        for (String line : readLines(itemsFile)) {
+            if (line.isBlank()) continue;
+            String[] f = fields(line);
+
+            if (f.length > 0 && f[0].equals(itemId)) {
+                if (found) throw new IllegalArgumentException("Duplicate listing ID.");
+                if (f.length < 12) {
+                    f = java.util.Arrays.copyOf(f, 12);
+                    f[8] = current.getStatus();
+                    f[11] = current.getApprovalStatus();
+                }
+
+                // Proposal fields: ID, item ID, owner, title, description, category,
+                // type, location, date, phone, photo, submitted timestamp.
+                f[2] = proposal[3];
+                f[3] = proposal[4];
+                f[4] = proposal[5];
+                f[5] = proposal[6];
+                f[6] = proposal[7];
+                f[7] = proposal[8];
+                f[9] = proposal[9];
+                f[10] = proposal[10];
+                f[11] = "APPROVED";
+
+                updated.add(row(f));
+                found = true;
+            } else {
+                updated.add(line);
+            }
+        }
+
+        if (!found) throw new IllegalArgumentException("The original listing no longer exists.");
+
+        // Replace the listing first; keep the proposal if the write fails.
+        replace(itemsFile, updated);
+        removeItemEditProposal(proposalId);
+        return findItem(itemId);
+    }
+
+    public synchronized String[] removeItemEditProposal(String proposalId) throws IOException {
+        List<String> kept = new ArrayList<>();
+        String[] selected = null;
+        for (String line : readLines(itemEditsFile)) {
+            if (line.isBlank()) continue;
+            String[] f = fields(line);
+            if (f.length >= 12 && f[0].equals(proposalId)) {
+                if (selected != null) throw new IllegalArgumentException("Duplicate edit proposal ID.");
+                selected = f;
+            } else {
+                kept.add(line);
+            }
+        }
+        if (selected == null) throw new IllegalArgumentException("Edit proposal not found.");
+        replace(itemEditsFile, kept);
+        return selected;
+    }
+
 }

@@ -25,6 +25,7 @@ public class AdminServlet extends HttpServlet {
         List<User> users = DataStore.get().allUsers();
         req.setAttribute("claims", claims);
         req.setAttribute("items", items);
+        req.setAttribute("pendingItemEdits", DataStore.get().pendingItemEditProposals());
         req.setAttribute("allUsers", users);
         req.setAttribute("auditEntries", WorkflowStore.get().recentAudit(30));
         req.setAttribute("listingFlags", CommunityStore.get().flags());
@@ -33,6 +34,23 @@ public class AdminServlet extends HttpServlet {
         req.setAttribute("foundCount", items.stream().filter(i -> "FOUND".equals(i.getType())).count());
         req.getRequestDispatcher("/WEB-INF/views/admin.jsp").forward(req, resp);
     }
+    private void deleteProposalPhoto(String photoName, String keepPhotoName) {
+        if (photoName == null || photoName.isBlank() || photoName.equals(keepPhotoName)) return;
+        if (!photoName.matches("[a-fA-F0-9-]+\\.(jpg|png)")) return;
+        try {
+            // Never delete a photo that is still referenced by any existing listing.
+            boolean stillUsed = DataStore.get().allItems().stream()
+                    .anyMatch(item -> photoName.equals(item.getPhotoName()));
+            if (stillUsed) return;
+
+            java.nio.file.Path uploads = DataStore.get().getDataDirectory().resolve("uploads").normalize();
+            java.nio.file.Path photo = uploads.resolve(photoName).normalize();
+            if (photo.getParent().equals(uploads)) java.nio.file.Files.deleteIfExists(photo);
+        } catch (IOException ignored) {
+            // Do not fail the review if cleanup fails.
+        }
+    }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (!WebUtil.admin(req)) { resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Admin access required."); return; }
@@ -98,6 +116,66 @@ if ("resetUserPassword".equals(action)) {
                 );
 
                 resp.sendRedirect(req.getContextPath() + "/admin?itemDeleted=1");
+                return;
+            }
+
+            if ("reviewItemEdit".equals(action)) {
+                String proposalId = req.getParameter("proposalId");
+                String decision = req.getParameter("decision");
+
+                if (proposalId == null || proposalId.isBlank()) {
+                    throw new IllegalArgumentException("Choose an edit proposal to review.");
+                }
+                if (!"APPROVED".equals(decision) && !"REJECTED".equals(decision)) {
+                    throw new IllegalArgumentException("Choose approve or reject.");
+                }
+
+                String[] proposal = DataStore.get().findItemEditProposal(proposalId);
+                if (proposal == null) {
+                    throw new IllegalArgumentException("This edit proposal has already been reviewed or removed.");
+                }
+
+                Item original = DataStore.get().findItem(proposal[1]);
+                if (original == null) {
+                    DataStore.get().removeItemEditProposal(proposalId);
+                    deleteProposalPhoto(proposal[10], "");
+                    throw new IllegalArgumentException("The original listing no longer exists; the proposal was discarded.");
+                }
+                if (!original.getReporterId().equals(proposal[2])) {
+                    throw new IllegalArgumentException("The proposal owner does not match the listing owner.");
+                }
+
+                String oldPhoto = original.getPhotoName() == null ? "" : original.getPhotoName();
+                String proposedPhoto = proposal[10] == null ? "" : proposal[10];
+                String title = proposal[3] == null ? original.getTitle() : proposal[3];
+
+                if ("APPROVED".equals(decision)) {
+                    DataStore.get().applyItemEditProposal(proposalId);
+                    if (!oldPhoto.equals(proposedPhoto)) {
+                        deleteProposalPhoto(oldPhoto, "");
+                    }
+                } else {
+                    DataStore.get().removeItemEditProposal(proposalId);
+                    if (!oldPhoto.equals(proposedPhoto)) {
+                        deleteProposalPhoto(proposedPhoto, oldPhoto);
+                    }
+                }
+
+                WorkflowStore.get().notifyUser(
+                    original.getReporterId(),
+                    "Your proposed changes to '" + title + "' were "
+                        + decision.toLowerCase(Locale.ROOT) + "."
+                        + ("REJECTED".equals(decision) ? " Your existing listing remains unchanged." : ""),
+                    "/item?id=" + original.getId()
+                );
+
+                WorkflowStore.get().audit(
+                    WebUtil.userId(req),
+                    "ITEM_EDIT_" + decision,
+                    "Edit proposal " + proposalId + " for listing " + original.getId()
+                );
+
+                resp.sendRedirect(req.getContextPath() + "/admin?editReviewed=1");
                 return;
             }
 

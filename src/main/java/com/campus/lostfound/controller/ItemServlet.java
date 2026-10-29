@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-@WebServlet(urlPatterns = {"/items", "/report-item"})
+@WebServlet(urlPatterns = {"/items", "/report-item", "/edit-item"})
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 5 * 1024 * 1024, maxRequestSize = 7 * 1024 * 1024)
 public class ItemServlet extends HttpServlet {
     @Override
@@ -32,6 +32,23 @@ public class ItemServlet extends HttpServlet {
         if ("/report-item".equals(path)) {
             if (!WebUtil.loggedIn(req)) { resp.sendRedirect(req.getContextPath() + "/login"); return; }
             req.getRequestDispatcher("/WEB-INF/views/report-item.jsp").forward(req, resp);
+            return;
+        }
+        if ("/edit-item".equals(path)) {
+            if (!WebUtil.loggedIn(req)) { resp.sendRedirect(req.getContextPath() + "/login"); return; }
+            String itemId = clean(req.getParameter("id"));
+            Item item = itemId.isEmpty() ? null : DataStore.get().findItem(itemId);
+            if (item == null) { resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Listing not found."); return; }
+            if (!WebUtil.admin(req) && !WebUtil.userId(req).equals(item.getReporterId())) {
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "You can only edit your own listing.");
+                return;
+            }
+            if (!"APPROVED".equals(item.getApprovalStatus())) {
+                resp.sendError(HttpServletResponse.SC_CONFLICT, "Only approved listings can be edited.");
+                return;
+            }
+            req.setAttribute("item", item);
+            req.getRequestDispatcher("/WEB-INF/views/edit-item.jsp").forward(req, resp);
             return;
         }
         List<Item> items = DataStore.get().allItems().stream()
@@ -73,6 +90,10 @@ public class ItemServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
         if (!WebUtil.loggedIn(req)) { resp.sendRedirect(req.getContextPath() + "/login"); return; }
+        if ("/edit-item".equals(req.getServletPath())) {
+            handleEditSubmission(req, resp);
+            return;
+        }
         if (!"/report-item".equals(req.getServletPath())) { resp.sendError(405); return; }
         String title = clean(req.getParameter("title"));
         String description = clean(req.getParameter("description"));
@@ -119,6 +140,111 @@ public class ItemServlet extends HttpServlet {
             req.getRequestDispatcher("/WEB-INF/views/report-item.jsp").forward(req, resp);
         }
     }
+    private void handleEditSubmission(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        String ctx = req.getContextPath();
+        String itemId = clean(req.getParameter("itemId"));
+        Item item = itemId.isEmpty() ? null : DataStore.get().findItem(itemId);
+
+        if (item == null) {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Listing not found.");
+            return;
+        }
+        if (!WebUtil.userId(req).equals(item.getReporterId())) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "You can only edit your own listing.");
+            return;
+        }
+        if (!"APPROVED".equals(item.getApprovalStatus())) {
+            resp.sendError(HttpServletResponse.SC_CONFLICT, "Only approved listings can be edited.");
+            return;
+        }
+
+        String title = clean(req.getParameter("title"));
+        String description = clean(req.getParameter("description"));
+        String category = clean(req.getParameter("category"));
+        String type = clean(req.getParameter("type")).toUpperCase(Locale.ROOT);
+        String location = clean(req.getParameter("location"));
+        String date = clean(req.getParameter("date"));
+        String contactPhone = clean(req.getParameter("contactPhone"));
+
+        Part photoPart;
+        try {
+            photoPart = req.getPart("photo");
+        } catch (IllegalStateException tooLarge) {
+            req.setAttribute("item", item);
+            req.setAttribute("error", "Photo is too large. Please choose an image under 5 MB.");
+            req.getRequestDispatcher("/WEB-INF/views/edit-item.jsp").forward(req, resp);
+            return;
+        }
+
+        String error = null;
+        if (contactPhone.length() > 30 ||
+                (!contactPhone.isEmpty() && !contactPhone.matches("[+0-9() .-]{7,30}"))) {
+            error = "Enter a valid contact phone number, or leave it blank.";
+        } else if (title.length() < 2 || title.length() > 120 ||
+                description.length() < 3 || description.length() > 2000 ||
+                category.length() < 2 || category.length() > 50 ||
+                location.length() < 2 || location.length() > 150 ||
+                !(type.equals("LOST") || type.equals("FOUND"))) {
+            error = "Please complete all fields with valid lengths.";
+        } else {
+            try {
+                LocalDate parsed = LocalDate.parse(date);
+                if (parsed.isAfter(LocalDate.now()) || parsed.isBefore(LocalDate.now().minusYears(2))) {
+                    error = "Choose a date within the last two years.";
+                }
+            } catch (RuntimeException invalidDate) {
+                error = "Please enter a valid date.";
+            }
+        }
+
+        if (error != null) {
+            req.setAttribute("item", item);
+            req.setAttribute("error", error);
+            req.getRequestDispatcher("/WEB-INF/views/edit-item.jsp").forward(req, resp);
+            return;
+        }
+
+        String photoName = item.getPhotoName() == null ? "" : item.getPhotoName();
+        String newPhotoName = null;
+        try {
+            if (photoPart != null && photoPart.getSize() > 0) {
+                newPhotoName = savePhoto(photoPart);
+                photoName = newPhotoName;
+            }
+
+            DataStore.get().saveItemEditProposal(
+                    item.getId(), item.getReporterId(), title, description, category,
+                    type, location, date, contactPhone, photoName);
+
+            WorkflowStore.get().audit(WebUtil.userId(req), "ITEM_EDIT_SUBMITTED",
+                    title + " (" + type + "), listing " + item.getId());
+
+            resp.sendRedirect(ctx + "/item?id=" + item.getId() + "&editSubmitted=1");
+        } catch (IllegalArgumentException e) {
+            if (newPhotoName != null) deleteUploadedPhoto(newPhotoName);
+            req.setAttribute("item", item);
+            req.setAttribute("error", e.getMessage() == null
+                    ? "Could not submit these changes." : e.getMessage());
+            req.getRequestDispatcher("/WEB-INF/views/edit-item.jsp").forward(req, resp);
+        } catch (IOException | ServletException | RuntimeException e) {
+            if (newPhotoName != null) deleteUploadedPhoto(newPhotoName);
+            throw e;
+        }
+    }
+
+    private void deleteUploadedPhoto(String photoName) {
+        try {
+            Path path = DataStore.get().getDataDirectory().resolve("uploads")
+                    .resolve(photoName).normalize();
+            if (path.getParent().equals(DataStore.get().getDataDirectory().resolve("uploads").normalize())) {
+                Files.deleteIfExists(path);
+            }
+        } catch (IOException ignored) {
+            // An orphaned image can be cleaned up later; never replace the original listing on failure.
+        }
+    }
+
     private String savePhoto(Part part) throws IOException, ServletException {
         if (part == null || part.getSize() == 0) return "";
         if (part.getSize() > 5L * 1024 * 1024) throw new IllegalArgumentException("Photo must be 5 MB or smaller.");
