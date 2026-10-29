@@ -9,6 +9,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Messages | CampusFind</title>
 
+    <script>
+(function () {
+    try {
+        if (localStorage.getItem("campusfind-theme") === "dark") {
+            document.documentElement.setAttribute("data-theme", "dark");
+        }
+    } catch (e) {}
+})();
+</script>
+
     <style>
         * { box-sizing: border-box; }
 
@@ -208,6 +218,76 @@
             .time { display: none; }
             .item-title { font-size: 14px; }
         }
+
+       :root[data-theme="dark"] {
+    --inbox-bg: #0f172a;
+    --inbox-panel: #172033;
+    --inbox-text: #e5e7eb;
+    --inbox-muted: #94a3b8;
+    --inbox-line: #334155;
+}
+
+:root:not([data-theme="dark"]) {
+    --inbox-bg: #f5f7fb;
+    --inbox-panel: #ffffff;
+    --inbox-text: #172033;
+    --inbox-muted: #64748b;
+    --inbox-line: #e4e9f1;
+}
+
+body {
+    background: var(--inbox-bg);
+    color: var(--inbox-text);
+}
+
+.eyebrow, .subtitle, .participant, .empty p, #status {
+    color: var(--inbox-muted);
+}
+
+.panel {
+    background: var(--inbox-panel);
+    border-color: var(--inbox-line);
+}
+
+.panel-head, .conversation {
+    border-color: var(--inbox-line);
+}
+
+.count, .empty-icon, .avatar {
+    background: var(--inbox-bg);
+    color: var(--inbox-text);
+}
+
+.conversation:hover {
+    background: var(--inbox-bg);
+}
+
+.back, .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 1px solid var(--inbox-line);
+    border-radius: 12px;
+    background: var(--inbox-panel);
+    color: var(--inbox-text);
+    text-decoration: none;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.inbox-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+    .top { flex-wrap: wrap; }
+}
     </style>
 </head>
 
@@ -219,7 +299,13 @@
             <h1>Your messages</h1>
             <p class="subtitle">Conversations about lost and found items.</p>
         </div>
-        <a class="back" href="<%= request.getContextPath() %>/items">Browse items</a>
+        <div class="inbox-actions">
+    <a class="back" href="<%= request.getContextPath() %>/items">← Back to CampusFind</a>
+    <button type="button" class="theme-toggle" id="theme-toggle"
+            aria-label="Switch theme" title="Switch theme">
+        <span id="theme-icon" aria-hidden="true">◐</span>
+    </button>
+</div>
     </header>
 
     <section class="panel">
@@ -340,6 +426,34 @@
     }
 
     loadInbox();
+})();
+</script>
+<script>
+(function () {
+    const button = document.getElementById("theme-toggle");
+    const icon = document.getElementById("theme-icon");
+    if (!button || !icon) return;
+
+    function updateIcon() {
+        const dark = document.documentElement.getAttribute("data-theme") === "dark";
+        icon.textContent = dark ? "☀" : "☾";
+        button.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+        button.title = dark ? "Switch to light mode" : "Switch to dark mode";
+    }
+
+    updateIcon();
+
+    button.addEventListener("click", function () {
+        const dark = document.documentElement.getAttribute("data-theme") === "dark";
+        if (dark) {
+            document.documentElement.removeAttribute("data-theme");
+            localStorage.setItem("campusfind-theme", "light");
+        } else {
+            document.documentElement.setAttribute("data-theme", "dark");
+            localStorage.setItem("campusfind-theme", "dark");
+        }
+        updateIcon();
+    });
 })();
 </script>
 </body>
