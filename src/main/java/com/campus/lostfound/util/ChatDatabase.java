@@ -20,6 +20,12 @@ public final class ChatDatabase {
         if (!url.startsWith("jdbc:postgresql://")) {
             throw new SQLException("Invalid PostgreSQL JDBC URL.");
         }
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("PostgreSQL JDBC driver is missing from the application.", e);
+        }
+
         HikariDataSource pool = dataSource;
         if (pool == null) {
             synchronized (ChatDatabase.class) {
