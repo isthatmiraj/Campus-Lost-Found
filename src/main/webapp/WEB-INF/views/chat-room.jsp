@@ -13,34 +13,55 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+try {
+    if (localStorage.getItem('campusfind-theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    }
+} catch (e) {}
+</script>
 <title>Chat | CampusFind</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Inter,system-ui,sans-serif;background:#f4f6fb;color:#172033}
+:root{
+ --chat-bg:#f4f6fb;--chat-panel:#fff;--chat-text:#172033;
+ --chat-muted:#64748b;--chat-line:#e4e9f1;--chat-bubble:#f0f2f7;
+ --chat-bubble-text:#202b40;--chat-input:#fff;--chat-own:#4f46e5;
+}
+:root[data-theme="dark"]{
+ --chat-bg:#0b1220;--chat-panel:#111b2e;--chat-text:#e5edf9;
+ --chat-muted:#9aabc5;--chat-line:#293750;--chat-bubble:#1c2940;
+ --chat-bubble-text:#e5edf9;--chat-input:#0f172a;--chat-own:#4f46e5;
+ color-scheme:dark;
+}
+body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--chat-bg);color:var(--chat-text);transition:background .15s,color .15s}
 .app{max-width:900px;height:100dvh;max-height:950px;margin:auto;padding:18px;display:flex;flex-direction:column}
 .top{display:flex;align-items:center;gap:14px;padding:12px 4px 18px}
-.back{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:#fff;border:1px solid #e3e8f1;color:#334155;text-decoration:none;font-size:21px}
+.back,.theme-toggle{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--chat-panel);border:1px solid var(--chat-line);color:var(--chat-text);text-decoration:none;font-size:21px;cursor:pointer}
 .heading{min-width:0;flex:1}
-.heading h1{font-size:19px;margin:0 0 4px}
-.heading p{font-size:13px;color:#64748b;margin:0}
+.heading h1{font-size:19px;margin:0 0 4px;color:var(--chat-text)}
+.heading p{font-size:13px;color:var(--chat-muted);margin:0}
 .badge{font-size:11px;font-weight:700;color:#047857;background:#d1fae5;border-radius:20px;padding:6px 9px}
-.panel{flex:1;min-height:0;display:flex;flex-direction:column;background:white;border:1px solid #e4e9f1;border-radius:22px;overflow:hidden;box-shadow:0 12px 40px #1e293b08}
-.banner{padding:14px 20px;background:#fafbff;border-bottom:1px solid #edf0f5;color:#64748b;font-size:12px}
+:root[data-theme="dark"] .badge{color:#6ee7b7;background:#12382e}
+.panel{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--chat-panel);border:1px solid var(--chat-line);border-radius:22px;overflow:hidden;box-shadow:0 12px 40px #1e293b08}
+.banner{padding:14px 20px;background:var(--chat-bg);border-bottom:1px solid var(--chat-line);color:var(--chat-muted);font-size:12px}
 #messages{flex:1;min-height:0;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:14px}
-.state{margin:auto;text-align:center;color:#64748b;font-size:14px;line-height:1.6}
+.state{margin:auto;text-align:center;color:var(--chat-muted);font-size:14px;line-height:1.6}
 .message{max-width:min(78%,520px);display:flex;flex-direction:column;gap:5px}
 .message.mine{align-self:flex-end;align-items:flex-end}
 .message.theirs{align-self:flex-start;align-items:flex-start}
-.bubble{padding:12px 15px;border-radius:17px;background:#f0f2f7;color:#202b40;line-height:1.5;overflow-wrap:anywhere;white-space:pre-wrap}
-.mine .bubble{background:#4f46e5;color:#fff;border-bottom-right-radius:5px}
+.bubble{padding:12px 15px;border-radius:17px;background:var(--chat-bubble);color:var(--chat-bubble-text);line-height:1.5;overflow-wrap:anywhere;white-space:pre-wrap}
+.mine .bubble{background:var(--chat-own);color:#fff;border-bottom-right-radius:5px}
 .theirs .bubble{border-bottom-left-radius:5px}
-.stamp{font-size:10px;color:#94a3b8;padding:0 4px}
-.composer{display:flex;align-items:flex-end;gap:10px;padding:15px;border-top:1px solid #edf0f5;background:#fff}
-#message{flex:1;min-width:0;max-height:130px;resize:vertical;border:1px solid #dfe5ef;border-radius:14px;padding:13px 14px;font:inherit;font-size:14px;outline:none}
+.stamp{font-size:10px;color:var(--chat-muted);padding:0 4px}
+.composer{display:flex;align-items:flex-end;gap:10px;padding:15px;border-top:1px solid var(--chat-line);background:var(--chat-panel)}
+#message{flex:1;min-width:0;max-height:130px;resize:vertical;border:1px solid var(--chat-line);border-radius:14px;padding:13px 14px;font:inherit;font-size:14px;outline:none;background:var(--chat-input);color:var(--chat-text)}
+#message::placeholder{color:var(--chat-muted)}
 #message:focus{border-color:#818cf8;box-shadow:0 0 0 3px #4f46e51a}
-#send{border:0;border-radius:13px;padding:13px 18px;background:#4f46e5;color:#fff;font-weight:750;cursor:pointer}
+#send{border:0;border-radius:13px;padding:13px 18px;background:var(--chat-own);color:#fff;font-weight:750;cursor:pointer;transition:filter .15s,transform .15s}
+#send:hover:not(:disabled){filter:brightness(1.12);transform:translateY(-1px)}
 #send:disabled,#message:disabled{opacity:.5;cursor:not-allowed}
-.note{font-size:11px;color:#94a3b8;text-align:center;padding:0 10px 12px}
+.note{font-size:11px;color:var(--chat-muted);text-align:center;padding:0 10px 12px}
 @media(max-width:600px){.app{padding:8px;height:100dvh}.top{padding:8px 4px 12px}.panel{border-radius:17px}.badge{display:none}#messages{padding:16px 12px}.message{max-width:88%}.composer{padding:10px;gap:8px}#send{padding:13px 14px}}
 </style>
 </head>
@@ -52,6 +73,8 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:#f4f6fb;color:#1
 <h1>CampusFind Messages</h1>
 <p id="subtitle">Private conversation about a listing</p>
 </div>
+<button class="theme-toggle" id="theme-toggle" type="button"
+        aria-label="Switch theme" title="Switch theme"><span id="theme-icon" aria-hidden="true">☾</span></button>
 <span class="badge">PRIVATE CHAT</span>
 </header>
 
@@ -71,6 +94,30 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:#f4f6fb;color:#1
 <script>
 (() => {
     const context = '<%= request.getContextPath() %>';
+    const themeButton = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+
+    function syncThemeButton() {
+        const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+        themeIcon.textContent = dark ? '☀' : '☾';
+        themeButton.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+        themeButton.title = dark ? 'Switch to light mode' : 'Switch to dark mode';
+    }
+
+    syncThemeButton();
+    themeButton.addEventListener('click', () => {
+        const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (dark) {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('campusfind-theme', 'light');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('campusfind-theme', 'dark');
+        }
+        syncThemeButton();
+    });
+
+
     const params = new URLSearchParams(window.location.search);
     const conversationId = params.get('conversationId');
     const messagesEl = document.getElementById('messages');
@@ -151,6 +198,15 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:#f4f6fb;color:#1
             if (!lastRendered) showState('Unable to load messages. Please refresh and try again.');
         }
     }
+
+    input.addEventListener('keydown', event => {
+        if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+            event.preventDefault();
+            if (input.value.trim() && !send.disabled) {
+                form.requestSubmit();
+            }
+        }
+    });
 
     form.addEventListener('submit', async event => {
         event.preventDefault();
