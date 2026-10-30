@@ -366,6 +366,50 @@ body {
         :root:not([data-theme="dark"]) .browse:hover {
             background: #00bd8d !important;
         }
+
+
+        /* Inbox conversation content: preserve the existing row layout. */
+        .person-name {
+            color: var(--inbox-text);
+            font-size: 15px;
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: 4px;
+        }
+        .latest-message {
+            color: var(--inbox-muted);
+            font-size: 13px;
+            line-height: 1.45;
+            margin-bottom: 7px;
+            overflow-wrap: anywhere;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .item-badge {
+            display: inline-flex;
+            align-items: center;
+            max-width: 100%;
+            padding: 4px 9px;
+            border: 1px solid rgba(0, 214, 160, .55);
+            border-radius: 999px;
+            background: rgba(0, 214, 160, .12);
+            color: #00a77d;
+            font-size: 11px;
+            font-weight: 750;
+            line-height: 1.35;
+            overflow-wrap: anywhere;
+        }
+        :root[data-theme="dark"] .item-badge {
+            color: #00e6ad;
+            background: rgba(0, 214, 160, .10);
+            border-color: rgba(0, 214, 160, .42);
+        }
+        @media (max-width: 600px) {
+            .person-name { font-size: 14px; }
+            .latest-message { font-size: 12px; }
+        }
     </style>
 </head>
 
@@ -466,14 +510,19 @@ body {
                 details.className = 'details';
 
                 const title = document.createElement('div');
-                title.className = 'item-title';
-                title.textContent = conversation.itemTitle || ('Item ' + conversation.itemId);
+                title.className = 'person-name';
+                title.textContent = conversation.participantName || 'Campus user';
 
-                const participant = document.createElement('div');
-                participant.className = 'participant';
-                participant.textContent = conversation.participantName || 'Campus user';
+                const latest = document.createElement('div');
+                latest.className = 'latest-message';
+                latest.textContent = conversation.latestMessage || 'No messages yet';
 
-                details.append(title, participant);
+                const item = document.createElement('span');
+                item.className = 'item-badge';
+                item.textContent = 'Item: ' +
+                    (conversation.itemTitle || ('Item ' + conversation.itemId));
+
+                details.append(title, latest, item);
 
                 const meta = document.createElement('div');
                 meta.className = 'meta';
