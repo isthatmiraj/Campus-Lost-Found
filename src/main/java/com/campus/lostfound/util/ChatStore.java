@@ -34,14 +34,28 @@ public final class ChatStore {
         public final String reporterId;
         public final String contactId;
         public final Timestamp lastMessageAt;
+        public final String itemTitle;
+        public final String otherParticipantName;
+        public final String latestMessage;
 
         public Conversation(UUID id, String itemId, String reporterId,
                             String contactId, Timestamp lastMessageAt) {
+            this(id, itemId, reporterId, contactId, lastMessageAt,
+                    "Campus listing", "Campus user", "No messages yet");
+        }
+
+        public Conversation(UUID id, String itemId, String reporterId,
+                            String contactId, Timestamp lastMessageAt,
+                            String itemTitle, String otherParticipantName,
+                            String latestMessage) {
             this.id = id;
             this.itemId = itemId;
             this.reporterId = reporterId;
             this.contactId = contactId;
             this.lastMessageAt = lastMessageAt;
+            this.itemTitle = itemTitle == null || itemTitle.isBlank() ? "Campus listing" : itemTitle;
+            this.otherParticipantName = otherParticipantName == null || otherParticipantName.isBlank() ? "Campus user" : otherParticipantName;
+            this.latestMessage = latestMessage == null || latestMessage.isBlank() ? "No messages yet" : latestMessage;
         }
     }
 
@@ -295,10 +309,13 @@ public final class ChatStore {
         List<Conversation> conversations = new ArrayList<>();
 
         String sql = """
-                SELECT id, item_id, reporter_id, contact_id, last_message_at
-                FROM chat_conversations
-                WHERE reporter_id = ? OR contact_id = ?
-                ORDER BY last_message_at DESC
+                SELECT c.id, c.item_id, c.reporter_id, c.contact_id, c.last_message_at,
+                       (SELECT m.message_text FROM chat_messages m
+                        WHERE m.conversation_id = c.id
+                        ORDER BY m.sent_at DESC, m.id DESC LIMIT 1) AS latest_message
+                FROM chat_conversations c
+                WHERE c.reporter_id = ? OR c.contact_id = ?
+                ORDER BY c.last_message_at DESC
                 LIMIT 200
                 """;
 
@@ -310,30 +327,23 @@ public final class ChatStore {
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
+                    String itemId = rs.getString("item_id");
+                    String reporterId = rs.getString("reporter_id");
+                    String contactId = rs.getString("contact_id");
+                    String otherId = userId.equals(reporterId) ? contactId : reporterId;
+                    Item item = DataStore.get().findItem(itemId);
+                    User other = DataStore.get().findUserById(otherId);
                     conversations.add(new Conversation(
-                            rs.getObject("id", UUID.class),
-                            rs.getString("item_id"),
-                            rs.getString("reporter_id"),
-                            rs.getString("contact_id"),
-                            rs.getTimestamp("last_message_at")));
+                            rs.getObject("id", UUID.class), itemId, reporterId, contactId,
+                            rs.getTimestamp("last_message_at"),
+                            item == null ? "Campus listing" : item.getTitle(),
+                            other == null ? "Campus user" : other.getName(),
+                            rs.getString("latest_message")));
                 }
             }
         }
 
         return conversations;
-    }
-
-
-    public static Conversation getConversation(UUID conversationId, String userId)
-            throws Exception {
-        try (Connection connection = ChatDatabase.getConnection()) {
-            Conversation conversation = findConversation(connection, conversationId);
-            if (conversation == null) {
-                throw new IllegalArgumentException("Conversation not found.");
-            }
-            requireParticipant(conversation, userId);
-            return conversation;
-        }
     }
 
     public static int getUnreadCount(String userId) throws Exception {

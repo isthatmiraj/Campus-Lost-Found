@@ -60,20 +60,10 @@ public class ChatServlet extends HttpServlet {
                 UUID conversationId = parseUuid(
                         req.getParameter("conversationId"));
 
-                ChatStore.Conversation conversation =
-                        ChatStore.getConversation(conversationId, userId);
                 var messages = ChatStore.getMessages(conversationId, userId);
-                Item chatItem = DataStore.get().findItem(conversation.itemId);
-                String otherUserId = userId.equals(conversation.reporterId)
-                        ? conversation.contactId : conversation.reporterId;
-                var otherUser = DataStore.get().findUserById(otherUserId);
-                String itemTitle = chatItem == null ? "Campus listing" : chatItem.getTitle();
-                String participantName = otherUser == null ? "Campus user" : otherUser.getName();
                 StringBuilder json = new StringBuilder();
                 json.append("{\"currentUserId\":\"")
                     .append(escape(userId))
-                    .append("\",\"itemTitle\":\"").append(escape(itemTitle))
-                    .append("\",\"participantName\":\"").append(escape(participantName))
                     .append("\",\"messages\":[");
 
                 for (int i = 0; i < messages.size(); i++) {
@@ -101,18 +91,16 @@ public class ChatServlet extends HttpServlet {
                     ChatStore.Conversation c = conversations.get(i);
                     if (i > 0) json.append(",");
 
-                    Item inboxItem = DataStore.get().findItem(c.itemId);
-                    String otherUserId = userId.equals(c.reporterId) ? c.contactId : c.reporterId;
-                    var otherUser = DataStore.get().findUserById(otherUserId);
                     json.append("{")
                         .append("\"id\":\"").append(c.id).append("\",")
                         .append("\"itemId\":\"").append(escape(c.itemId)).append("\",")
-                        .append("\"itemTitle\":\"").append(escape(inboxItem == null ? "Campus listing" : inboxItem.getTitle())).append("\",")
-                        .append("\"participantName\":\"").append(escape(otherUser == null ? "Campus user" : otherUser.getName())).append("\",")
+                        .append("\"itemTitle\":\"").append(escape(c.itemTitle)).append("\",")
+                        .append("\"participantName\":\"").append(escape(c.otherParticipantName)).append("\",")
+                        .append("\"latestMessage\":\"").append(escape(c.latestMessage)).append("\",")
                         .append("\"reporterId\":\"").append(escape(c.reporterId)).append("\",")
                         .append("\"contactId\":\"").append(escape(c.contactId)).append("\",")
                         .append("\"lastMessageAt\":\"")
-                        .append(c.lastMessageAt == null ? "" : escape(c.lastMessageAt.toInstant().toString()))
+                        .append(escape(c.lastMessageAt.toInstant().toString()))
                         .append("\"}");
                 }
 

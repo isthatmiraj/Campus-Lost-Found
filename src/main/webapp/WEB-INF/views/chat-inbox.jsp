@@ -289,19 +289,25 @@ body {
     .top { flex-wrap: wrap; }
 }
 
-        :root { --inbox-bg:#f6faf7; --inbox-panel:#ffffff; --inbox-text:#14221b; --inbox-muted:#65766c; --inbox-line:#dce9e0; }
-        :root[data-theme="dark"] { --inbox-bg:#070b09; --inbox-panel:#101713; --inbox-text:#edf7f0; --inbox-muted:#9aada1; --inbox-line:#26372d; color-scheme:dark; }
-        body { background:var(--inbox-bg); color:var(--inbox-text); }
-        .panel { background:var(--inbox-panel); border-color:var(--inbox-line); }
-        .panel-head,.conversation { border-color:var(--inbox-line); }
-        .conversation { background:var(--inbox-panel); }
-        .conversation:hover { background:color-mix(in srgb, #00d6a0 8%, var(--inbox-panel)); }
-        .item-title,h1,h2,h3 { color:var(--inbox-text); }
-        .avatar { background:#00d6a0; color:#04110b; font-weight:800; }
-        .back,.theme-toggle { border-color:var(--inbox-line); background:var(--inbox-panel); color:var(--inbox-text); }
-        .browse { border:1px solid #00b889; background:#00b889; color:#04110b; }
-        .browse:hover { background:#009b73; color:#04110b; }
-        .count,.empty-icon { background:color-mix(in srgb, #00d6a0 12%, var(--inbox-panel)); color:var(--inbox-text); }
+.conversation .details { min-width: 0; }
+.conversation .item-title { font-weight: 750; }
+.conversation .participant {
+    margin-top: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+.conversation-item-label {
+    display: inline-block;
+    margin-top: 7px;
+    padding: 3px 8px;
+    border: 1px solid var(--inbox-line);
+    border-radius: 999px;
+    color: var(--inbox-muted);
+    font-size: 11px;
+    line-height: 1.4;
+}
     </style>
 </head>
 
@@ -396,20 +402,25 @@ body {
 
                 const avatar = document.createElement('div');
                 avatar.className = 'avatar';
-                avatar.textContent = (conversation.participantName || 'C').trim().charAt(0).toUpperCase();
+                avatar.textContent = (conversation.participantName || 'U').trim().charAt(0).toUpperCase();
 
                 const details = document.createElement('div');
                 details.className = 'details';
 
                 const title = document.createElement('div');
                 title.className = 'item-title';
-                title.textContent = conversation.itemTitle || ('Item ' + conversation.itemId);
+                title.textContent = conversation.participantName || 'Campus user';
 
                 const participant = document.createElement('div');
                 participant.className = 'participant';
-                participant.textContent = conversation.participantName || 'Campus user';
+                participant.textContent = conversation.latestMessage || 'No messages yet';
 
                 details.append(title, participant);
+
+                const itemLabel = document.createElement('div');
+                itemLabel.className = 'conversation-item-label';
+                itemLabel.textContent = 'Item: ' + (conversation.itemTitle || 'Campus listing');
+                details.appendChild(itemLabel);
 
                 const meta = document.createElement('div');
                 meta.className = 'meta';
