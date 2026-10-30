@@ -41,8 +41,8 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--chat-bg);c
 .heading{min-width:0;flex:1}
 .heading h1{font-size:19px;margin:0 0 4px;color:var(--chat-text)}
 .heading p{font-size:13px;color:var(--chat-muted);margin:0}
-.badge{font-size:11px;font-weight:700;color:#047857;background:#d1fae5;border-radius:20px;padding:6px 9px}
-:root[data-theme="dark"] .badge{color:#6ee7b7;background:#12382e}
+.badge{font-size:11px;font-weight:700;color:#075c43;background:#c9f7e7;border-radius:20px;padding:6px 9px}
+:root[data-theme="dark"] .badge{color:#72f0c5;background:#12382e}
 .panel{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--chat-panel);border:1px solid var(--chat-line);border-radius:22px;overflow:hidden;box-shadow:0 12px 40px #1e293b08}
 .banner{padding:14px 20px;background:var(--chat-bg);border-bottom:1px solid var(--chat-line);color:var(--chat-muted);font-size:12px}
 #messages{flex:1;min-height:0;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:14px}
@@ -57,9 +57,9 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--chat-bg);c
 .composer{display:flex;align-items:flex-end;gap:10px;padding:15px;border-top:1px solid var(--chat-line);background:var(--chat-panel)}
 #message{flex:1;min-width:0;max-height:130px;resize:vertical;border:1px solid var(--chat-line);border-radius:14px;padding:13px 14px;font:inherit;font-size:14px;outline:none;background:var(--chat-input);color:var(--chat-text)}
 #message::placeholder{color:var(--chat-muted)}
-#message:focus{border-color:#818cf8;box-shadow:0 0 0 3px #4f46e51a}
+#message:focus{border-color:#00b889;box-shadow:0 0 0 3px #00b88922}
 #send{border:0;border-radius:13px;padding:13px 18px;background:var(--chat-own);color:#fff;font-weight:750;cursor:pointer;transition:filter .15s,transform .15s}
-#send:hover:not(:disabled){filter:brightness(1.12);transform:translateY(-1px)}
+#send:hover:not(:disabled){filter:brightness(1.08);transform:translateY(-1px)}
 #send:disabled,#message:disabled{opacity:.5;cursor:not-allowed}
 .note{font-size:11px;color:var(--chat-muted);text-align:center;padding:0 10px 12px}
 @media(max-width:600px){.app{padding:8px;height:100dvh}.top{padding:8px 4px 12px}.panel{border-radius:17px}.badge{display:none}#messages{padding:16px 12px}.message{max-width:88%}.composer{padding:10px;gap:8px}#send{padding:13px 14px}}
@@ -70,7 +70,7 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--chat-bg);c
 <header class="top">
 <a class="back" href="<%= request.getContextPath() %>/chat/inbox-page" aria-label="Back to inbox">←</a>
 <div class="heading">
-<h1>CampusFind Messages</h1>
+<h1 id="chat-title">CampusFind Messages</h1>
 <p id="subtitle">Private conversation about a listing</p>
 </div>
 <button class="theme-toggle" id="theme-toggle" type="button"
@@ -178,6 +178,8 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--chat-bg);c
             }
 
             const data = await response.json();
+            document.getElementById('chat-title').textContent = data.participantName || 'Campus user';
+            document.getElementById('subtitle').textContent = 'Regarding: ' + (data.itemTitle || 'Campus listing');
             const serialized = JSON.stringify(data.messages || []);
             if (serialized === lastRendered) return;
 

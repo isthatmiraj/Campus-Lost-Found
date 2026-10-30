@@ -323,6 +323,19 @@ public final class ChatStore {
         return conversations;
     }
 
+
+    public static Conversation getConversation(UUID conversationId, String userId)
+            throws Exception {
+        try (Connection connection = ChatDatabase.getConnection()) {
+            Conversation conversation = findConversation(connection, conversationId);
+            if (conversation == null) {
+                throw new IllegalArgumentException("Conversation not found.");
+            }
+            requireParticipant(conversation, userId);
+            return conversation;
+        }
+    }
+
     public static int getUnreadCount(String userId) throws Exception {
         if (userId == null || userId.isBlank()) {
             throw new SecurityException("Please sign in first.");

@@ -1356,3 +1356,40 @@ html[data-theme="dark"] body main.narrow.panel form input:focus {
     outline: none !important;
     box-shadow: 0 0 0 2px rgba(0, 214, 160, 0.15) !important;
 }
+
+
+/* CampusFind green identity — unified light and dark themes */
+:root {
+  --bg:#f5faf7; --surface:#ffffff; --text:#14221b; --muted:#65766c;
+  --line:#dce9e0; --accent:#00b889; --accent-hover:#009b73;
+  --success-bg:#dff8ed; --success:#087653; --danger-bg:#fff0f0; --danger:#b42335;
+}
+:root[data-theme="dark"] {
+  color-scheme:dark; --bg:#070b09; --surface:#101713; --text:#edf7f0;
+  --muted:#9aada1; --line:#26372d; --accent:#00d6a0; --accent-hover:#00b889;
+  --success-bg:#12382b; --success:#72f0c5; --danger-bg:#3a1d22; --danger:#ff9da8;
+}
+.btn { background:var(--accent); border-color:var(--accent); color:#04110b; font-weight:750; }
+.btn:hover { background:var(--accent-hover); border-color:var(--accent-hover); color:#04110b; }
+.btn-light { background:color-mix(in srgb, var(--accent) 10%, var(--surface)); border-color:var(--accent); color:var(--text); }
+.btn-light:hover { background:color-mix(in srgb, var(--accent) 19%, var(--surface)); color:var(--text); }
+.item-actions .btn-light { background:var(--accent); border-color:var(--accent); color:#04110b; font-weight:800; }
+.item-actions .btn-light:hover { background:var(--accent-hover); border-color:var(--accent-hover); color:#04110b; }
+.nav-cta { background:color-mix(in srgb, var(--accent) 14%, var(--surface)); color:var(--text); }
+.brand-mark { background:var(--accent); color:#04110b; }
+.hero-art { background:#eaf8f0; }
+.art-circle { background:#c9f1dc; }
+:root[data-theme="dark"] .hero-art { background:#12251a; }
+:root[data-theme="dark"] .art-circle { background:#1c4933; }
+:root[data-theme="dark"] .floating-card,
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] .btn-light,
+:root[data-theme="dark"] .contact-box { background:var(--surface); color:var(--text); border-color:var(--line); }
+:root[data-theme="dark"] .item-actions .btn-light { background:var(--accent); color:#04110b; border-color:var(--accent); }
+/* Fix item detail image background */
+.item-detail-photo {
+    background: #050706 !important;
+    border-color: #26372d !important;
+}
