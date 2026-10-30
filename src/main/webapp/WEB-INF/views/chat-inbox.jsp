@@ -220,11 +220,13 @@
         }
 
        :root[data-theme="dark"] {
-    --inbox-bg: #0f172a;
-    --inbox-panel: #172033;
-    --inbox-text: #e5e7eb;
-    --inbox-muted: #94a3b8;
-    --inbox-line: #334155;
+    --inbox-bg: #050706;
+    --inbox-panel: #0d120f;
+    --inbox-text: #f2fff9;
+    --inbox-muted: #9aada4;
+    --inbox-line: #26372d;
+    --inbox-accent: #00d6a0;
+    --inbox-accent-soft: rgba(0, 214, 160, .12);
 }
 
 :root:not([data-theme="dark"]) {
@@ -233,6 +235,8 @@
     --inbox-text: #172033;
     --inbox-muted: #64748b;
     --inbox-line: #e4e9f1;
+    --inbox-accent: #009f78;
+    --inbox-accent-soft: rgba(0, 159, 120, .10);
 }
 
 body {
@@ -308,6 +312,61 @@ body {
     font-size: 11px;
     line-height: 1.4;
 }
+    
+
+/* CampusFind inbox palette: keep the inbox aligned with the site theme. */
+:root[data-theme="dark"] body {
+    background: #050706;
+    color: #f2fff9;
+}
+:root[data-theme="dark"] .panel {
+    background: #0d120f;
+    border-color: #26372d;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, .24);
+}
+:root[data-theme="dark"] .panel-head,
+:root[data-theme="dark"] .conversation {
+    border-color: #26372d;
+}
+:root[data-theme="dark"] .conversation:hover {
+    background: #111a15;
+}
+:root[data-theme="dark"] .avatar {
+    background: #00d6a0;
+    color: #04100b;
+}
+:root[data-theme="dark"] .count {
+    background: rgba(0, 214, 160, .12);
+    color: #66f0c7;
+}
+:root[data-theme="dark"] .conversation-item-label {
+    border-color: rgba(0, 214, 160, .48);
+    background: rgba(0, 214, 160, .08);
+    color: #45e8bd;
+    font-weight: 650;
+}
+:root[data-theme="dark"] .open-label {
+    color: #00e6aa;
+}
+:root[data-theme="dark"] .back,
+:root[data-theme="dark"] .theme-toggle {
+    background: #0d120f;
+    border-color: #26372d;
+    color: #eafff6;
+}
+:root[data-theme="dark"] .back:hover,
+:root[data-theme="dark"] .theme-toggle:hover {
+    border-color: #00d6a0;
+}
+:root[data-theme="dark"] .empty-icon {
+    background: rgba(0, 214, 160, .12);
+    color: #00d6a0;
+}
+:root[data-theme="dark"] .browse {
+    background: #00d6a0;
+    color: #04100b;
+}
+
     </style>
 </head>
 
