@@ -220,13 +220,11 @@
         }
 
        :root[data-theme="dark"] {
-    --inbox-bg: #050706;
-    --inbox-panel: #0d120f;
-    --inbox-text: #f2fff9;
-    --inbox-muted: #9aada4;
-    --inbox-line: #26372d;
-    --inbox-accent: #00d6a0;
-    --inbox-accent-soft: rgba(0, 214, 160, .12);
+    --inbox-bg: #0f172a;
+    --inbox-panel: #172033;
+    --inbox-text: #e5e7eb;
+    --inbox-muted: #94a3b8;
+    --inbox-line: #334155;
 }
 
 :root:not([data-theme="dark"]) {
@@ -235,8 +233,6 @@
     --inbox-text: #172033;
     --inbox-muted: #64748b;
     --inbox-line: #e4e9f1;
-    --inbox-accent: #009f78;
-    --inbox-accent-soft: rgba(0, 159, 120, .10);
 }
 
 body {
@@ -293,80 +289,83 @@ body {
     .top { flex-wrap: wrap; }
 }
 
-.conversation .details { min-width: 0; }
-.conversation .item-title { font-weight: 750; }
-.conversation .participant {
-    margin-top: 4px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 100%;
-}
-.conversation-item-label {
-    display: inline-block;
-    margin-top: 7px;
-    padding: 3px 8px;
-    border: 1px solid var(--inbox-line);
-    border-radius: 999px;
-    color: var(--inbox-muted);
-    font-size: 11px;
-    line-height: 1.4;
-}
-    
+        :root { --inbox-bg:#f6faf7; --inbox-panel:#ffffff; --inbox-text:#14221b; --inbox-muted:#65766c; --inbox-line:#dce9e0; }
+        :root[data-theme="dark"] { --inbox-bg:#070b09; --inbox-panel:#101713; --inbox-text:#edf7f0; --inbox-muted:#9aada1; --inbox-line:#26372d; color-scheme:dark; }
+        body { background:var(--inbox-bg); color:var(--inbox-text); }
+        .panel { background:var(--inbox-panel); border-color:var(--inbox-line); }
+        .panel-head,.conversation { border-color:var(--inbox-line); }
+        .conversation { background:var(--inbox-panel); }
+        .conversation:hover { background:color-mix(in srgb, #00d6a0 8%, var(--inbox-panel)); }
+        .item-title,h1,h2,h3 { color:var(--inbox-text); }
+        .avatar { background:#00d6a0; color:#04110b; font-weight:800; }
+        .back,.theme-toggle { border-color:var(--inbox-line); background:var(--inbox-panel); color:var(--inbox-text); }
+        .browse { border:1px solid #00b889; background:#00b889; color:#04110b; }
+        .browse:hover { background:#009b73; color:#04110b; }
+        .count,.empty-icon { background:color-mix(in srgb, #00d6a0 12%, var(--inbox-panel)); color:var(--inbox-text); }
 
-/* CampusFind inbox palette: keep the inbox aligned with the site theme. */
-:root[data-theme="dark"] body {
-    background: #050706;
-    color: #f2fff9;
-}
-:root[data-theme="dark"] .panel {
-    background: #0d120f;
-    border-color: #26372d;
-    box-shadow: 0 14px 40px rgba(0, 0, 0, .24);
-}
-:root[data-theme="dark"] .panel-head,
-:root[data-theme="dark"] .conversation {
-    border-color: #26372d;
-}
-:root[data-theme="dark"] .conversation:hover {
-    background: #111a15;
-}
-:root[data-theme="dark"] .avatar {
-    background: #00d6a0;
-    color: #04100b;
-}
-:root[data-theme="dark"] .count {
-    background: rgba(0, 214, 160, .12);
-    color: #66f0c7;
-}
-:root[data-theme="dark"] .conversation-item-label {
-    border-color: rgba(0, 214, 160, .48);
-    background: rgba(0, 214, 160, .08);
-    color: #45e8bd;
-    font-weight: 650;
-}
-:root[data-theme="dark"] .open-label {
-    color: #00e6aa;
-}
-:root[data-theme="dark"] .back,
-:root[data-theme="dark"] .theme-toggle {
-    background: #0d120f;
-    border-color: #26372d;
-    color: #eafff6;
-}
-:root[data-theme="dark"] .back:hover,
-:root[data-theme="dark"] .theme-toggle:hover {
-    border-color: #00d6a0;
-}
-:root[data-theme="dark"] .empty-icon {
-    background: rgba(0, 214, 160, .12);
-    color: #00d6a0;
-}
-:root[data-theme="dark"] .browse {
-    background: #00d6a0;
-    color: #04100b;
-}
-
+        /* CampusFind neon identity — light mode only */
+        :root:not([data-theme="dark"]) {
+            --inbox-bg: #f4fbf7;
+            --inbox-panel: #ffffff;
+            --inbox-text: #14221b;
+            --inbox-muted: #62756a;
+            --inbox-line: #d5eadf;
+            color-scheme: light;
+        }
+        :root:not([data-theme="dark"]) body {
+            background: var(--inbox-bg) !important;
+            color: var(--inbox-text) !important;
+        }
+        :root:not([data-theme="dark"]) .panel {
+            background: #ffffff !important;
+            border-color: #cfe8db !important;
+            box-shadow: 0 12px 36px rgba(0, 159, 120, .07) !important;
+        }
+        :root:not([data-theme="dark"]) .panel-head,
+        :root:not([data-theme="dark"]) .conversation {
+            border-color: #d5eadf !important;
+        }
+        :root:not([data-theme="dark"]) .conversation {
+            background: #ffffff !important;
+        }
+        :root:not([data-theme="dark"]) .conversation:hover {
+            background: #effbf5 !important;
+        }
+        :root:not([data-theme="dark"]) .item-title {
+            color: #008f6b !important;
+            font-weight: 800;
+        }
+        :root:not([data-theme="dark"]) .avatar {
+            background: #00d6a0 !important;
+            color: #042016 !important;
+            box-shadow: 0 0 0 4px rgba(0, 214, 160, .12);
+        }
+        :root:not([data-theme="dark"]) .open-label {
+            color: #008f6b !important;
+        }
+        :root:not([data-theme="dark"]) .count,
+        :root:not([data-theme="dark"]) .empty-icon {
+            background: #e4f9ef !important;
+            color: #007b5c !important;
+            border: 1px solid #bdebd5;
+        }
+        :root:not([data-theme="dark"]) .back,
+        :root:not([data-theme="dark"]) .theme-toggle {
+            border-color: #bdebd5 !important;
+            background: #ffffff !important;
+            color: #087653 !important;
+        }
+        :root:not([data-theme="dark"]) .eyebrow {
+            color: #008f6b !important;
+        }
+        :root:not([data-theme="dark"]) .browse {
+            border: 1px solid #00b889 !important;
+            background: #00d6a0 !important;
+            color: #042016 !important;
+        }
+        :root:not([data-theme="dark"]) .browse:hover {
+            background: #00bd8d !important;
+        }
     </style>
 </head>
 
@@ -461,25 +460,20 @@ body {
 
                 const avatar = document.createElement('div');
                 avatar.className = 'avatar';
-                avatar.textContent = (conversation.participantName || 'U').trim().charAt(0).toUpperCase();
+                avatar.textContent = (conversation.participantName || 'C').trim().charAt(0).toUpperCase();
 
                 const details = document.createElement('div');
                 details.className = 'details';
 
                 const title = document.createElement('div');
                 title.className = 'item-title';
-                title.textContent = conversation.participantName || 'Campus user';
+                title.textContent = conversation.itemTitle || ('Item ' + conversation.itemId);
 
                 const participant = document.createElement('div');
                 participant.className = 'participant';
-                participant.textContent = conversation.latestMessage || 'No messages yet';
+                participant.textContent = conversation.participantName || 'Campus user';
 
                 details.append(title, participant);
-
-                const itemLabel = document.createElement('div');
-                itemLabel.className = 'conversation-item-label';
-                itemLabel.textContent = 'Item: ' + (conversation.itemTitle || 'Campus listing');
-                details.appendChild(itemLabel);
 
                 const meta = document.createElement('div');
                 meta.className = 'meta';
