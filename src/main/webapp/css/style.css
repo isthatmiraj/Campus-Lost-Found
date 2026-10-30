@@ -1393,3 +1393,9 @@ html[data-theme="dark"] body main.narrow.panel form input:focus {
     background: #050706 !important;
     border-color: #26372d !important;
 }
+/* Full item details image only */
+body .container.page .panel .item-detail-photo {
+    background-color: #050706 !important;
+    border: 1px solid #26372d !important;
+    border-radius: 14px;
+}
