@@ -1316,3 +1316,43 @@ html body header.topbar nav a.signup-btn:hover {
     color: #04110c !important;
     border-color: #00ad80 !important;
 }
+
+/* ===== Fix blue login/register input backgrounds ===== */
+
+/* Light mode */
+html body main.narrow.panel form input {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #17221d !important;
+    border: 1px solid #d9e8e1 !important;
+    box-shadow: none !important;
+}
+
+/* Dark mode */
+html[data-theme="dark"] body main.narrow.panel form input {
+    background: #101512 !important;
+    background-color: #101512 !important;
+    color: #e7f4ec !important;
+    border: 1px solid #35463c !important;
+    box-shadow: none !important;
+}
+
+/* Stop Chrome from applying its blue autofill background */
+html body main.narrow.panel form input:-webkit-autofill,
+html body main.narrow.panel form input:-webkit-autofill:hover,
+html body main.narrow.panel form input:-webkit-autofill:focus,
+html[data-theme="dark"] body main.narrow.panel form input:-webkit-autofill,
+html[data-theme="dark"] body main.narrow.panel form input:-webkit-autofill:hover,
+html[data-theme="dark"] body main.narrow.panel form input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #101512 inset !important;
+    -webkit-text-fill-color: #e7f4ec !important;
+    caret-color: #00d6a0 !important;
+    border: 1px solid #35463c !important;
+}
+
+/* Neon green focus */
+html[data-theme="dark"] body main.narrow.panel form input:focus {
+    border-color: #00d6a0 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(0, 214, 160, 0.15) !important;
+}
