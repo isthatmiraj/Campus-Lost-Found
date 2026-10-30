@@ -51,8 +51,8 @@
                 <%=WebUtil.h((String)session.getAttribute("name"))%>
             </span>
         <% } else { %>
-            <a href="<%=request.getContextPath()%>/login">Log in</a>
-            <a class="nav-cta" href="<%=request.getContextPath()%>/register">Sign up</a>
+            <a class="login-btn" href="<%=request.getContextPath()%>/login">Log in</a>
+            <a class="nav-cta signup-btn" href="<%=request.getContextPath()%>/register">Sign up</a>
         <% } %>
 
         <button type="button" class="theme-toggle" id="theme-toggle"

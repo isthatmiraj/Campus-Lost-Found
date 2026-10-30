@@ -983,3 +983,336 @@ button.btn-danger:hover {
     color: #ffe3a0;
     border-color: #9b792e;
 }
+
+
+/* CampusFind Neon Console palette — final overrides */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #050706;
+  --surface: #101512;
+  --text: #edf7f1;
+  --muted: #9aa9a1;
+  --line: #2a3730;
+  --accent: #00d6a0;
+  --accent-hover: #00b989;
+  --success-bg: #10372b;
+  --success: #48e6b2;
+  --danger-bg: #3b1d22;
+  --danger: #ff8794;
+}
+
+html[data-theme="dark"] body,
+html[data-theme="dark"] main,
+html[data-theme="dark"] .container {
+  background: #050706 !important;
+  color: #edf7f1 !important;
+}
+
+html[data-theme="dark"] .topbar,
+html[data-theme="dark"] .hero,
+html[data-theme="dark"] .item-card,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .admin-stat,
+html[data-theme="dark"] .table-wrap,
+html[data-theme="dark"] .searchbar,
+html[data-theme="dark"] .empty,
+html[data-theme="dark"] .count,
+html[data-theme="dark"] .contact-box,
+html[data-theme="dark"] .floating-card,
+html[data-theme="dark"] .claim-box {
+  background-color: #101512 !important;
+  color: #edf7f1 !important;
+  border-color: #2a3730 !important;
+}
+
+html[data-theme="dark"] .hero-art {
+  background: #0b2119 !important;
+}
+html[data-theme="dark"] .art-circle {
+  background: #104b38 !important;
+}
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+  background-color: #090e0b !important;
+  color: #edf7f1 !important;
+  border-color: #304239 !important;
+}
+html[data-theme="dark"] input:focus,
+html[data-theme="dark"] select:focus,
+html[data-theme="dark"] textarea:focus,
+html[data-theme="dark"] button:focus-visible,
+html[data-theme="dark"] a:focus-visible {
+  outline-color: #00d6a0 !important;
+  border-color: #00d6a0 !important;
+  box-shadow: 0 0 0 3px #00d6a026 !important;
+}
+html[data-theme="dark"] th {
+  background: #151e19 !important;
+  color: #a9bbb0 !important;
+}
+html[data-theme="dark"] td,
+html[data-theme="dark"] .item-meta {
+  border-color: #2a3730 !important;
+}
+html[data-theme="dark"] .brand-mark,
+html[data-theme="dark"] .btn:not(.btn-light):not(.btn-danger),
+html[data-theme="dark"] a.btn:not(.btn-light):not(.btn-danger),
+html[data-theme="dark"] button.btn:not(.btn-light):not(.btn-danger) {
+  background: #00d6a0 !important;
+  color: #04110c !important;
+  border-color: #00d6a0 !important;
+}
+html[data-theme="dark"] .btn:hover,
+html[data-theme="dark"] .nav-cta:hover {
+  background: #00b989 !important;
+  border-color: #00b989 !important;
+  color: #04110c !important;
+}
+html[data-theme="dark"] .nav-cta,
+html[data-theme="dark"] a.nav-cta,
+html[data-theme="dark"] nav a[href$="/login"],
+html[data-theme="dark"] .login-btn,
+html[data-theme="dark"] a.login-btn {
+  background: #00d6a0 !important;
+  color: #04110c !important;
+  border: 1px solid #00d6a0 !important;
+}
+html[data-theme="dark"] .btn-light,
+html[data-theme="dark"] a.btn-light,
+html[data-theme="dark"] button.btn-light,
+html[data-theme="dark"] .theme-toggle {
+  background: #18211c !important;
+  color: #e7f4ec !important;
+  border-color: #35463c !important;
+}
+html[data-theme="dark"] .type-pill,
+html[data-theme="dark"] .status,
+html[data-theme="dark"] .item-icon {
+  background: #1a2820 !important;
+  color: #c6d8cd !important;
+}
+html[data-theme="dark"] .type-pill.found {
+  background: #10372b !important;
+  color: #48e6b2 !important;
+}
+html[data-theme="dark"] .type-pill.lost {
+  background: #392b17 !important;
+  color: #f4c66f !important;
+}
+html[data-theme="dark"] a:not(.btn):not(.nav-cta) {
+  color: #00d6a0;
+}
+html[data-theme="dark"] .eyebrow,
+html[data-theme="dark"] .hero h1 span {
+  color: #00d6a0 !important;
+}
+html[data-theme="dark"] .btn-danger,
+html[data-theme="dark"] a.btn-danger,
+html[data-theme="dark"] button.btn-danger {
+  background: #3b1d22 !important;
+  color: #ff9aa4 !important;
+  border-color: #74404a !important;
+}
+
+
+/* ===== CampusFind accent system: neon green in BOTH themes ===== */
+/* Light mode: white surfaces + neon green accents (remove cobalt blue). */
+:root {
+  --accent: #00b98b !important;
+  --accent-hover: #009c75 !important;
+  --line: #d9e8e1;
+}
+:root body .brand-mark {
+  background: #00c995 !important;
+  color: #042018 !important;
+}
+:root body .eyebrow,
+:root body .hero h1 span {
+  color: #00a979 !important;
+}
+:root body a:not(.btn):not(.nav-cta) {
+  color: #009f75;
+}
+:root body .btn,
+:root body input[type="submit"],
+:root body input[type="button"],
+:root body nav a.nav-cta,
+:root body nav a[href*="/login"],
+:root body nav a[href*="/register"],
+:root body nav a[href*="/signup"],
+:root body .login-btn,
+:root body a.login-btn {
+  background: #00c995 !important;
+  background-color: #00c995 !important;
+  color: #052017 !important;
+  border: 1px solid #00b98b !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+}
+:root body .btn:hover,
+:root body input[type="submit"]:hover,
+:root body input[type="button"]:hover,
+:root body nav a.nav-cta:hover,
+:root body nav a[href*="/login"]:hover,
+:root body nav a[href*="/register"]:hover,
+:root body nav a[href*="/signup"]:hover {
+  background: #00ad80 !important;
+  border-color: #00ad80 !important;
+  color: #041a12 !important;
+}
+:root body .btn-light,
+:root body a.btn-light,
+:root body button.btn-light {
+  background: #ffffff !important;
+  color: #087c5c !important;
+  border: 1px solid #8edfc4 !important;
+}
+:root body .btn-danger,
+:root body a.btn-danger,
+:root body button.btn-danger {
+  background: #fff1f2 !important;
+  color: #be123c !important;
+  border: 1px solid #fecdd3 !important;
+}
+
+/* Dark mode: same neon primary buttons, charcoal secondary buttons. */
+:root[data-theme="dark"] {
+  --accent: #00d6a0 !important;
+  --accent-hover: #00b989 !important;
+}
+:root[data-theme="dark"] body .btn,
+:root[data-theme="dark"] body input[type="submit"],
+:root[data-theme="dark"] body input[type="button"],
+:root[data-theme="dark"] body nav a.nav-cta,
+:root[data-theme="dark"] body nav a[href*="/login"],
+:root[data-theme="dark"] body nav a[href*="/register"],
+:root[data-theme="dark"] body nav a[href*="/signup"],
+:root[data-theme="dark"] body .login-btn,
+:root[data-theme="dark"] body a.login-btn {
+  background: #00d6a0 !important;
+  background-color: #00d6a0 !important;
+  color: #04110c !important;
+  border: 1px solid #00d6a0 !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+}
+:root[data-theme="dark"] body .btn:hover,
+:root[data-theme="dark"] body input[type="submit"]:hover,
+:root[data-theme="dark"] body input[type="button"]:hover,
+:root[data-theme="dark"] body nav a.nav-cta:hover,
+:root[data-theme="dark"] body nav a[href*="/login"]:hover,
+:root[data-theme="dark"] body nav a[href*="/register"]:hover,
+:root[data-theme="dark"] body nav a[href*="/signup"]:hover {
+  background: #00b989 !important;
+  border-color: #00b989 !important;
+  color: #04110c !important;
+}
+:root[data-theme="dark"] body .btn-light,
+:root[data-theme="dark"] body a.btn-light,
+:root[data-theme="dark"] body button.btn-light {
+  background: #18211c !important;
+  color: #e7f4ec !important;
+  border: 1px solid #35463c !important;
+}
+:root[data-theme="dark"] body .btn-danger,
+:root[data-theme="dark"] body a.btn-danger,
+:root[data-theme="dark"] body button.btn-danger {
+  background: #3b1d22 !important;
+  color: #ff9aa4 !important;
+  border: 1px solid #74404a !important;
+}
+
+/* Keep the theme switch visually distinct from primary actions. */
+:root body .theme-toggle,
+:root[data-theme="dark"] body .theme-toggle {
+  background: transparent !important;
+  color: #00b98b !important;
+  border: 1px solid #00c995 !important;
+}
+:root body button:focus-visible,
+:root body a:focus-visible,
+:root body input:focus-visible {
+  outline: 2px solid #00c995 !important;
+  outline-offset: 3px !important;
+}
+
+/* ===== FINAL FIX: Login and Signup buttons in BOTH themes ===== */
+
+/* Light mode: white + neon green */
+html:not([data-theme="dark"]) body header.topbar nav a[href$="/login"],
+html:not([data-theme="dark"]) body header.topbar nav a[href$="/register"],
+html:not([data-theme="dark"]) body header.topbar nav a.nav-cta {
+    background: #00c995 !important;
+    background-color: #00c995 !important;
+    color: #042018 !important;
+    border: 1px solid #00b98b !important;
+    text-decoration: none !important;
+}
+
+/* Dark mode: black + neon green */
+html[data-theme="dark"] body header.topbar nav a[href$="/login"],
+html[data-theme="dark"] body header.topbar nav a[href$="/register"],
+html[data-theme="dark"] body header.topbar nav a.nav-cta {
+    background: #00d6a0 !important;
+    background-color: #00d6a0 !important;
+    color: #04110c !important;
+    border: 1px solid #00d6a0 !important;
+    text-decoration: none !important;
+}
+
+/* Hover states */
+html body header.topbar nav a[href$="/login"]:hover,
+html body header.topbar nav a[href$="/register"]:hover,
+html body header.topbar nav a.nav-cta:hover {
+    background: #00ad80 !important;
+    background-color: #00ad80 !important;
+    border-color: #00ad80 !important;
+    color: #04110c !important;
+}
+
+/* Login and signup form submit buttons */
+html body main form button.btn:not(.btn-danger) {
+    background: #00c995 !important;
+    background-color: #00c995 !important;
+    color: #042018 !important;
+    border: 1px solid #00b98b !important;
+}
+
+html[data-theme="dark"] body main form button.btn:not(.btn-danger) {
+    background: #00d6a0 !important;
+    background-color: #00d6a0 !important;
+    color: #04110c !important;
+    border-color: #00d6a0 !important;
+}
+
+
+/* FINAL NAVIGATION BUTTON FIX */
+html body header.topbar nav a.login-btn,
+html body header.topbar nav a.signup-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px !important;
+    border-radius: 8px !important;
+    background: #00c995 !important;
+    background-color: #00c995 !important;
+    color: #042018 !important;
+    border: 1px solid #00b98b !important;
+    text-decoration: none !important;
+}
+
+html[data-theme="dark"] body header.topbar nav a.login-btn,
+html[data-theme="dark"] body header.topbar nav a.signup-btn {
+    background: #00d6a0 !important;
+    background-color: #00d6a0 !important;
+    color: #04110c !important;
+    border-color: #00d6a0 !important;
+}
+
+html body header.topbar nav a.login-btn:hover,
+html body header.topbar nav a.signup-btn:hover {
+    background: #00ad80 !important;
+    color: #04110c !important;
+    border-color: #00ad80 !important;
+}
