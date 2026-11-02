@@ -282,9 +282,7 @@ public final class ChatStore {
                 }
             }
 
-            // Read receipts are best-effort: a permission/schema issue while
-            // updating read_at must never prevent the conversation itself
-            // from opening or displaying messages.
+            // Mark the other participant's messages as read.
             try (PreparedStatement ps = connection.prepareStatement("""
                     UPDATE chat_messages
                     SET read_at = CURRENT_TIMESTAMP
@@ -295,11 +293,6 @@ public final class ChatStore {
                 ps.setObject(1, conversationId);
                 ps.setString(2, userId);
                 ps.executeUpdate();
-            } catch (SQLException readReceiptError) {
-                System.err.println("CampusFind chat read-receipt update failed "
-                        + "for conversation " + conversationId + ": "
-                        + readReceiptError.getMessage());
-                readReceiptError.printStackTrace(System.err);
             }
         }
 
