@@ -1,7 +1,7 @@
 
 <%@ page import="com.campus.lostfound.util.WebUtil" %>
 <%@ page import="com.campus.lostfound.util.LogoPreferenceStore" %>
-<% String cfLogo = WebUtil.loggedIn(request) ? LogoPreferenceStore.get(WebUtil.userId(request)) : "black"; %>
+<% String cfLogo = WebUtil.loggedIn(request) ? LogoPreferenceStore.get(WebUtil.userId(request)) : "auto"; %>
 <script>
 (function() {
     try {
@@ -15,7 +15,7 @@
 
 <header class="topbar">
     <a class="brand" href="<%=request.getContextPath()%>/items" aria-label="CampusFind home">
-        <img class="brand-logo" src="<%=request.getContextPath()%>/images/campusfind-logo-<%=cfLogo%>.png" alt="CF">
+        <img class="brand-logo theme-aware-logo" data-logo-preference="<%=cfLogo%>" src="<%=request.getContextPath()%>/images/campusfind-logo-<%="white".equals(cfLogo) ? "white" : "black"%>.png" data-context-path="<%=request.getContextPath()%>" alt="CampusFind CF">
         <span>CampusFind</span>
     </a>
 
@@ -178,7 +178,18 @@
         b.setAttribute("title", dark ? "Switch to light mode" : "Switch to dark mode");
     }
 
+    function updateBrandLogos() {
+        var dark = document.documentElement.getAttribute("data-theme") === "dark";
+        document.querySelectorAll(".theme-aware-logo").forEach(function (img) {
+            var preference = img.getAttribute("data-logo-preference") || "auto";
+            var variant = preference === "auto" ? (dark ? "white" : "black") : preference;
+            img.src = img.getAttribute("data-context-path") + "/images/campusfind-logo-" + variant + ".png";
+        });
+    }
+
     updateIcon();
+    updateBrandLogos();
+    document.addEventListener("DOMContentLoaded", updateBrandLogos);
 
     b.addEventListener("click", function () {
         var dark = document.documentElement.getAttribute("data-theme") === "dark";
@@ -192,6 +203,7 @@
         }
 
         updateIcon();
+        updateBrandLogos();
     });
 })();
 </script>

@@ -5,7 +5,7 @@
     User profileUser = (User) request.getAttribute("profileUser");
     String csrfToken = (String) session.getAttribute("csrfToken");
     String logoPreference = WebUtil.loggedIn(request)
-        ? com.campus.lostfound.util.LogoPreferenceStore.get(WebUtil.userId(request)) : "black";
+        ? com.campus.lostfound.util.LogoPreferenceStore.get(WebUtil.userId(request)) : "auto";
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -158,11 +158,17 @@
 
         <section class="profile-card">
             <h2>Appearance</h2>
-            <p class="muted">Choose which CampusFind logo appears in your navigation bar.</p>
+            <p class="muted">Choose a logo manually, or let CampusFind match your light or dark theme automatically.</p>
             <form method="post" action="<%=ctx%>/profile">
                 <input type="hidden" name="csrfToken" value="<%=WebUtil.h(csrfToken)%>">
                 <input type="hidden" name="action" value="saveLogoPreference">
                 <div class="logo-choice">
+                    <label class="logo-option">
+                        <img src="<%=ctx%>/images/campusfind-logo-black.png" alt="Automatic logo preview">
+                        <input type="radio" name="logoPreference" value="auto" <%="auto".equals(logoPreference) ? "checked" : ""%>>
+                        Automatic
+                        <small>Matches light/dark mode</small>
+                    </label>
                     <label class="logo-option">
                         <img src="<%=ctx%>/images/campusfind-logo-black.png" alt="Black CF logo on white">
                         <input type="radio" name="logoPreference" value="black" <%="black".equals(logoPreference) ? "checked" : ""%>>

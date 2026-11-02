@@ -19,22 +19,22 @@ public final class LogoPreferenceStore {
     }
 
     public static String get(String userId) {
-        if (userId == null || userId.isBlank()) return "black";
+        if (userId == null || userId.isBlank()) return "auto";
         synchronized (LOCK) {
             Properties p = new Properties();
             try (InputStream in = Files.newInputStream(file())) {
                 p.load(in);
             } catch (IOException ignored) {
-                return "black";
+                return "auto";
             }
-            String value = p.getProperty(userId, "black");
-            return "white".equals(value) ? "white" : "black";
+            String value = p.getProperty(userId, "auto");
+            return "white".equals(value) || "black".equals(value) ? value : "auto";
         }
     }
 
     public static void set(String userId, String preference) throws IOException {
         if (userId == null || userId.isBlank()) throw new IllegalArgumentException("Invalid account.");
-        if (!"black".equals(preference) && !"white".equals(preference))
+        if (!"auto".equals(preference) && !"black".equals(preference) && !"white".equals(preference))
             throw new IllegalArgumentException("Choose a valid logo.");
         synchronized (LOCK) {
             Path path = file();
