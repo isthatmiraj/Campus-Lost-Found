@@ -88,6 +88,49 @@ public final class DataStore {
         }
     }
 
+    public synchronized void updateProfile(String userId, String name, String email) throws IOException {
+        try (Connection c = ChatDatabase.getConnection()) {
+            c.setAutoCommit(false);
+            try {
+                try (PreparedStatement check = c.prepareStatement(
+                        "SELECT id FROM campus_users WHERE lower(email)=lower(?) AND id<>? LIMIT 1")) {
+                    check.setString(1, email);
+                    check.setString(2, userId);
+                    try (ResultSet r = check.executeQuery()) {
+                        if (r.next()) {
+                            throw new IllegalArgumentException("That email address is already registered.");
+                        }
+                    }
+                }
+
+                try (PreparedStatement update = c.prepareStatement(
+                        "UPDATE campus_users SET name=?, email=? WHERE id=?")) {
+                    update.setString(1, name);
+                    update.setString(2, email.toLowerCase(Locale.ROOT));
+                    update.setString(3, userId);
+                    if (update.executeUpdate() == 0) {
+                        throw new IllegalArgumentException("User account not found.");
+                    }
+                }
+                c.commit();
+            } catch (Exception e) {
+                try { c.rollback(); } catch (SQLException rollbackError) {
+                    e.addSuppressed(rollbackError);
+                }
+                if (e instanceof IOException) throw (IOException) e;
+                if (e instanceof RuntimeException) throw (RuntimeException) e;
+                throw new IOException(e);
+            } finally {
+                try { c.setAutoCommit(true); } catch (SQLException ignored) {}
+            }
+        } catch (SQLException e) {
+            if ("23505".equals(e.getSQLState())) {
+                throw new IllegalArgumentException("That email address is already registered.", e);
+            }
+            throw io(e);
+        }
+    }
+
     public synchronized void updatePasswordHash(String userId, String passwordHash) throws IOException {
         try (Connection c = ChatDatabase.getConnection();
              PreparedStatement p = c.prepareStatement("UPDATE campus_users SET password_hash=? WHERE id=?")) {

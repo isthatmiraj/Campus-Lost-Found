@@ -26,6 +26,30 @@
         <span></span>
     </button>
 
+    <% if (WebUtil.loggedIn(request)) { %>
+        <div class="profile-menu" id="profile-menu">
+            <button type="button" class="profile-menu-trigger"
+                    id="profile-menu-trigger"
+                    aria-expanded="false"
+                    aria-controls="profile-dropdown">
+                <span class="profile-menu-avatar">
+                    <%=WebUtil.h(((String)session.getAttribute("name")).substring(0, 1).toUpperCase())%>
+                </span>
+                <span class="profile-menu-name">
+                    <%=WebUtil.h((String)session.getAttribute("name"))%>
+                </span>
+                <span class="profile-menu-chevron" aria-hidden="true">⌄</span>
+            </button>
+
+            <div class="profile-dropdown" id="profile-dropdown">
+                <a href="<%=request.getContextPath()%>/profile">My Profile</a>
+                <form method="post" action="<%=request.getContextPath()%>/logout">
+                    <button type="submit">Log out</button>
+                </form>
+            </div>
+        </div>
+    <% } %>
+
     <nav class="site-nav" id="site-nav">
         <a href="<%=request.getContextPath()%>/items">Browse</a>
 
@@ -52,14 +76,6 @@
                 <a href="<%=request.getContextPath()%>/admin">Admin</a>
             <% } %>
 
-            <form class="inline" method="post"
-                  action="<%=request.getContextPath()%>/logout">
-                <button class="link-button" type="submit">Log out</button>
-            </form>
-
-            <span class="user-chip">
-                <%=WebUtil.h((String)session.getAttribute("name"))%>
-            </span>
         <% } else { %>
             <a class="login-btn" href="<%=request.getContextPath()%>/login">Log in</a>
             <a class="nav-cta signup-btn" href="<%=request.getContextPath()%>/register">Sign up</a>
@@ -107,6 +123,34 @@
 
     document.addEventListener("keydown", function (event) {
         if (event.key === "Escape") closeMenu();
+    });
+})();
+</script>
+
+<script>
+(function () {
+    var wrapper = document.getElementById("profile-menu");
+    var trigger = document.getElementById("profile-menu-trigger");
+    var dropdown = document.getElementById("profile-dropdown");
+
+    if (!wrapper || !trigger || !dropdown) return;
+
+    function closeProfileMenu() {
+        wrapper.classList.remove("is-open");
+        trigger.setAttribute("aria-expanded", "false");
+    }
+
+    trigger.addEventListener("click", function () {
+        var open = wrapper.classList.toggle("is-open");
+        trigger.setAttribute("aria-expanded", String(open));
+    });
+
+    document.addEventListener("click", function (event) {
+        if (!wrapper.contains(event.target)) closeProfileMenu();
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") closeProfileMenu();
     });
 })();
 </script>
