@@ -1494,3 +1494,15 @@ body .container.page .panel .item-detail-photo {
         margin-top: 4px;
     }
 }
+
+/* Mobile header: menu left, brand right */
+@media (max-width: 580px) {
+    .mobile-menu-toggle {
+        order: 1;
+    }
+
+    .topbar .brand {
+        order: 2;
+        margin-left: auto;
+    }
+}
