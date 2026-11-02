@@ -1824,3 +1824,58 @@ body .container.page .panel .item-detail-photo {
     flex: 1 1 calc(50% - 9px);
   }
 }
+
+
+/* CampusFind branded full-screen loading overlay */
+#cf-loading-overlay {
+  position: fixed; inset: 0; z-index: 99999; display: grid; place-items: center;
+  background: rgba(3, 7, 5, .91); backdrop-filter: blur(9px);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity .22s ease, visibility .22s;
+}
+#cf-loading-overlay.cf-loading-active {
+  opacity: 1; visibility: visible; pointer-events: auto;
+}
+#cf-loading-overlay .cf-loader-content { display: grid; justify-items: center; }
+#cf-loading-overlay .cf-logo-wrap {
+  width: 132px; height: 132px; position: relative; display: grid; place-items: center;
+  animation: cf-rotate-then-beat 2.7s ease-in-out infinite;
+  transform-origin: center;
+}
+#cf-loading-overlay .cf-logo-wrap::before {
+  content: ""; position: absolute; inset: -15px; border-radius: 50%;
+  border: 2px solid transparent; border-top-color: #03c995;
+  border-right-color: rgba(3,201,149,.22);
+  animation: cf-ring-spin 1.25s linear infinite;
+  filter: drop-shadow(0 0 7px rgba(3,201,149,.5));
+}
+#cf-loading-overlay .cf-logo-wrap::after {
+  content: ""; position: absolute; inset: -25px; border-radius: 50%;
+  border: 1px solid rgba(3,201,149,.12);
+  animation: cf-halo 2.7s ease-out infinite;
+}
+#cf-loading-overlay .cf-logo {
+  width: 100%; height: 100%; object-fit: contain;
+  filter: drop-shadow(0 0 16px rgba(3,201,149,.2));
+}
+@keyframes cf-ring-spin { to { transform: rotate(360deg); } }
+@keyframes cf-rotate-then-beat {
+  0% { transform: rotate(0deg) scale(1); }
+  52% { transform: rotate(360deg) scale(1); }
+  62% { transform: rotate(360deg) scale(1.10); }
+  70% { transform: rotate(360deg) scale(.96); }
+  78% { transform: rotate(360deg) scale(1.08); }
+  87% { transform: rotate(360deg) scale(.97); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+@keyframes cf-halo {
+  0%, 52% { transform: scale(.82); opacity: .10; }
+  62% { transform: scale(1.02); opacity: .48; }
+  87% { transform: scale(1.12); opacity: .18; }
+  100% { transform: scale(1.2); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #cf-loading-overlay .cf-logo-wrap,
+  #cf-loading-overlay .cf-logo-wrap::before,
+  #cf-loading-overlay .cf-logo-wrap::after { animation-duration: 5s; }
+}

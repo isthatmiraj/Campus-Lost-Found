@@ -46,4 +46,12 @@ if (!response.ok) {
 })();
 </script>
 
+<div id="cf-loading-overlay" role="status" aria-label="Loading" aria-hidden="true">
+  <div class="cf-loader-content">
+    <div class="cf-logo-wrap">
+      <img class="cf-logo" src="<%=ctx%>/images/campusfind-loader.png" alt="">
+    </div>
+  </div>
+</div>
+<script src="<%=ctx%>/js/campusfind-loader.js" defer></script>
 </body></html>
