@@ -43,7 +43,10 @@
 
             <div class="profile-dropdown" id="profile-dropdown">
                 <a href="<%=request.getContextPath()%>/profile">My Profile</a>
-                <form method="post" action="<%=request.getContextPath()%>/logout">
+                <form method="post" action="<%=request.getContextPath()%>/logout"
+                      onsubmit="return confirm('Are you sure you want to log out?');">
+                    <input type="hidden" name="csrfToken"
+                           value="<%=WebUtil.h((String) session.getAttribute("csrfToken"))%>">
                     <button type="submit">Log out</button>
                 </form>
             </div>

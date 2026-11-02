@@ -199,5 +199,5 @@
 
     <a class="profile-back" href="<%=ctx%>/items">← Back to CampusFind</a>
 </main>
-</body>
+<script src="<%=ctx%>/js/password-visibility.js" defer></script></body>
 </html>

@@ -1670,3 +1670,67 @@ body .container.page .panel .item-detail-photo {
     margin-top: -4px;
     flex-shrink: 0;
 }
+
+
+/* Password visibility control */
+.password-field {
+    display: block;
+    position: relative;
+    width: 100%;
+}
+
+.password-field input {
+    width: 100%;
+    box-sizing: border-box;
+    padding-right: 48px !important;
+}
+
+.password-visibility-toggle {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border, #cbd5e1);
+    border-radius: 8px;
+    background: var(--surface, #ffffff);
+    color: var(--text, #334155);
+    cursor: pointer;
+    padding: 7px;
+}
+
+.password-visibility-toggle:hover {
+    background: var(--surface-hover, #f1f5f9);
+}
+
+.password-visibility-toggle:focus-visible {
+    outline: 2px solid var(--primary, #0d9488);
+    outline-offset: 2px;
+}
+
+.password-visibility-toggle svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.password-eye-slash {
+    display: none;
+}
+
+.password-visibility-toggle.is-visible .password-eye-slash {
+    display: block;
+}
+
+.password-visibility-toggle.is-visible .password-eye-open {
+    opacity: 0.35;
+}

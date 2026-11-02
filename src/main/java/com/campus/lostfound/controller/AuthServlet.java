@@ -9,6 +9,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Locale;
 
 @WebServlet(urlPatterns = {"/login", "/register", "/logout"})
@@ -27,7 +29,18 @@ public class AuthServlet extends HttpServlet {
         String path = req.getServletPath();
         if ("/logout".equals(path)) {
             HttpSession s = req.getSession(false);
-            if (s != null) s.invalidate();
+            String expectedToken = s == null ? null : (String) s.getAttribute("csrfToken");
+            String suppliedToken = req.getParameter("csrfToken");
+
+            if (expectedToken == null || suppliedToken == null ||
+                    !MessageDigest.isEqual(
+                            expectedToken.getBytes(StandardCharsets.UTF_8),
+                            suppliedToken.getBytes(StandardCharsets.UTF_8))) {
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+
+            s.invalidate();
             resp.sendRedirect(req.getContextPath() + "/");
             return;
         }
