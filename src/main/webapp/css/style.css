@@ -1740,3 +1740,87 @@ body .container.page .panel .item-detail-photo {
 .brand-logo { width:38px; height:38px; object-fit:contain; border-radius:8px; flex:0 0 auto; }
 .brand-mark { display:none !important; }
 .auth-brand-logo { display:block; width:112px; height:112px; object-fit:contain; margin:0 auto 16px; border-radius:16px; }
+
+
+/* Listing details: consistent action button alignment */
+.item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.item-actions > form {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: auto;
+  min-width: 0;
+  margin: 0;
+}
+
+.item-actions > form > button,
+.item-actions > button,
+.item-actions > a,
+.item-actions > form > select {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  height: 38px;
+  margin: 0;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.item-actions > form > select {
+  width: 132px;
+  min-width: 132px;
+  padding: 0 28px 0 11px;
+  font-size: 13px;
+  line-height: normal;
+}
+
+.item-actions > form > button,
+.item-actions > button,
+.item-actions > a {
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .item-actions {
+    align-items: stretch;
+    gap: 9px;
+  }
+
+  .item-actions > form {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .item-actions > form > button,
+  .item-actions > form > select,
+  .item-actions > button,
+  .item-actions > a {
+    min-height: 42px;
+    height: 42px;
+  }
+
+  .item-actions > form > select {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+
+  .item-actions > form > button {
+    flex: 0 0 auto;
+  }
+
+  .item-actions > button,
+  .item-actions > a {
+    flex: 1 1 calc(50% - 9px);
+  }
+}
