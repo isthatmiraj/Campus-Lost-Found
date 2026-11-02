@@ -199,7 +199,7 @@
 
     <a class="profile-back" href="<%=ctx%>/items">← Back to CampusFind</a>
 </main>
-<script src="<%=ctx%>/js/password-visibility.js" defer></script><div id="cf-loading-overlay" hidden role="status" aria-label="Loading" aria-hidden="true">
+<script src="<%=ctx%>/js/password-visibility.js" defer></script><div id="cf-loading-overlay" hidden style="display:none" role="status" aria-label="Loading" aria-hidden="true">
   <div class="cf-loader-content">
     <div class="cf-logo-wrap">
       <img class="cf-logo" src="<%=request.getContextPath()%>/images/campusfind-loader.png" alt="">

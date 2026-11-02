@@ -7,21 +7,20 @@
   function showLoader() {
     window.clearTimeout(timer);
     overlay.hidden = false;
+    overlay.style.display = "grid";
     overlay.classList.add("cf-loading-active");
     overlay.setAttribute("aria-hidden", "false");
   }
+
   function hideLoader() {
     overlay.classList.remove("cf-loading-active");
     overlay.setAttribute("aria-hidden", "true");
-    // Keep it out of document flow even if the stylesheet is delayed or unavailable.
+    // Keep the overlay out of document flow when inactive.
+    overlay.style.display = "none";
     overlay.hidden = true;
   }
 
-  // Expose for JavaScript-driven transitions such as fetch-based Start Chat.
-  window.CampusFindLoader = {
-    show: showLoader,
-    hide: hideLoader
-  };
+  window.CampusFindLoader = { show: showLoader, hide: hideLoader };
 
   document.addEventListener("submit", function (event) {
     if (event.defaultPrevented) return;
@@ -52,6 +51,7 @@
   document.addEventListener("visibilitychange", function () {
     if (document.visibilityState === "visible") hideLoader();
   });
-  // Defensive: the overlay must never remain visible as a normal page element.
+
+  // Start hidden regardless of stylesheet loading order.
   hideLoader();
 })();
