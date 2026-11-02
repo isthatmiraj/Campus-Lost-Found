@@ -1657,3 +1657,16 @@ body .container.page .panel .item-detail-photo {
         margin-left: 2px;
     }
 }
+
+
+/* Profile dropdown: CSS-drawn chevron */
+.profile-menu-chevron {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    margin-top: -4px;
+    flex-shrink: 0;
+}

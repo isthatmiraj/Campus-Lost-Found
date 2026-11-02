@@ -38,7 +38,7 @@
                 <span class="profile-menu-name">
                     <%=WebUtil.h((String)session.getAttribute("name"))%>
                 </span>
-                <span class="profile-menu-chevron" aria-hidden="true">⌄</span>
+                <span class="profile-menu-chevron" aria-hidden="true"></span>
             </button>
 
             <div class="profile-dropdown" id="profile-dropdown">
