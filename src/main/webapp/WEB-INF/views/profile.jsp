@@ -4,8 +4,6 @@
     String ctx = request.getContextPath();
     User profileUser = (User) request.getAttribute("profileUser");
     String csrfToken = (String) session.getAttribute("csrfToken");
-    String logoPreference = WebUtil.loggedIn(request)
-        ? com.campus.lostfound.util.LogoPreferenceStore.get(WebUtil.userId(request)) : "auto";
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -71,12 +69,6 @@
         :root[data-theme="dark"] .profile-error { background: #48211f; color: #ffb5ae; }
         .profile-card .btn { width: 100%; margin-top: 5px; }
         .profile-back { display: inline-block; margin-top: 22px; color: var(--muted); }
-        .logo-choice { display:flex; gap:14px; margin:16px 0; }
-        .logo-option { flex:1; border:1px solid var(--line); border-radius:12px; padding:12px; text-align:center; cursor:pointer; background:var(--surface); }
-        .logo-option:has(input:checked) { border:2px solid var(--accent); padding:11px; }
-        .logo-option img { width:100%; max-width:125px; aspect-ratio:1; object-fit:contain; border-radius:8px; display:block; margin:0 auto 9px; }
-        .logo-option input { width:auto; margin-right:5px; }
-        .logo-option.dark-preview img { background:#111; }
         @media(max-width: 680px) {
             .profile-page { margin: 23px auto; }
             .profile-layout { grid-template-columns: 1fr; }
@@ -96,9 +88,6 @@
 
     <% if ("1".equals(request.getParameter("updated"))) { %>
         <div class="profile-message profile-success">Your profile has been updated successfully.</div>
-    <% } %>
-    <% if ("1".equals(request.getParameter("logoUpdated"))) { %>
-        <div class="profile-message profile-success">Your CampusFind logo preference has been saved.</div>
     <% } %>
     <% if ("1".equals(request.getParameter("passwordUpdated"))) { %>
         <div class="profile-message profile-success">Your password has been changed successfully.</div>
@@ -153,34 +142,6 @@
                 </label>
 
                 <button class="btn" type="submit">Save changes</button>
-            </form>
-        </section>
-
-        <section class="profile-card">
-            <h2>Appearance</h2>
-            <p class="muted">Choose a logo manually, or let CampusFind match your light or dark theme automatically.</p>
-            <form method="post" action="<%=ctx%>/profile">
-                <input type="hidden" name="csrfToken" value="<%=WebUtil.h(csrfToken)%>">
-                <input type="hidden" name="action" value="saveLogoPreference">
-                <div class="logo-choice">
-                    <label class="logo-option">
-                        <img src="<%=ctx%>/images/campusfind-logo-black.png" alt="Automatic logo preview">
-                        <input type="radio" name="logoPreference" value="auto" <%="auto".equals(logoPreference) ? "checked" : ""%>>
-                        Automatic
-                        <small>Matches light/dark mode</small>
-                    </label>
-                    <label class="logo-option">
-                        <img src="<%=ctx%>/images/campusfind-logo-black.png" alt="Black CF logo on white">
-                        <input type="radio" name="logoPreference" value="black" <%="black".equals(logoPreference) ? "checked" : ""%>>
-                        Black CF
-                    </label>
-                    <label class="logo-option dark-preview">
-                        <img src="<%=ctx%>/images/campusfind-logo-white.png" alt="White CF logo on dark">
-                        <input type="radio" name="logoPreference" value="white" <%="white".equals(logoPreference) ? "checked" : ""%>>
-                        White CF
-                    </label>
-                </div>
-                <button class="btn" type="submit">Save logo preference</button>
             </form>
         </section>
 

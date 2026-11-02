@@ -3,7 +3,6 @@ package com.campus.lostfound.controller;
 import com.campus.lostfound.model.User;
 import com.campus.lostfound.util.DataStore;
 import com.campus.lostfound.util.PasswordUtil;
-import com.campus.lostfound.util.LogoPreferenceStore;
 import com.campus.lostfound.util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -56,13 +55,7 @@ public class ProfileServlet extends HttpServlet {
         String action = value(req.getParameter("action"));
 
         try {
-            if ("saveLogoPreference".equals(action)) {
-                String preference = value(req.getParameter("logoPreference"));
-                LogoPreferenceStore.set(userId, preference);
-                resp.sendRedirect(req.getContextPath() + "/profile?logoUpdated=1");
-                return;
-
-            } else if ("updateProfile".equals(action)) {
+            if ("updateProfile".equals(action)) {
                 String name = value(req.getParameter("name"));
                 String email = value(req.getParameter("email"))
                         .toLowerCase(Locale.ROOT);
