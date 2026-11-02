@@ -16,7 +16,17 @@
         <span class="brand-mark">C</span> CampusFind
     </a>
 
-    <nav>
+    <button type="button" class="mobile-menu-toggle"
+            id="mobile-menu-toggle"
+            aria-label="Open navigation menu"
+            aria-controls="site-nav"
+            aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <nav class="site-nav" id="site-nav">
         <a href="<%=request.getContextPath()%>/items">Browse</a>
 
         <% if (WebUtil.loggedIn(request)) { %>
@@ -61,6 +71,45 @@
         </button>
     </nav>
 </header>
+
+
+<script>
+(function () {
+    var button = document.getElementById("mobile-menu-toggle");
+    var menu = document.getElementById("site-nav");
+
+    if (!button || !menu) return;
+
+    function closeMenu() {
+        menu.classList.remove("is-open");
+        button.setAttribute("aria-expanded", "false");
+        button.setAttribute("aria-label", "Open navigation menu");
+    }
+
+    button.addEventListener("click", function () {
+        var isOpen = menu.classList.toggle("is-open");
+        button.setAttribute("aria-expanded", String(isOpen));
+        button.setAttribute(
+            "aria-label",
+            isOpen ? "Close navigation menu" : "Open navigation menu"
+        );
+    });
+
+    menu.addEventListener("click", function (event) {
+        if (event.target.closest("a")) closeMenu();
+    });
+
+    document.addEventListener("click", function (event) {
+        if (!menu.contains(event.target) && !button.contains(event.target)) {
+            closeMenu();
+        }
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") closeMenu();
+    });
+})();
+</script>
 
 <script>
 (function () {

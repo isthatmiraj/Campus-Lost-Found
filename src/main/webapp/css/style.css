@@ -1399,3 +1399,98 @@ body .container.page .panel .item-detail-photo {
     border: 1px solid #26372d !important;
     border-radius: 14px;
 }
+
+
+
+/* MOBILE NAVIGATION MENU */
+.mobile-menu-toggle {
+    display: none;
+}
+
+@media (max-width: 580px) {
+    .topbar {
+        position: relative;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+    }
+
+    .mobile-menu-toggle {
+        display: flex;
+        width: 44px;
+        height: 44px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        flex-shrink: 0;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        background: var(--surface);
+        cursor: pointer;
+    }
+
+    .mobile-menu-toggle span {
+        display: block;
+        width: 21px;
+        height: 2px;
+        border-radius: 2px;
+        background: var(--text);
+    }
+
+    .site-nav {
+        display: none;
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 14px;
+        right: 14px;
+        z-index: 1000;
+        width: auto;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--surface);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
+    }
+
+    .site-nav.is-open {
+        display: flex;
+    }
+
+    .site-nav > a,
+    .site-nav .link-button {
+        display: flex;
+        width: 100%;
+        min-height: 44px;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 10px 12px;
+        border-radius: 8px;
+        text-align: left;
+    }
+
+    .site-nav .inline {
+        display: block;
+        width: 100%;
+    }
+
+    .site-nav .user-chip {
+        align-self: flex-start;
+        margin: 5px 8px;
+    }
+
+    .site-nav .theme-toggle {
+        display: inline-flex;
+        width: 44px;
+        min-height: 44px;
+        align-self: flex-start;
+        align-items: center;
+        justify-content: center;
+        margin-top: 4px;
+    }
+}
