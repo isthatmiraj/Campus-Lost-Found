@@ -1734,3 +1734,9 @@ body .container.page .panel .item-detail-photo {
 .password-visibility-toggle.is-visible .password-eye-open {
     opacity: 0.35;
 }
+
+/* CampusFind CF brand mark */
+.brand { display:inline-flex; align-items:center; gap:10px; }
+.brand-logo { width:38px; height:38px; object-fit:contain; border-radius:8px; flex:0 0 auto; }
+.brand-mark { display:none !important; }
+.auth-brand-logo { display:block; width:112px; height:112px; object-fit:contain; margin:0 auto 16px; border-radius:16px; }

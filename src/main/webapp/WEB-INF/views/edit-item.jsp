@@ -9,7 +9,7 @@ Item item = (Item) request.getAttribute("item");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Edit Listing | CampusFind</title>
-    <link rel="stylesheet" href="<%=ctx%>/css/style.css">
+    <link rel="icon" type="image/png" href="<%=ctx%>/favicon.png"><link rel="stylesheet" href="<%=ctx%>/css/style.css">
 </head>
 <body>
 <%@ include file="nav.jspf" %>

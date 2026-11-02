@@ -1,5 +1,7 @@
 
 <%@ page import="com.campus.lostfound.util.WebUtil" %>
+<%@ page import="com.campus.lostfound.util.LogoPreferenceStore" %>
+<% String cfLogo = WebUtil.loggedIn(request) ? LogoPreferenceStore.get(WebUtil.userId(request)) : "black"; %>
 <script>
 (function() {
     try {
@@ -12,8 +14,9 @@
 </script>
 
 <header class="topbar">
-    <a class="brand" href="<%=request.getContextPath()%>/items">
-        <span class="brand-mark">C</span> CampusFind
+    <a class="brand" href="<%=request.getContextPath()%>/items" aria-label="CampusFind home">
+        <img class="brand-logo" src="<%=request.getContextPath()%>/images/campusfind-logo-<%=cfLogo%>.png" alt="CF">
+        <span>CampusFind</span>
     </a>
 
     <button type="button" class="mobile-menu-toggle"
