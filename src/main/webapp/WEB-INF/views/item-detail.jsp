@@ -7,6 +7,7 @@
 
     button.addEventListener('click', async () => {
         button.disabled = true;
+        if (window.CampusFindLoader) window.CampusFindLoader.show();
         const originalText = button.textContent;
         button.textContent = 'Opening chat…';
 
@@ -38,6 +39,7 @@ if (!response.ok) {
             window.location.href = '<%=ctx%>/chat/room?conversationId='
                 + encodeURIComponent(data.conversationId);
         } catch (error) {
+            if (window.CampusFindLoader) window.CampusFindLoader.hide();
             alert('Could not start chat: ' + error.message);
             button.disabled = false;
             button.textContent = originalText;
@@ -46,12 +48,12 @@ if (!response.ok) {
 })();
 </script>
 
-<div id="cf-loading-overlay" role="status" aria-label="Loading" aria-hidden="true">
+<div id="cf-loading-overlay" hidden role="status" aria-label="Loading" aria-hidden="true">
   <div class="cf-loader-content">
     <div class="cf-logo-wrap">
-      <img class="cf-logo" src="<%=ctx%>/images/campusfind-loader.png" alt="">
+      <img class="cf-logo" src="<%=request.getContextPath()%>/images/campusfind-loader.png" alt="">
     </div>
   </div>
 </div>
-<script src="<%=ctx%>/js/campusfind-loader.js" defer></script>
+<script src="<%=request.getContextPath()%>/js/campusfind-loader.js?v=2" defer></script>
 </body></html>

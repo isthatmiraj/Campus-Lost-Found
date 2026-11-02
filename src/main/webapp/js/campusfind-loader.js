@@ -3,17 +3,26 @@
   var overlay = document.getElementById("cf-loading-overlay");
   if (!overlay) return;
   var timer = null;
+
   function showLoader() {
     window.clearTimeout(timer);
+    overlay.hidden = false;
     overlay.classList.add("cf-loading-active");
     overlay.setAttribute("aria-hidden", "false");
   }
   function hideLoader() {
     overlay.classList.remove("cf-loading-active");
     overlay.setAttribute("aria-hidden", "true");
+    // Keep it out of document flow even if the stylesheet is delayed or unavailable.
+    overlay.hidden = true;
   }
 
-  // Show after a valid form submission; native validation and confirmation dialogs remain intact.
+  // Expose for JavaScript-driven transitions such as fetch-based Start Chat.
+  window.CampusFindLoader = {
+    show: showLoader,
+    hide: hideLoader
+  };
+
   document.addEventListener("submit", function (event) {
     if (event.defaultPrevented) return;
     var form = event.target;
@@ -22,7 +31,6 @@
     showLoader();
   }, true);
 
-  // Show for normal same-tab page navigation, but not anchors, downloads or JS controls.
   document.addEventListener("click", function (event) {
     var link = event.target.closest && event.target.closest("a[href]");
     if (!link || event.defaultPrevented || event.button !== 0) return;
@@ -37,7 +45,6 @@
     showLoader();
   }, true);
 
-  // Hide if navigation is cancelled, restored from bfcache, or the user returns.
   window.addEventListener("pageshow", hideLoader);
   window.addEventListener("pagehide", function () {
     timer = window.setTimeout(hideLoader, 10000);
@@ -45,4 +52,6 @@
   document.addEventListener("visibilitychange", function () {
     if (document.visibilityState === "visible") hideLoader();
   });
+  // Defensive: the overlay must never remain visible as a normal page element.
+  hideLoader();
 })();

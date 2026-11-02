@@ -78,13 +78,13 @@ Item item = (Item) request.getAttribute("item");
         </form>
     </section>
 </main>
-<div id="cf-loading-overlay" role="status" aria-label="Loading" aria-hidden="true">
+<div id="cf-loading-overlay" hidden role="status" aria-label="Loading" aria-hidden="true">
   <div class="cf-loader-content">
     <div class="cf-logo-wrap">
-      <img class="cf-logo" src="<%=ctx%>/images/campusfind-loader.png" alt="">
+      <img class="cf-logo" src="<%=request.getContextPath()%>/images/campusfind-loader.png" alt="">
     </div>
   </div>
 </div>
-<script src="<%=ctx%>/js/campusfind-loader.js" defer></script>
+<script src="<%=request.getContextPath()%>/js/campusfind-loader.js?v=2" defer></script>
 </body>
 </html>

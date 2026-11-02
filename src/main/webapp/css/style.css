@@ -1838,19 +1838,19 @@ body .container.page .panel .item-detail-photo {
 }
 #cf-loading-overlay .cf-loader-content { display: grid; justify-items: center; }
 #cf-loading-overlay .cf-logo-wrap {
-  width: 132px; height: 132px; position: relative; display: grid; place-items: center;
+  width: 88px; height: 88px; position: relative; display: grid; place-items: center;
   animation: cf-rotate-then-beat 2.7s ease-in-out infinite;
   transform-origin: center;
 }
 #cf-loading-overlay .cf-logo-wrap::before {
-  content: ""; position: absolute; inset: -15px; border-radius: 50%;
+  content: ""; position: absolute; inset: -10px; border-radius: 50%;
   border: 2px solid transparent; border-top-color: #03c995;
   border-right-color: rgba(3,201,149,.22);
   animation: cf-ring-spin 1.25s linear infinite;
   filter: drop-shadow(0 0 7px rgba(3,201,149,.5));
 }
 #cf-loading-overlay .cf-logo-wrap::after {
-  content: ""; position: absolute; inset: -25px; border-radius: 50%;
+  content: ""; position: absolute; inset: -17px; border-radius: 50%;
   border: 1px solid rgba(3,201,149,.12);
   animation: cf-halo 2.7s ease-out infinite;
 }
@@ -1878,4 +1878,17 @@ body .container.page .panel .item-detail-photo {
   #cf-loading-overlay .cf-logo-wrap,
   #cf-loading-overlay .cf-logo-wrap::before,
   #cf-loading-overlay .cf-logo-wrap::after { animation-duration: 5s; }
+}
+
+/* CampusFind branded page-transition loader */
+#cf-loading-overlay[hidden] { display: none !important; }
+#cf-loading-overlay:not([hidden]) {
+  position: fixed; inset: 0; z-index: 99999;
+  display: grid; place-items: center;
+  background: rgba(3, 7, 5, .91);
+  backdrop-filter: blur(9px);
+}
+#cf-loading-overlay .cf-logo-wrap {
+  width: 88px; height: 88px; position: relative;
+  display: grid; place-items: center;
 }
