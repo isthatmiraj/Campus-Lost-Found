@@ -38,25 +38,43 @@
     canvas.addEventListener("pointerdown", function (e) {
       var p = point(e);
       var handle = hitHandle(p);
-      if (!handle) return;
-      mode = handle;
+      if (handle) {
+        mode = handle;
+      } else if (p.x >= crop.x && p.x <= crop.x + crop.size && p.y >= crop.y && p.y <= crop.y + crop.size) {
+        mode = "move";
+      } else {
+        return;
+      }
       pointerStart = { x: p.x, y: p.y, crop: Object.assign({}, crop) };
+      canvas.classList.add("is-dragging");
       canvas.setPointerCapture(e.pointerId);
     });
     canvas.addEventListener("pointermove", function (e) {
       if (!mode || !pointerStart) return;
       var p = point(e), dx = p.x - pointerStart.x, dy = p.y - pointerStart.y;
       var c = pointerStart.crop;
-      var d = dimensions();
-      var maxCrop = Math.min(600, 600 * Math.min(d.w, d.h) / Math.max(d.w, d.h));
-      var size = Math.max(Math.min(100, maxCrop), Math.min(maxCrop, c.size + (mode.includes("b") ? dx : -dx) / 2 + (mode.includes("r") ? dy : -dy) / 2));
-      crop = { x: Math.max(0, Math.min(600 - size, c.x + (mode.includes("l") ? c.size - size : 0))),
-               y: Math.max(0, Math.min(600 - size, c.y + (mode.includes("t") ? c.size - size : 0))),
-               size: size };
+      var bounds = imageBounds();
+      if (mode === "move") {
+        crop = {
+          x: Math.max(bounds.x, Math.min(bounds.x + bounds.w - c.size, c.x + dx)),
+          y: Math.max(bounds.y, Math.min(bounds.y + bounds.h - c.size, c.y + dy)),
+          size: c.size
+        };
+      } else {
+        var maxCrop = Math.min(bounds.w, bounds.h);
+        var size = Math.max(Math.min(100, maxCrop), Math.min(maxCrop, c.size + (mode.includes("b") ? dy : -dy) / 2 + (mode.includes("r") ? dx : -dx) / 2));
+        var nextX = c.x + (mode.includes("l") ? c.size - size : 0);
+        var nextY = c.y + (mode.includes("t") ? c.size - size : 0);
+        crop = {
+          x: Math.max(bounds.x, Math.min(bounds.x + bounds.w - size, nextX)),
+          y: Math.max(bounds.y, Math.min(bounds.y + bounds.h - size, nextY)),
+          size: size
+        };
+      }
       render();
     });
     ["pointerup", "pointercancel", "lostpointercapture"].forEach(function (name) {
-      canvas.addEventListener(name, function () { mode = null; pointerStart = null; });
+      canvas.addEventListener(name, function () { mode = null; pointerStart = null; canvas.classList.remove("is-dragging"); });
     });
     document.addEventListener("keydown", function (e) { if (!modal.hidden && e.key === "Escape") cancel(); });
   }
@@ -77,6 +95,12 @@
   function dimensions() {
     var swap = rotation % 2 === 1;
     return { w: swap ? image.naturalHeight : image.naturalWidth, h: swap ? image.naturalWidth : image.naturalHeight };
+  }
+  function imageBounds() {
+    var d = dimensions();
+    var scale = Math.min(600 / d.w, 600 / d.h);
+    var w = d.w * scale, h = d.h * scale;
+    return { x: (600 - w) / 2, y: (600 - h) / 2, w: w, h: h };
   }
   function drawImage(c, targetSize) {
     var d = dimensions();
@@ -127,7 +151,7 @@
       ctx.fillStyle = "#fff"; ctx.fillRect(p[0]-6,p[1]-6,12,12);
     });
     ctx.restore();
-    status.textContent = "Square crop · drag a corner to resize";
+    status.textContent = "Drag inside the square to move it · drag a corner to resize";
   }
   function open(file) {
     originalFile = file;
