@@ -2069,3 +2069,44 @@ body.cf-photo-editor-open { overflow:hidden; }
   margin: 12px 0 !important;
   box-sizing: border-box !important;
 }
+
+
+/* Hard containment for both the crop editor canvas and the final thumbnail.
+   These rules intentionally override generic site-wide img/canvas sizing. */
+.cf-photo-editor__dialog {
+  box-sizing: border-box !important;
+  width: min(100%, 560px) !important;
+  max-width: 560px !important;
+  min-width: 0 !important;
+}
+.cf-photo-editor__stage.cf-crop-stage {
+  display: block !important;
+  position: relative !important;
+  width: min(100%, 460px) !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+.cf-photo-editor__stage.cf-crop-stage > canvas {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  box-sizing: border-box !important;
+}
+#photo-preview.cf-photo-final-preview {
+  display: block !important;
+  width: min(100%, 280px) !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: 280px !important;
+  object-fit: contain !important;
+  box-sizing: border-box !important;
+  margin: 12px 0 !important;
+}

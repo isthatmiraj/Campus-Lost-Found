@@ -202,8 +202,21 @@
       var dt = new DataTransfer(); dt.items.add(edited); input.files = dt.files;
       modal.hidden = true; document.body.classList.remove("cf-photo-editor-open");
       var old = document.getElementById("photo-preview"); if (old) old.remove();
-      var img = document.createElement("img"); img.id = "photo-preview"; img.alt = "Cropped photo preview";
-      img.src = URL.createObjectURL(edited); img.className = "cf-photo-final-preview";
+      var img = document.createElement("img");
+      img.id = "photo-preview";
+      img.alt = "Cropped photo preview";
+      img.src = URL.createObjectURL(edited);
+      img.className = "cf-photo-final-preview";
+      // Apply hard limits inline as well, so broad site-wide img rules cannot
+      // make the generated square preview expand beyond the form.
+      img.style.setProperty("display", "block", "important");
+      img.style.setProperty("width", "min(100%, 280px)", "important");
+      img.style.setProperty("max-width", "100%", "important");
+      img.style.setProperty("height", "auto", "important");
+      img.style.setProperty("max-height", "280px", "important");
+      img.style.setProperty("object-fit", "contain", "important");
+      img.style.setProperty("box-sizing", "border-box", "important");
+      img.style.setProperty("margin", "12px 0", "important");
       input.insertAdjacentElement("afterend", img);
       cleanup();
     }, "image/jpeg", 0.9);
