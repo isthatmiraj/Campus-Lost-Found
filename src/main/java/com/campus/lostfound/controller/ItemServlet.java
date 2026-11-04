@@ -247,11 +247,12 @@ public class ItemServlet extends HttpServlet {
 
     private String savePhoto(Part part) throws IOException, ServletException {
         if (part == null || part.getSize() == 0) return "";
-        if (part.getSize() > 5L * 1024 * 1024) throw new IllegalArgumentException("Photo must be 5 MB or smaller.");
+        if (part.getSize() > 20L * 1024 * 1024) throw new IllegalArgumentException("Photo must be 20 MB or smaller.");
         String contentType = part.getContentType() == null ? "" : part.getContentType().toLowerCase(Locale.ROOT);
         String extension;
         if ("image/jpeg".equals(contentType) || "image/jpg".equals(contentType)) extension = ".jpg";
-        else if ("image/png".equals(contentType)) extension = ".png";\n        else if ("image/webp".equals(contentType)) extension = ".webp";
+        else if ("image/png".equals(contentType)) extension = ".png";
+        else if ("image/webp".equals(contentType)) extension = ".webp";
         else throw new IllegalArgumentException("Please upload a JPG, PNG or WebP image.");
 
         byte[] bytes;
