@@ -2054,3 +2054,18 @@ body.cf-photo-editor-open { overflow:hidden; }
 /* Drag the crop frame itself; corner handles remain available for resizing. */
 .cf-crop-stage canvas { cursor:grab; }
 .cf-crop-stage canvas.is-dragging { cursor:grabbing; }
+
+
+/* Keep the post-crop thumbnail contained inside the upload form.
+   The ID selector and !important override broad/global image rules. */
+#photo-preview.cf-photo-final-preview {
+  display: block !important;
+  width: min(100%, 360px) !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: 260px !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  margin: 12px 0 !important;
+  box-sizing: border-box !important;
+}
