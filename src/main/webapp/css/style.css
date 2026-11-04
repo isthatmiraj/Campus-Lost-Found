@@ -2046,3 +2046,8 @@ body.cf-photo-editor-open { overflow:hidden; }
   /* Rule-of-thirds guide contained inside the square crop frame. */
   border: 1px solid rgba(255,255,255,.42);
 }
+
+
+/* Fixed-image square crop selector with draggable corner handles (no image panning). */
+.cf-crop-stage { width:min(100%, 460px); aspect-ratio:1/1; margin-inline:auto; }
+.cf-crop-stage canvas { width:100%; height:100%; display:block; touch-action:none; cursor:crosshair; }
