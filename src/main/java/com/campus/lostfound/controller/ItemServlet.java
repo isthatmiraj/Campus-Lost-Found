@@ -23,7 +23,7 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 @WebServlet(urlPatterns = {"/items", "/report-item", "/edit-item"})
-@MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 5 * 1024 * 1024, maxRequestSize = 7 * 1024 * 1024)
+@MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 20 * 1024 * 1024, maxRequestSize = 22 * 1024 * 1024)
 public class ItemServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -251,8 +251,8 @@ public class ItemServlet extends HttpServlet {
         String contentType = part.getContentType() == null ? "" : part.getContentType().toLowerCase(Locale.ROOT);
         String extension;
         if ("image/jpeg".equals(contentType) || "image/jpg".equals(contentType)) extension = ".jpg";
-        else if ("image/png".equals(contentType)) extension = ".png";
-        else throw new IllegalArgumentException("Please upload a JPG or PNG image.");
+        else if ("image/png".equals(contentType)) extension = ".png";\n        else if ("image/webp".equals(contentType)) extension = ".webp";
+        else throw new IllegalArgumentException("Please upload a JPG, PNG or WebP image.");
 
         byte[] bytes;
         try (InputStream in = part.getInputStream()) {
@@ -262,7 +262,7 @@ public class ItemServlet extends HttpServlet {
             BufferedImage image = ImageIO.read(in);
             if (image == null || image.getWidth() < 1 || image.getHeight() < 1 ||
                     image.getWidth() > 8000 || image.getHeight() > 8000) {
-                throw new IllegalArgumentException("The uploaded file is not a valid JPG or PNG image.");
+                throw new IllegalArgumentException("The uploaded file is not a valid JPG, PNG or WebP image.");
             }
         }
         String fileName = "campusfind-" + UUID.randomUUID() + extension;

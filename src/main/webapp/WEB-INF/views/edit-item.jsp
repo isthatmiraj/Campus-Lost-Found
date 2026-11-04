@@ -68,8 +68,8 @@ Item item = (Item) request.getAttribute("item");
             <% } %>
 
             <label for="photo">Replace photo (optional)</label>
-            <input id="photo" name="photo" type="file" accept="image/jpeg,image/png">
-            <small>Leave this empty to keep the current photo. Maximum upload size: 5 MB.</small>
+            <input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp">
+            <small>Leave this empty to keep the current photo. Phone photos up to 20 MB are supported; the editor compresses them before upload.</small>
 
             <div class="form-actions">
                 <button class="btn" type="submit">Submit changes for approval</button>

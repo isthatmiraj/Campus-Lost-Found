@@ -166,7 +166,11 @@
       render();
       modal.querySelector('[data-action="apply"]').focus();
     };
-    image.onerror = function () { alert("Could not open this image."); input.value = ""; };
+    image.onerror = function () {
+      alert("This image format could not be opened by your browser. Try saving it as JPG or PNG and upload again.");
+      input.value = "";
+      cleanup();
+    };
     image.src = objectUrl;
   }
   function cancel() {
@@ -227,8 +231,27 @@
     var file = input.files && input.files[0];
     var old = document.getElementById("photo-preview"); if (old) old.remove();
     if (!file) return;
-    if (!["image/jpeg", "image/png"].includes(file.type)) { input.value = ""; alert("Choose a JPG or PNG image."); return; }
-    if (file.size > MAX_FILE_SIZE) { input.value = ""; alert("Image must be 5 MB or smaller."); return; }
+    var mime = (file.type || "").toLowerCase();
+    var extension = (file.name.match(/\\.([^.]+)$/) || ["", ""])[1].toLowerCase();
+    // Some mobile browsers provide an empty MIME type; use the filename as a
+    // fallback, then let the browser's image decoder verify that it is readable.
+    if (!mime) {
+      if (extension === "jpg" || extension === "jpeg") mime = "image/jpeg";
+      else if (extension === "png") mime = "image/png";
+      else if (extension === "webp") mime = "image/webp";
+    }
+    if (!["image/jpeg", "image/png", "image/webp"].includes(mime)) {
+      input.value = "";
+      alert("Please choose a JPG, PNG or WebP image. HEIC/HEIF photos need to be converted to JPG first.");
+      return;
+    }
+    // Phone camera originals can be much larger than 5 MB. They are resized
+    // and exported as a compressed 1080x1080 JPEG by the crop editor before upload.
+    if (file.size > 20 * 1024 * 1024) {
+      input.value = "";
+      alert("This photo is larger than 20 MB. Please choose a smaller image.");
+      return;
+    }
     open(file);
   });
 })();
