@@ -25,7 +25,7 @@
         '<div class="cf-photo-editor__header"><div><p class="eyebrow">PHOTO EDITOR</p><h2 id="cf-photo-editor-title">Adjust your photo</h2></div>' +
         '<button type="button" class="cf-photo-editor__close" data-action="cancel" aria-label="Close editor">×</button></div>' +
         '<p class="cf-photo-editor__hint">Drag the photo to reposition it. Use zoom and rotate to get the crop right.</p>' +
-        '<div class="cf-photo-editor__stage"><canvas width="720" height="540" aria-label="Photo crop preview"></canvas></div>' +
+        '<div class="cf-photo-editor__stage"><canvas width="720" height="540" aria-label="Photo crop preview"></canvas><div class="cf-photo-editor__grid" aria-hidden="true"></div></div>' +
         '<div class="cf-photo-editor__tools"><button type="button" class="btn btn-light" data-action="left">↶ Rotate left</button>' +
         '<button type="button" class="btn btn-light" data-action="right">↷ Rotate right</button></div>' +
         '<label class="cf-photo-editor__zoom">Zoom <input type="range" min="1" max="3" step="0.01" value="1"></label>' +
