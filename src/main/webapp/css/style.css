@@ -2027,3 +2027,22 @@ body.cf-photo-editor-open { overflow:hidden; }
       transparent calc(66.666% + .5px));
   opacity: .8;
 }
+
+
+/* WhatsApp-style square crop frame */
+.cf-photo-editor__stage {
+  width: min(100%, 460px);
+  aspect-ratio: 1 / 1;
+  margin-inline: auto;
+  border: 2px solid rgba(255,255,255,.9);
+  box-shadow: 0 0 0 999px rgba(0,0,0,.18);
+}
+.cf-photo-editor__stage canvas {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+}
+.cf-photo-editor__grid {
+  /* Rule-of-thirds guide contained inside the square crop frame. */
+  border: 1px solid rgba(255,255,255,.42);
+}
