@@ -4,6 +4,7 @@ import com.campus.lostfound.model.User;
 import com.campus.lostfound.util.DataStore;
 import com.campus.lostfound.util.PasswordUtil;
 import com.campus.lostfound.util.WebUtil;
+import com.campus.lostfound.util.RememberMeUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
