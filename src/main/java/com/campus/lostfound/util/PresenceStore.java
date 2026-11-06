@@ -65,6 +65,41 @@ public final class PresenceStore {
         }
     }
 
+    public static java.util.Map<String, java.util.Map<String, String>> adminStatus() throws IOException {
+        java.util.Map<String, java.util.Map<String, String>> result = new java.util.LinkedHashMap<>();
+        String sql = "WITH presence AS (" +
+                " SELECT user_id, " +
+                " MIN(started_at) FILTER (WHERE last_seen >= CURRENT_TIMESTAMP - INTERVAL '2 minutes') AS online_since, " +
+                " MAX(last_seen) AS last_seen " +
+                " FROM campus_user_presence GROUP BY user_id" +
+                "), remembered AS (" +
+                " SELECT user_id, MIN(login_started_at) AS remembered_since, MAX(expires_at) AS remember_expires_at " +
+                " FROM campus_user_tokens WHERE expires_at > CURRENT_TIMESTAMP GROUP BY user_id" +
+                ") " +
+                "SELECT u.id, p.online_since, p.last_seen, r.remembered_since, r.remember_expires_at " +
+                "FROM campus_users u LEFT JOIN presence p ON p.user_id=u.id " +
+                "LEFT JOIN remembered r ON r.user_id=u.id";
+        try (Connection c = ChatDatabase.getConnection();
+             PreparedStatement p = c.prepareStatement(sql);
+             ResultSet r = p.executeQuery()) {
+            while (r.next()) {
+                java.util.Map<String, String> status = new java.util.LinkedHashMap<>();
+                status.put("onlineSince", timestampString(r.getTimestamp("online_since")));
+                status.put("lastSeen", timestampString(r.getTimestamp("last_seen")));
+                status.put("rememberedSince", timestampString(r.getTimestamp("remembered_since")));
+                status.put("rememberExpiresAt", timestampString(r.getTimestamp("remember_expires_at")));
+                result.put(r.getString("id"), status);
+            }
+        } catch (SQLException e) {
+            throw new IOException("Unable to read admin user status", e);
+        }
+        return result;
+    }
+
+    private static String timestampString(java.sql.Timestamp value) {
+        return value == null ? null : value.toInstant().toString();
+    }
+
     public static Set<String> onlineUserIds() throws IOException {
         Set<String> ids = new LinkedHashSet<>();
         try (Connection c = ChatDatabase.getConnection();

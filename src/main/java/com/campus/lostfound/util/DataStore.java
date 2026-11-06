@@ -505,14 +505,21 @@ public final class DataStore {
 
 
     public synchronized void saveUserToken(String userId, String tokenHash, java.time.LocalDateTime expiresAt) throws IOException {
+        saveUserToken(userId, tokenHash, expiresAt, java.time.LocalDateTime.now());
+    }
+
+    public synchronized void saveUserToken(String userId, String tokenHash,
+                                           java.time.LocalDateTime expiresAt,
+                                           java.time.LocalDateTime loginStartedAt) throws IOException {
         String id = UUID.randomUUID().toString();
         try (Connection c = ChatDatabase.getConnection();
              PreparedStatement p = c.prepareStatement(
-                 "INSERT INTO campus_user_tokens (id, user_id, token_hash, expires_at) VALUES (?, ?, ?, ?)")) {
+                 "INSERT INTO campus_user_tokens (id, user_id, token_hash, expires_at, login_started_at) VALUES (?, ?, ?, ?, ?)")) {
             p.setString(1, id);
             p.setString(2, userId);
             p.setString(3, tokenHash);
             p.setTimestamp(4, Timestamp.valueOf(expiresAt));
+            p.setTimestamp(5, Timestamp.valueOf(loginStartedAt == null ? java.time.LocalDateTime.now() : loginStartedAt));
             p.executeUpdate();
         } catch (SQLException e) {
             throw io(e);
@@ -522,7 +529,7 @@ public final class DataStore {
     public synchronized com.campus.lostfound.model.UserToken findUserTokenByHash(String tokenHash) throws IOException {
         try (Connection c = ChatDatabase.getConnection();
              PreparedStatement p = c.prepareStatement(
-                 "SELECT id, user_id, token_hash, created_at, expires_at FROM campus_user_tokens WHERE token_hash = ? LIMIT 1")) {
+                 "SELECT id, user_id, token_hash, created_at, login_started_at, expires_at FROM campus_user_tokens WHERE token_hash = ? LIMIT 1")) {
             p.setString(1, tokenHash);
             try (ResultSet r = p.executeQuery()) {
                 if (r.next()) {
@@ -531,6 +538,7 @@ public final class DataStore {
                         r.getString("user_id"),
                         r.getString("token_hash"),
                         r.getTimestamp("created_at").toLocalDateTime(),
+                        r.getTimestamp("login_started_at").toLocalDateTime(),
                         r.getTimestamp("expires_at").toLocalDateTime()
                     );
                 }

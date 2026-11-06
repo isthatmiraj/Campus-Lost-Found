@@ -126,19 +126,30 @@ public final class DatabaseSchema {
             user_id VARCHAR(64) NOT NULL,
             token_hash VARCHAR(64) NOT NULL UNIQUE,
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            login_started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             expires_at TIMESTAMP NOT NULL,
             CONSTRAINT fk_campus_user_token FOREIGN KEY (user_id) REFERENCES campus_users(id) ON DELETE CASCADE
         )
         """,
         "CREATE INDEX IF NOT EXISTS campus_user_tokens_hash_idx ON campus_user_tokens(token_hash)",
         "CREATE INDEX IF NOT EXISTS campus_user_tokens_user_idx ON campus_user_tokens(user_id)",
+        "ALTER TABLE campus_user_tokens ADD COLUMN IF NOT EXISTS login_started_at TIMESTAMP",
+        "UPDATE campus_user_tokens SET login_started_at = created_at WHERE login_started_at IS NULL",
+        "ALTER TABLE campus_user_tokens ALTER COLUMN login_started_at SET DEFAULT CURRENT_TIMESTAMP",
+        "ALTER TABLE campus_user_tokens ALTER COLUMN login_started_at SET NOT NULL",
+        "CREATE INDEX IF NOT EXISTS campus_user_tokens_user_expiry_idx ON campus_user_tokens(user_id, expires_at)",
         """
         CREATE TABLE IF NOT EXISTS campus_user_presence (
             session_key_hash VARCHAR(64) PRIMARY KEY,
             user_id VARCHAR(64) NOT NULL REFERENCES campus_users(id) ON DELETE CASCADE,
+            started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             last_seen TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
         """,
+        "ALTER TABLE campus_user_presence ADD COLUMN IF NOT EXISTS started_at TIMESTAMP",
+        "UPDATE campus_user_presence SET started_at = last_seen WHERE started_at IS NULL",
+        "ALTER TABLE campus_user_presence ALTER COLUMN started_at SET DEFAULT CURRENT_TIMESTAMP",
+        "ALTER TABLE campus_user_presence ALTER COLUMN started_at SET NOT NULL",
         "CREATE INDEX IF NOT EXISTS campus_user_presence_user_seen_idx ON campus_user_presence(user_id, last_seen)",
         "CREATE INDEX IF NOT EXISTS campus_user_presence_seen_idx ON campus_user_presence(last_seen)"
     );

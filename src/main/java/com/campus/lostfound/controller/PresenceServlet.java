@@ -62,15 +62,24 @@ public class PresenceServlet extends HttpServlet {
         }
 
         try {
-            Set<String> onlineIds = PresenceStore.onlineUserIds();
-            StringBuilder json = new StringBuilder("{\"onlineUserIds\":[");
-            boolean first = true;
-            for (String id : onlineIds) {
-                if (!first) json.append(',');
-                first = false;
-                json.append('"').append(jsonEscape(id)).append('"');
+            java.util.Map<String, java.util.Map<String, String>> statuses = PresenceStore.adminStatus();
+            StringBuilder json = new StringBuilder("{\"users\":{");
+            boolean firstUser = true;
+            for (java.util.Map.Entry<String, java.util.Map<String, String>> entry : statuses.entrySet()) {
+                if (!firstUser) json.append(',');
+                firstUser = false;
+                json.append('\"').append(jsonEscape(entry.getKey())).append("\":{");
+                boolean firstField = true;
+                for (java.util.Map.Entry<String, String> field : entry.getValue().entrySet()) {
+                    if (!firstField) json.append(',');
+                    firstField = false;
+                    json.append('\"').append(jsonEscape(field.getKey())).append("\":");
+                    if (field.getValue() == null) json.append("null");
+                    else json.append('\"').append(jsonEscape(field.getValue())).append('\"');
+                }
+                json.append('}');
             }
-            json.append("]}");
+            json.append("}}");
             resp.setContentType("application/json");
             resp.setCharacterEncoding("UTF-8");
             resp.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");

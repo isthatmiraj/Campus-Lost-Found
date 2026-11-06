@@ -51,7 +51,7 @@ public class SessionValidationFilter implements Filter {
                                 DataStore.get().deleteUserTokenByHash(tokenHash);
                                 String newToken = RememberMeUtil.generateToken();
                                 String newTokenHash = RememberMeUtil.hashToken(newToken);
-                                DataStore.get().saveUserToken(user.getId(), newTokenHash, LocalDateTime.now().plusDays(30));
+                                DataStore.get().saveUserToken(user.getId(), newTokenHash, LocalDateTime.now().plusDays(30), userToken.getLoginStartedAt());
                                 RememberMeUtil.setRememberMeCookie(req, resp, newToken);
                             } else {
                                 DataStore.get().deleteUserTokenByHash(tokenHash);

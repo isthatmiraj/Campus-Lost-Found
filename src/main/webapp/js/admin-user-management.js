@@ -36,17 +36,52 @@
         if (count) count.textContent = visible + " of " + rows.length + " users";
     }
 
-    function setPresence(id, online) {
+    function formatDate(value) {
+        if (!value) return "";
+        var date = new Date(value);
+        if (isNaN(date.getTime())) return "";
+        return date.toLocaleString([], {
+            day: "numeric", month: "short", year: "numeric",
+            hour: "numeric", minute: "2-digit"
+        });
+    }
+
+    function setPresence(id, status) {
         var el = null;
         table.querySelectorAll("[data-user-presence]").forEach(function (candidate) {
             if (candidate.getAttribute("data-user-presence") === id) el = candidate;
         });
         if (!el) return;
-        el.classList.remove("is-checking", "is-online", "is-offline");
-        el.classList.add(online ? "is-online" : "is-offline");
+
+        var online = !!status.onlineSince;
+        var remembered = !!status.rememberedSince;
+        el.classList.remove("is-checking", "is-online", "is-offline", "is-remembered");
         var label = el.querySelector(".user-presence-label");
-        if (label) label.textContent = online ? "Online" : "Offline";
-        el.setAttribute("aria-label", online ? "Online" : "Offline");
+        var meta = null;
+        table.querySelectorAll("[data-user-presence-meta]").forEach(function (candidate) {
+            if (candidate.getAttribute("data-user-presence-meta") === id) meta = candidate;
+        });
+        var detail = "";
+
+        if (online) {
+            el.classList.add("is-online");
+            if (label) label.textContent = "Online";
+            detail = "Online since " + (formatDate(status.onlineSince) || "recently");
+            if (remembered) detail += " · Remembered on device";
+            el.setAttribute("aria-label", "Online");
+        } else if (remembered) {
+            el.classList.add("is-remembered");
+            if (label) label.textContent = "Remembered";
+            detail = "Remembered login since " + (formatDate(status.rememberedSince) || "unknown");
+            if (status.rememberExpiresAt) detail += " · Expires " + formatDate(status.rememberExpiresAt);
+            el.setAttribute("aria-label", "Offline with a valid remembered login");
+        } else {
+            el.classList.add("is-offline");
+            if (label) label.textContent = "Offline";
+            detail = status.lastSeen ? "Last active " + formatDate(status.lastSeen) : "No recent login recorded";
+            el.setAttribute("aria-label", "Offline");
+        }
+        if (meta) meta.textContent = detail;
     }
 
     function refreshPresence() {
@@ -62,12 +97,12 @@
             if (!response.ok) throw new Error("Presence request failed");
             return response.json();
         }).then(function (data) {
-            var online = new Set(data.onlineUserIds || []);
+            var users = data.users || {};
             rows.forEach(function (row) {
                 var marker = row.querySelector("[data-user-presence]");
                 if (marker) {
                     var id = marker.getAttribute("data-user-presence");
-                    setPresence(id, online.has(id));
+                    setPresence(id, users[id] || {});
                 }
             });
         }).catch(function () {
