@@ -568,4 +568,16 @@ public final class DataStore {
             throw io(e);
         }
     }
+
+    public synchronized void deleteAllUserTokens(String userId) throws IOException {
+        try (Connection c = ChatDatabase.getConnection();
+             PreparedStatement ps = c.prepareStatement(
+                 "DELETE FROM campus_user_tokens WHERE user_id = ?")) {
+            ps.setString(1, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw io(e);
+        }
+    }
+
 }

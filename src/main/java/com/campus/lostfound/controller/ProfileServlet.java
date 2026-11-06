@@ -56,14 +56,18 @@ public class ProfileServlet extends HttpServlet {
 
         try {
             if ("forgetThisDevice".equals(action)) {
-                String rawToken = com.campus.lostfound.util.RememberMeUtil.getRememberMeToken(req);
-                if (rawToken != null && !rawToken.isBlank()) {
-                    String tokenHash = com.campus.lostfound.util.RememberMeUtil.hashToken(rawToken);
-                    com.campus.lostfound.model.UserToken rememberedToken =
-                            DataStore.get().findUserTokenByHash(tokenHash);
-                    // Revoke only the remembered login belonging to this signed-in account.
-                    if (rememberedToken != null && userId.equals(rememberedToken.getUserId())) {
-                        DataStore.get().deleteUserTokenByHash(tokenHash);
+                if (WebUtil.admin(req)) {
+                    // Admin forget action: clear every remembered login for this admin account.
+                    DataStore.get().deleteAllUserTokens(userId);
+                } else {
+                    String rawToken = com.campus.lostfound.util.RememberMeUtil.getRememberMeToken(req);
+                    if (rawToken != null && !rawToken.isBlank()) {
+                        String tokenHash = com.campus.lostfound.util.RememberMeUtil.hashToken(rawToken);
+                        com.campus.lostfound.model.UserToken rememberedToken =
+                                DataStore.get().findUserTokenByHash(tokenHash);
+                        if (rememberedToken != null && userId.equals(rememberedToken.getUserId())) {
+                            DataStore.get().deleteUserTokenByHash(tokenHash);
+                        }
                     }
                 }
                 com.campus.lostfound.util.RememberMeUtil.clearRememberMeCookie(req, resp);
