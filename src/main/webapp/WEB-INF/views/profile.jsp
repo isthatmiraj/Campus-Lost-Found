@@ -195,8 +195,6 @@
             </form>
         </section>
 
-
-
         <section class="profile-card">
             <h2>Account information</h2>
             <p class="muted">Your CampusFind account details.</p>
