@@ -1,4 +1,13 @@
-<%@ page import="java.util.List,com.campus.lostfound.model.UserToken,com.campus.lostfound.util.WebUtil" %>
+
+<%!
+    private String formatDeviceDate(java.time.LocalDateTime date) {
+        if (date == null) return "Never";
+        return date.format(
+            java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss a")
+        );
+    }
+%>
+\n<%@ page import="java.util.List,com.campus.lostfound.model.UserToken,com.campus.lostfound.util.WebUtil" %>
 <%
     List<UserToken> rememberedDevices =
         (List<UserToken>) request.getAttribute("rememberedDevices");
