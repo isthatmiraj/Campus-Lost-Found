@@ -65,6 +65,122 @@
     .cfind-device { align-items:flex-start; }
     .cfind-device-actions { width:100%; justify-content:flex-end; }
 }
+
+/* CampusFind dark theme support */
+body.dark-mode .cfind-devices-card,
+[data-theme="dark"] .cfind-devices-card,
+.dark-mode .cfind-devices-card,
+.theme-dark .cfind-devices-card {
+    background: #171923 !important;
+    color: #f1f3f8 !important;
+    border-color: #34394a !important;
+}
+
+body.dark-mode .cfind-device,
+[data-theme="dark"] .cfind-device,
+.dark-mode .cfind-device,
+.theme-dark .cfind-device {
+    background: #202432 !important;
+    border-color: #383e50 !important;
+    color: #f1f3f8 !important;
+}
+
+body.dark-mode .cfind-device-icon,
+[data-theme="dark"] .cfind-device-icon,
+.dark-mode .cfind-device-icon,
+.theme-dark .cfind-device-icon {
+    background: #30374a !important;
+}
+
+body.dark-mode .cfind-devices-empty,
+[data-theme="dark"] .cfind-devices-empty,
+.dark-mode .cfind-devices-empty,
+.theme-dark .cfind-devices-empty {
+    border-color: #454b5e !important;
+}
+
+body.dark-mode .cfind-devices-muted,
+[data-theme="dark"] .cfind-devices-muted,
+.dark-mode .cfind-devices-muted,
+.theme-dark .cfind-devices-muted {
+    color: #b8c0d2 !important;
+}
+
+body.dark-mode .cfind-device-button,
+[data-theme="dark"] .cfind-device-button,
+.dark-mode .cfind-device-button,
+.theme-dark .cfind-device-button {
+    color: #ff8585 !important;
+    border-color: #8d4545 !important;
+}
+
+
+/* CampusFind theme-aware remembered device cards */
+:is(html, body, [data-theme="dark"], [data-bs-theme="dark"]).dark
+    .cfind-devices-card,
+.dark-mode .cfind-devices-card,
+.theme-dark .cfind-devices-card,
+[data-theme="dark"] .cfind-devices-card,
+[data-bs-theme="dark"] .cfind-devices-card {
+    background: #191d29 !important;
+    color: #edf0f7 !important;
+    border-color: #343b4d !important;
+}
+
+.dark-mode .cfind-device,
+.theme-dark .cfind-device,
+.dark .cfind-device,
+[data-theme="dark"] .cfind-device,
+[data-bs-theme="dark"] .cfind-device {
+    background: #222838 !important;
+    color: #edf0f7 !important;
+    border-color: #394256 !important;
+}
+
+.dark-mode .cfind-device-icon,
+.theme-dark .cfind-device-icon,
+.dark .cfind-device-icon,
+[data-theme="dark"] .cfind-device-icon,
+[data-bs-theme="dark"] .cfind-device-icon {
+    background: #30394e !important;
+}
+
+.dark-mode .cfind-devices-empty,
+.theme-dark .cfind-devices-empty,
+.dark .cfind-devices-empty,
+[data-theme="dark"] .cfind-devices-empty,
+[data-bs-theme="dark"] .cfind-devices-empty {
+    border-color: #414b61 !important;
+    color: #e5e9f2 !important;
+}
+
+.dark-mode .cfind-devices-muted,
+.theme-dark .cfind-devices-muted,
+.dark .cfind-devices-muted,
+[data-theme="dark"] .cfind-devices-muted,
+[data-bs-theme="dark"] .cfind-devices-muted {
+    color: #b8c2d5 !important;
+}
+
+/* Also cover the original Remember Me card if it appears elsewhere */
+.dark-mode .profile-remember-card,
+.theme-dark .profile-remember-card,
+.dark .profile-remember-card,
+[data-theme="dark"] .profile-remember-card,
+[data-bs-theme="dark"] .profile-remember-card {
+    background: #191d29 !important;
+    color: #edf0f7 !important;
+    border-color: #343b4d !important;
+}
+
+.dark-mode .profile-remember-card .muted,
+.theme-dark .profile-remember-card .muted,
+.dark .profile-remember-card .muted,
+[data-theme="dark"] .profile-remember-card .muted,
+[data-bs-theme="dark"] .profile-remember-card .muted {
+    color: #b8c2d5 !important;
+}
+
 </style>
 
 <section class="cfind-devices-wrap">

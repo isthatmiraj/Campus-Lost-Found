@@ -194,20 +194,7 @@
             </form>
         </section>
 
-        <section class="profile-card profile-remember-card">
-            <h2>Remember this device</h2>
-            <% if (rememberMeActive) { %>
-                <p class="muted">This browser has a valid Remember Me login. You can stop automatic sign-in on this device without logging out of your current session.</p>
-                <form method="post" action="<%=ctx%>/profile"
-                      onsubmit="return confirm('Forget this device? You will stay signed in here, but automatic sign-in will be disabled after you log out or your session expires.');">
-                    <input type="hidden" name="csrfToken" value="<%=WebUtil.h(csrfToken)%>">
-                    <input type="hidden" name="action" value="forgetThisDevice">
-                    <button class="btn profile-forget-btn" type="submit">Forget this device</button>
-                </form>
-            <% } else { %>
-                <p class="muted">Remember Me is not currently enabled on this browser. Select “Remember me for 30 days” the next time you log in to enable it.</p>
-            <% } %>
-        </section>
+
 
         <section class="profile-card">
             <h2>Account information</h2>
