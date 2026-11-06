@@ -4,7 +4,6 @@ import com.campus.lostfound.model.User;
 import com.campus.lostfound.util.DataStore;
 import com.campus.lostfound.util.PasswordUtil;
 import com.campus.lostfound.util.WebUtil;
-import com.campus.lostfound.util.RememberMeUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -58,9 +57,6 @@ public class AuthServlet extends HttpServlet {
                 }
                 User user = DataStore.get().createUser(name, email, PasswordUtil.hash(password), "STUDENT");
                 establishSession(req, user);
-                if ("true".equals(req.getParameter("remember"))) {
-                    RememberMeUtil.issueToken(resp, user.getId());
-                }
                 resp.sendRedirect(req.getContextPath() + "/items");
             } else {
                 User user = DataStore.get().findUserByEmail(email);
@@ -70,9 +66,6 @@ public class AuthServlet extends HttpServlet {
                     return;
                 }
                 establishSession(req, user);
-                if ("true".equals(req.getParameter("remember"))) {
-                    RememberMeUtil.issueToken(resp, user.getId());
-                }
                 resp.sendRedirect(req.getContextPath() + "/items");
             }
         } catch (IllegalArgumentException e) {

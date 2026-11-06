@@ -21,14 +21,9 @@ public class HeartbeatServlet extends HttpServlet {
         }
         HttpSession session = req.getSession(false);
         String userId = WebUtil.userId(req);
-        Long last = (Long) session.getAttribute("lastActivityRecorded");
-        long now = System.currentTimeMillis();
-
-        if (last == null || (now - last) >= 50_000L) {
+        if (session != null && userId != null) {
             DataStore.get().updateSessionActivity(session.getId(), userId);
-            session.setAttribute("lastActivityRecorded", now);
         }
-
         resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
     }
 }

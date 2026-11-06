@@ -24,7 +24,6 @@ public class SessionValidationFilter implements Filter {
         HttpServletResponse resp = (HttpServletResponse) response;
 
         HttpSession session = req.getSession(false);
-        String path = req.getServletPath();
 
         if (session != null && session.getAttribute("userId") != null) {
             String userId = (String) session.getAttribute("userId");
@@ -53,6 +52,11 @@ public class SessionValidationFilter implements Filter {
 
                 session.setAttribute("csrfToken", token);
             }
+
+            // Update user session activity heartbeat on every authenticated page load
+            try {
+                DataStore.get().updateSessionActivity(session.getId(), userId);
+            } catch (Exception ignored) {}
         }
 
         chain.doFilter(request, response);
