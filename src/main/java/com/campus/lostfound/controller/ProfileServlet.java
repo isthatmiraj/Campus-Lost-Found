@@ -55,7 +55,23 @@ public class ProfileServlet extends HttpServlet {
         String action = value(req.getParameter("action"));
 
         try {
-            if ("updateProfile".equals(action)) {
+            if ("forgetThisDevice".equals(action)) {
+                String rawToken = com.campus.lostfound.util.RememberMeUtil.getRememberMeToken(req);
+                if (rawToken != null && !rawToken.isBlank()) {
+                    String tokenHash = com.campus.lostfound.util.RememberMeUtil.hashToken(rawToken);
+                    com.campus.lostfound.model.UserToken rememberedToken =
+                            DataStore.get().findUserTokenByHash(tokenHash);
+                    // Revoke only the remembered login belonging to this signed-in account.
+                    if (rememberedToken != null && userId.equals(rememberedToken.getUserId())) {
+                        DataStore.get().deleteUserTokenByHash(tokenHash);
+                    }
+                }
+                com.campus.lostfound.util.RememberMeUtil.clearRememberMeCookie(req, resp);
+                // Keep the current normal session alive; only disable future automatic login on this device.
+                resp.sendRedirect(req.getContextPath() + "/profile?rememberMeRemoved=1");
+                return;
+
+            } else if ("updateProfile".equals(action)) {
                 String name = value(req.getParameter("name"));
                 String email = value(req.getParameter("email"))
                         .toLowerCase(Locale.ROOT);
@@ -128,6 +144,18 @@ public class ProfileServlet extends HttpServlet {
             return;
         }
         req.setAttribute("profileUser", user);
+
+        String rawToken = com.campus.lostfound.util.RememberMeUtil.getRememberMeToken(req);
+        boolean rememberedOnThisDevice = false;
+        if (rawToken != null && !rawToken.isBlank()) {
+            com.campus.lostfound.model.UserToken rememberedToken = DataStore.get().findUserTokenByHash(
+                    com.campus.lostfound.util.RememberMeUtil.hashToken(rawToken));
+            rememberedOnThisDevice = rememberedToken != null
+                    && WebUtil.userId(req).equals(rememberedToken.getUserId())
+                    && rememberedToken.getExpiresAt() != null
+                    && rememberedToken.getExpiresAt().isAfter(java.time.LocalDateTime.now());
+        }
+        req.setAttribute("rememberMeActive", rememberedOnThisDevice);
     }
 
     private String value(String s) {
