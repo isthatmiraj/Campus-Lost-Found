@@ -138,6 +138,10 @@ public final class DatabaseSchema {
         "ALTER TABLE campus_user_tokens ALTER COLUMN login_started_at SET DEFAULT CURRENT_TIMESTAMP",
         "ALTER TABLE campus_user_tokens ALTER COLUMN login_started_at SET NOT NULL",
         "CREATE INDEX IF NOT EXISTS campus_user_tokens_user_expiry_idx ON campus_user_tokens(user_id, expires_at)",
+        "ALTER TABLE campus_user_tokens ADD COLUMN IF NOT EXISTS device_label TEXT NOT NULL DEFAULT 'Previously remembered device'",
+        "ALTER TABLE campus_user_tokens ADD COLUMN IF NOT EXISTS user_agent TEXT NOT NULL DEFAULT ''",
+        "ALTER TABLE campus_user_tokens ADD COLUMN IF NOT EXISTS last_used_at TIMESTAMP",
+        "UPDATE campus_user_tokens SET last_used_at = created_at WHERE last_used_at IS NULL",
         """
         CREATE TABLE IF NOT EXISTS campus_user_presence (
             session_key_hash VARCHAR(64) PRIMARY KEY,
@@ -151,7 +155,16 @@ public final class DatabaseSchema {
         "ALTER TABLE campus_user_presence ALTER COLUMN started_at SET DEFAULT CURRENT_TIMESTAMP",
         "ALTER TABLE campus_user_presence ALTER COLUMN started_at SET NOT NULL",
         "CREATE INDEX IF NOT EXISTS campus_user_presence_user_seen_idx ON campus_user_presence(user_id, last_seen)",
-        "CREATE INDEX IF NOT EXISTS campus_user_presence_seen_idx ON campus_user_presence(last_seen)"
+        "CREATE INDEX IF NOT EXISTS campus_user_presence_seen_idx ON campus_user_presence(last_seen)",
+        """
+        CREATE TABLE IF NOT EXISTS campus_user_active_sessions (
+            user_id VARCHAR(64) PRIMARY KEY
+                REFERENCES campus_users(id) ON DELETE CASCADE,
+            session_key_hash VARCHAR(64) NOT NULL,
+            last_seen TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS campus_user_active_sessions_seen_idx ON campus_user_active_sessions(last_seen)"
     );
 
     public static void initialize() throws SQLException {

@@ -238,5 +238,7 @@
   </div>
 </div>
 <script src="<%=request.getContextPath()%>/js/campusfind-loader.js?v=2" defer></script>
+
+<jsp:include page="/WEB-INF/views/profile-devices.jspf" />
 </body>
 </html>

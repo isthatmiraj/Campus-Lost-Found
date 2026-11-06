@@ -1,0 +1,139 @@
+<%@ page import="java.util.List,com.campus.lostfound.model.UserToken,com.campus.lostfound.util.WebUtil" %>
+<%
+    List<UserToken> rememberedDevices =
+        (List<UserToken>) request.getAttribute("rememberedDevices");
+    if (rememberedDevices == null) rememberedDevices = java.util.Collections.emptyList();
+    String deviceCsrf = (String) session.getAttribute("csrfToken");
+%>
+
+<style>
+.cfind-devices-wrap {
+    width: min(100% - 32px, 1040px);
+    margin: 26px auto;
+}
+.cfind-devices-card {
+    background: var(--card-bg, #fff);
+    color: var(--text-color, inherit);
+    border: 1px solid var(--border-color, rgba(128,128,128,.22));
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.045);
+}
+.cfind-devices-heading {
+    display:flex; justify-content:space-between; align-items:flex-start;
+    gap:16px; flex-wrap:wrap; margin-bottom:8px;
+}
+.cfind-devices-heading h2 { margin:0; font-size:1.2rem; }
+.cfind-devices-muted { opacity:.72; font-size:.9rem; line-height:1.5; }
+.cfind-device-list { display:grid; gap:12px; margin-top:20px; }
+.cfind-device {
+    display:flex; justify-content:space-between; align-items:center;
+    gap:16px; flex-wrap:wrap; padding:15px;
+    border:1px solid var(--border-color, rgba(128,128,128,.2));
+    border-radius:14px;
+}
+.cfind-device-main { display:flex; align-items:center; gap:13px; min-width:0; }
+.cfind-device-icon {
+    width:43px; height:43px; flex:0 0 43px; border-radius:12px;
+    display:grid; place-items:center; background:rgba(100,120,150,.12);
+    font-size:21px;
+}
+.cfind-device-name { font-weight:700; overflow-wrap:anywhere; }
+.cfind-device-meta { font-size:.83rem; opacity:.72; margin-top:4px; line-height:1.5; }
+.cfind-device-actions { display:flex; align-items:center; gap:9px; }
+.cfind-device-button {
+    border:1px solid rgba(220,65,65,.4); color:#d44747;
+    background:transparent; border-radius:9px; padding:8px 12px;
+    font:inherit; font-size:.85rem; font-weight:650; cursor:pointer;
+}
+.cfind-device-button:hover { background:rgba(220,65,65,.08); }
+.cfind-devices-danger {
+    border:1px solid rgba(220,65,65,.35); color:#d44747;
+    background:transparent; border-radius:10px; padding:9px 13px;
+    font:inherit; font-size:.86rem; font-weight:650; cursor:pointer;
+}
+.cfind-devices-empty {
+    padding:22px; text-align:center; border:1px dashed var(--border-color, #ccc);
+    border-radius:13px; opacity:.75; margin-top:18px;
+}
+.cfind-devices-footer {
+    display:flex; justify-content:space-between; gap:12px;
+    align-items:center; flex-wrap:wrap; margin-top:18px;
+}
+@media(max-width:560px) {
+    .cfind-devices-card { padding:17px; }
+    .cfind-device { align-items:flex-start; }
+    .cfind-device-actions { width:100%; justify-content:flex-end; }
+}
+</style>
+
+<section class="cfind-devices-wrap">
+  <div class="cfind-devices-card">
+    <div class="cfind-devices-heading">
+      <div>
+        <h2>Remembered devices</h2>
+        <p class="cfind-devices-muted">
+          Devices that can remember your login. Remove one whenever you no longer use it.
+        </p>
+      </div>
+      <span class="cfind-devices-muted">
+        <%= rememberedDevices.size() %> remembered
+      </span>
+    </div>
+
+    <% if (rememberedDevices.isEmpty()) { %>
+      <div class="cfind-devices-empty">
+        <strong>No remembered devices</strong>
+        <p class="cfind-devices-muted">Choose “Remember me” when signing in to add a device here.</p>
+      </div>
+    <% } else { %>
+      <div class="cfind-device-list">
+        <% for (UserToken device : rememberedDevices) {
+             String label = device.getDeviceLabel();
+             if (label == null || label.isBlank()) label = "Previously remembered device";
+             String created = device.getCreatedAt() == null ? "Unknown" :
+                 device.getCreatedAt().toString().replace('T', ' ');
+             String expires = device.getExpiresAt() == null ? "Unknown" :
+                 device.getExpiresAt().toString().replace('T', ' ');
+             String lastUsed = device.getLastUsedAt() == null ? created :
+                 device.getLastUsedAt().toString().replace('T', ' ');
+        %>
+          <article class="cfind-device">
+            <div class="cfind-device-main">
+              <div class="cfind-device-icon" aria-hidden="true">⌘</div>
+              <div>
+                <div class="cfind-device-name"><%= WebUtil.h(label) %></div>
+                <div class="cfind-device-meta">
+                  Remembered: <%= WebUtil.h(created) %><br>
+                  Last used: <%= WebUtil.h(lastUsed) %><br>
+                  Expires: <%= WebUtil.h(expires) %>
+                </div>
+              </div>
+            </div>
+            <div class="cfind-device-actions">
+              <form method="post" action="<%= request.getContextPath() %>/profile"
+                    onsubmit="return confirm('Remove this remembered device? It will no longer be able to sign in automatically.');">
+                <input type="hidden" name="csrfToken" value="<%= WebUtil.h(deviceCsrf) %>">
+                <input type="hidden" name="action" value="removeRememberedDevice">
+                <input type="hidden" name="tokenId" value="<%= WebUtil.h(device.getId()) %>">
+                <button class="cfind-device-button" type="submit">Remove</button>
+              </form>
+            </div>
+          </article>
+        <% } %>
+      </div>
+
+      <div class="cfind-devices-footer">
+        <span class="cfind-devices-muted">
+          Removing a device only revokes its remembered login. Your current session stays active.
+        </span>
+        <form method="post" action="<%= request.getContextPath() %>/profile"
+              onsubmit="return confirm('Remove ALL remembered devices for this account?');">
+          <input type="hidden" name="csrfToken" value="<%= WebUtil.h(deviceCsrf) %>">
+          <input type="hidden" name="action" value="forgetAllDevices">
+          <button class="cfind-devices-danger" type="submit">Remove all devices</button>
+        </form>
+      </div>
+    <% } %>
+  </div>
+</section>

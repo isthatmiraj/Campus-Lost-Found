@@ -511,15 +511,29 @@ public final class DataStore {
     public synchronized void saveUserToken(String userId, String tokenHash,
                                            java.time.LocalDateTime expiresAt,
                                            java.time.LocalDateTime loginStartedAt) throws IOException {
+        saveUserToken(userId, tokenHash, expiresAt, loginStartedAt,
+                "Previously remembered device", "");
+    }
+
+    public synchronized void saveUserToken(String userId, String tokenHash,
+                                           java.time.LocalDateTime expiresAt,
+                                           java.time.LocalDateTime loginStartedAt,
+                                           String deviceLabel, String userAgent) throws IOException {
         String id = UUID.randomUUID().toString();
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
         try (Connection c = ChatDatabase.getConnection();
              PreparedStatement p = c.prepareStatement(
-                 "INSERT INTO campus_user_tokens (id, user_id, token_hash, expires_at, login_started_at) VALUES (?, ?, ?, ?, ?)")) {
+                 "INSERT INTO campus_user_tokens " +
+                 "(id, user_id, token_hash, expires_at, login_started_at, device_label, user_agent, last_used_at) " +
+                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
             p.setString(1, id);
             p.setString(2, userId);
             p.setString(3, tokenHash);
             p.setTimestamp(4, Timestamp.valueOf(expiresAt));
-            p.setTimestamp(5, Timestamp.valueOf(loginStartedAt == null ? java.time.LocalDateTime.now() : loginStartedAt));
+            p.setTimestamp(5, Timestamp.valueOf(loginStartedAt == null ? now : loginStartedAt));
+            p.setString(6, deviceLabel == null ? "Unknown device" : deviceLabel);
+            p.setString(7, userAgent == null ? "" : userAgent);
+            p.setTimestamp(8, Timestamp.valueOf(now));
             p.executeUpdate();
         } catch (SQLException e) {
             throw io(e);
@@ -529,7 +543,8 @@ public final class DataStore {
     public synchronized com.campus.lostfound.model.UserToken findUserTokenByHash(String tokenHash) throws IOException {
         try (Connection c = ChatDatabase.getConnection();
              PreparedStatement p = c.prepareStatement(
-                 "SELECT id, user_id, token_hash, created_at, login_started_at, expires_at FROM campus_user_tokens WHERE token_hash = ? LIMIT 1")) {
+                 "SELECT id, user_id, token_hash, created_at, login_started_at, expires_at, " +
+                 "device_label, user_agent, last_used_at FROM campus_user_tokens WHERE token_hash = ? LIMIT 1")) {
             p.setString(1, tokenHash);
             try (ResultSet r = p.executeQuery()) {
                 if (r.next()) {
@@ -539,7 +554,11 @@ public final class DataStore {
                         r.getString("token_hash"),
                         r.getTimestamp("created_at").toLocalDateTime(),
                         r.getTimestamp("login_started_at").toLocalDateTime(),
-                        r.getTimestamp("expires_at").toLocalDateTime()
+                        r.getTimestamp("expires_at").toLocalDateTime(),
+                        r.getString("device_label"),
+                        r.getString("user_agent"),
+                        r.getTimestamp("last_used_at") == null ? null :
+                                r.getTimestamp("last_used_at").toLocalDateTime()
                     );
                 }
             }
@@ -575,6 +594,55 @@ public final class DataStore {
                  "DELETE FROM campus_user_tokens WHERE user_id = ?")) {
             ps.setString(1, userId);
             ps.executeUpdate();
+        } catch (SQLException e) {
+            throw io(e);
+        }
+    }
+
+
+
+    public synchronized java.util.List<com.campus.lostfound.model.UserToken>
+    findRememberedDevices(String userId) throws IOException {
+        java.util.List<com.campus.lostfound.model.UserToken> devices =
+                new java.util.ArrayList<>();
+
+        try (Connection c = ChatDatabase.getConnection();
+             PreparedStatement p = c.prepareStatement(
+                 "SELECT id, user_id, token_hash, created_at, login_started_at, " +
+                 "expires_at, device_label, user_agent, last_used_at " +
+                 "FROM campus_user_tokens WHERE user_id = ? " +
+                 "AND expires_at > CURRENT_TIMESTAMP ORDER BY created_at DESC")) {
+            p.setString(1, userId);
+            try (ResultSet r = p.executeQuery()) {
+                while (r.next()) {
+                    devices.add(new com.campus.lostfound.model.UserToken(
+                        r.getString("id"),
+                        r.getString("user_id"),
+                        r.getString("token_hash"),
+                        r.getTimestamp("created_at").toLocalDateTime(),
+                        r.getTimestamp("login_started_at").toLocalDateTime(),
+                        r.getTimestamp("expires_at").toLocalDateTime(),
+                        r.getString("device_label"),
+                        r.getString("user_agent"),
+                        r.getTimestamp("last_used_at") == null ? null :
+                            r.getTimestamp("last_used_at").toLocalDateTime()
+                    ));
+                }
+            }
+            return devices;
+        } catch (SQLException e) {
+            throw io(e);
+        }
+    }
+
+    public synchronized void deleteUserTokenById(String userId, String tokenId)
+            throws IOException {
+        try (Connection c = ChatDatabase.getConnection();
+             PreparedStatement p = c.prepareStatement(
+                 "DELETE FROM campus_user_tokens WHERE user_id = ? AND id = ?")) {
+            p.setString(1, userId);
+            p.setString(2, tokenId);
+            p.executeUpdate();
         } catch (SQLException e) {
             throw io(e);
         }

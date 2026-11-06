@@ -55,7 +55,35 @@ public class ProfileServlet extends HttpServlet {
         String action = value(req.getParameter("action"));
 
         try {
-            if ("forgetThisDevice".equals(action)) {
+            if ("removeRememberedDevice".equals(action)) {
+                String tokenId = value(req.getParameter("tokenId"));
+                if (tokenId.isBlank()) {
+                    throw new IllegalArgumentException("Choose a device to remove.");
+                }
+
+                DataStore.get().deleteUserTokenById(userId, tokenId);
+
+                // If this is the current browser's token, remove its cookie too.
+                String rawToken = com.campus.lostfound.util.RememberMeUtil.getRememberMeToken(req);
+                if (rawToken != null && !rawToken.isBlank()) {
+                    String currentHash = com.campus.lostfound.util.RememberMeUtil.hashToken(rawToken);
+                    com.campus.lostfound.model.UserToken current =
+                            DataStore.get().findUserTokenByHash(currentHash);
+                    if (current != null && tokenId.equals(current.getId())) {
+                        com.campus.lostfound.util.RememberMeUtil.clearRememberMeCookie(req, resp);
+                    }
+                }
+
+                resp.sendRedirect(req.getContextPath() + "/profile?deviceRemoved=1");
+                return;
+
+            } else if ("forgetAllDevices".equals(action)) {
+                DataStore.get().deleteAllUserTokens(userId);
+                com.campus.lostfound.util.RememberMeUtil.clearRememberMeCookie(req, resp);
+                resp.sendRedirect(req.getContextPath() + "/profile?devicesRemoved=1");
+                return;
+
+            } else if ("forgetThisDevice".equals(action)) {
                 if (WebUtil.admin(req)) {
                     // Admin forget action: clear every remembered login for this admin account.
                     DataStore.get().deleteAllUserTokens(userId);
@@ -125,7 +153,10 @@ public class ProfileServlet extends HttpServlet {
                 }
 
                 DataStore.get().updatePasswordHash(userId, PasswordUtil.hash(newPassword));
-                req.changeSessionId();
+                String previousSessionId = session.getId();
+                String newSessionId = req.changeSessionId();
+                com.campus.lostfound.util.ActiveSessionStore.replaceSessionId(
+                        userId, previousSessionId, newSessionId);
                 resp.sendRedirect(req.getContextPath() + "/profile?passwordUpdated=1");
                 return;
             }
@@ -160,6 +191,8 @@ public class ProfileServlet extends HttpServlet {
                     && rememberedToken.getExpiresAt().isAfter(java.time.LocalDateTime.now());
         }
         req.setAttribute("rememberMeActive", rememberedOnThisDevice);
+        req.setAttribute("rememberedDevices",
+                DataStore.get().findRememberedDevices(WebUtil.userId(req)));
     }
 
     private String value(String s) {

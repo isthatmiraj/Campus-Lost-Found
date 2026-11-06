@@ -48,11 +48,14 @@ public class AuthServlet extends HttpServlet {
                 com.campus.lostfound.util.RememberMeUtil.clearRememberMeCookie(req, resp);
             }
             if (s.getAttribute("userId") != null) {
+                String logoutUserId = (String) s.getAttribute("userId");
                 try {
                     com.campus.lostfound.util.PresenceStore.removeSession(
-                            (String) s.getAttribute("userId"), s.getId());
+                            logoutUserId, s.getId());
+                    com.campus.lostfound.util.ActiveSessionStore.clear(
+                            logoutUserId, s.getId());
                 } catch (IOException ignored) {
-                    // Presence naturally expires after two minutes if cleanup cannot run.
+                    // Expired presence and active-session records cannot authenticate anyone.
                 }
             }
             s.invalidate();
@@ -77,7 +80,11 @@ public class AuthServlet extends HttpServlet {
                     String token = com.campus.lostfound.util.RememberMeUtil.generateToken();
                     String tokenHash = com.campus.lostfound.util.RememberMeUtil.hashToken(token);
                     java.time.LocalDateTime expiresAt = java.time.LocalDateTime.now().plusDays(30);
-                    DataStore.get().saveUserToken(user.getId(), tokenHash, expiresAt);
+                    DataStore.get().saveUserToken(
+                            user.getId(), tokenHash, expiresAt,
+                            java.time.LocalDateTime.now(),
+                            com.campus.lostfound.util.DeviceInfoUtil.label(req.getHeader("User-Agent")),
+                            req.getHeader("User-Agent"));
                     com.campus.lostfound.util.RememberMeUtil.setRememberMeCookie(req, resp, token);
                 }
                 resp.sendRedirect(req.getContextPath() + "/items");
@@ -94,7 +101,11 @@ public class AuthServlet extends HttpServlet {
                     String token = com.campus.lostfound.util.RememberMeUtil.generateToken();
                     String tokenHash = com.campus.lostfound.util.RememberMeUtil.hashToken(token);
                     java.time.LocalDateTime expiresAt = java.time.LocalDateTime.now().plusDays(30);
-                    DataStore.get().saveUserToken(user.getId(), tokenHash, expiresAt);
+                    DataStore.get().saveUserToken(
+                            user.getId(), tokenHash, expiresAt,
+                            java.time.LocalDateTime.now(),
+                            com.campus.lostfound.util.DeviceInfoUtil.label(req.getHeader("User-Agent")),
+                            req.getHeader("User-Agent"));
                     com.campus.lostfound.util.RememberMeUtil.setRememberMeCookie(req, resp, token);
                 }
                 resp.sendRedirect(req.getContextPath() + "/items");
@@ -107,15 +118,19 @@ public class AuthServlet extends HttpServlet {
         }
     }
 
-    private void establishSession(HttpServletRequest req, User user) {
+    private void establishSession(HttpServletRequest req, User user) throws IOException {
         HttpSession old = req.getSession(false);
         if (old != null) old.invalidate();
+
         HttpSession session = req.getSession(true);
         session.setAttribute("userId", user.getId());
         session.setAttribute("name", user.getName());
         session.setAttribute("email", user.getEmail());
         session.setAttribute("role", user.getRole());
         session.setMaxInactiveInterval(30 * 60);
+
+        // A fresh credential login replaces the account's previous active session.
+        com.campus.lostfound.util.ActiveSessionStore.claim(user.getId(), session.getId());
     }
     private String value(String s) { return s == null ? "" : s.trim(); }
 }
