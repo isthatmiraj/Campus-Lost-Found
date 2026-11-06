@@ -2110,3 +2110,54 @@ body.cf-photo-editor-open { overflow:hidden; }
   box-sizing: border-box !important;
   margin: 12px 0 !important;
 }
+
+
+/* Admin user search and live presence indicators */
+.admin-user-search {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 14px 0 12px;
+}
+.admin-user-search label {
+  font-weight: 600;
+  margin: 0;
+}
+.admin-user-search input {
+  width: min(100%, 360px);
+  min-width: 180px;
+  margin: 0;
+}
+.admin-user-search .muted {
+  font-size: .88rem;
+}
+.user-presence {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 9px;
+  white-space: nowrap;
+  vertical-align: middle;
+  font-size: .78rem;
+  font-weight: 600;
+}
+.user-presence-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 50%;
+  background: #9ca3af;
+}
+.user-presence.is-online { color: #15803d; }
+.user-presence.is-online .user-presence-dot { background: #16a34a; }
+.user-presence.is-offline { color: #dc2626; }
+.user-presence.is-offline .user-presence-dot { background: #dc2626; }
+.user-presence.is-checking { color: #6b7280; }
+.user-presence.is-checking .user-presence-dot { background: #9ca3af; }
+@media (max-width: 600px) {
+  .admin-user-search { align-items: stretch; }
+  .admin-user-search label { width: 100%; }
+  .admin-user-search input { width: 100%; }
+}

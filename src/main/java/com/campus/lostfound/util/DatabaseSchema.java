@@ -131,7 +131,16 @@ public final class DatabaseSchema {
         )
         """,
         "CREATE INDEX IF NOT EXISTS campus_user_tokens_hash_idx ON campus_user_tokens(token_hash)",
-        "CREATE INDEX IF NOT EXISTS campus_user_tokens_user_idx ON campus_user_tokens(user_id)"
+        "CREATE INDEX IF NOT EXISTS campus_user_tokens_user_idx ON campus_user_tokens(user_id)",
+        """
+        CREATE TABLE IF NOT EXISTS campus_user_presence (
+            session_key_hash VARCHAR(64) PRIMARY KEY,
+            user_id VARCHAR(64) NOT NULL REFERENCES campus_users(id) ON DELETE CASCADE,
+            last_seen TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS campus_user_presence_user_seen_idx ON campus_user_presence(user_id, last_seen)",
+        "CREATE INDEX IF NOT EXISTS campus_user_presence_seen_idx ON campus_user_presence(last_seen)"
     );
 
     public static void initialize() throws SQLException {

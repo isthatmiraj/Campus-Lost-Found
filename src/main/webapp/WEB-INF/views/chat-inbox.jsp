@@ -583,5 +583,44 @@ body {
     });
 })();
 </script>
+
+<script>
+(function () {
+    var endpoint = '<%=request.getContextPath()%>/presence/heartbeat';
+    var csrfToken = '<%=WebUtil.h((String)session.getAttribute("csrfToken"))%>';
+    var lastActivity = Date.now();
+    var lastHeartbeat = 0;
+
+    function markActivity() { lastActivity = Date.now(); }
+    ["pointerdown", "keydown", "touchstart", "scroll", "mousemove"].forEach(function (eventName) {
+        document.addEventListener(eventName, markActivity, { passive: true });
+    });
+
+    function heartbeat() {
+        // Only send heartbeats while the person has interacted recently.
+        // This prevents background polling from extending CampusFind's 30-minute session timeout.
+        if (document.visibilityState === "hidden" || Date.now() - lastActivity > 120000) return;
+        if (Date.now() - lastHeartbeat < 55000) return;
+        lastHeartbeat = Date.now();
+        fetch(endpoint, {
+            method: "POST",
+            credentials: "same-origin",
+            cache: "no-store",
+            headers: { "X-CSRF-Token": csrfToken }
+        }).catch(function () {});
+    }
+
+    heartbeat();
+    window.setInterval(heartbeat, 60000);
+    document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === "visible") {
+            markActivity();
+            heartbeat();
+        }
+    });
+})();
+</script>
+
+
 </body>
 </html>

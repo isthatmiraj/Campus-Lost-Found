@@ -47,6 +47,14 @@ public class AuthServlet extends HttpServlet {
                 } catch (Exception ignored) {}
                 com.campus.lostfound.util.RememberMeUtil.clearRememberMeCookie(req, resp);
             }
+            if (s.getAttribute("userId") != null) {
+                try {
+                    com.campus.lostfound.util.PresenceStore.removeSession(
+                            (String) s.getAttribute("userId"), s.getId());
+                } catch (IOException ignored) {
+                    // Presence naturally expires after two minutes if cleanup cannot run.
+                }
+            }
             s.invalidate();
             resp.sendRedirect(req.getContextPath() + "/");
             return;
