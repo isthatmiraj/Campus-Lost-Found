@@ -1,5 +1,18 @@
 
 <%!
+    private String formatDeviceDate(String value) {
+        if (value == null || value.trim().isEmpty()) return "Never";
+        try {
+            java.sql.Timestamp timestamp = java.sql.Timestamp.valueOf(value.trim());
+            return new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss a")
+                    .format(timestamp);
+        } catch (Exception e) {
+            return value;
+        }
+    }
+%>
+\n
+<%!
     private String formatDeviceDate(java.time.LocalDateTime date) {
         if (date == null) return "Never";
         return date.format(
@@ -153,9 +166,9 @@
               <div>
                 <div class="cfind-device-name"><%= WebUtil.h(label) %></div>
                 <div class="cfind-device-meta">
-                  Remembered: <%= WebUtil.h(created) %><br>
-                  Last used: <%= WebUtil.h(lastUsed) %><br>
-                  Expires: <%= WebUtil.h(expires) %>
+                  Remembered: <%= WebUtil.h(formatDeviceDate(created)) %><br>
+                  Last used: <%= WebUtil.h(formatDeviceDate(lastUsed)) %><br>
+                  Expires: <%= WebUtil.h(formatDeviceDate(expires)) %>
                 </div>
               </div>
             </div>
