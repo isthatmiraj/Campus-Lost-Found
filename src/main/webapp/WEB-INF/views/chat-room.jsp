@@ -260,13 +260,5 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--chat-bg);c
     }
 })();
 </script>
-<div id="cf-loading-overlay" hidden style="display:none" role="status" aria-label="Loading" aria-hidden="true">
-  <div class="cf-loader-content">
-    <div class="cf-logo-wrap">
-      <img class="cf-logo" src="<%=request.getContextPath()%>/images/campusfind-loader.png" alt="">
-    </div>
-  </div>
-</div>
-<script src="<%=request.getContextPath()%>/js/campusfind-loader.js?v=2" defer></script>
 </body>
 </html>
