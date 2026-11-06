@@ -40,6 +40,13 @@ public class AuthServlet extends HttpServlet {
                 return;
             }
 
+            String rawCookieToken = com.campus.lostfound.util.RememberMeUtil.getRememberMeToken(req);
+            if (rawCookieToken != null && !rawCookieToken.isBlank()) {
+                try {
+                    DataStore.get().deleteUserTokenByHash(com.campus.lostfound.util.RememberMeUtil.hashToken(rawCookieToken));
+                } catch (Exception ignored) {}
+                com.campus.lostfound.util.RememberMeUtil.clearRememberMeCookie(req, resp);
+            }
             s.invalidate();
             resp.sendRedirect(req.getContextPath() + "/");
             return;
@@ -57,6 +64,14 @@ public class AuthServlet extends HttpServlet {
                 }
                 User user = DataStore.get().createUser(name, email, PasswordUtil.hash(password), "STUDENT");
                 establishSession(req, user);
+                boolean rememberMe = "true".equalsIgnoreCase(req.getParameter("rememberMe")) || "on".equalsIgnoreCase(req.getParameter("rememberMe"));
+                if (rememberMe) {
+                    String token = com.campus.lostfound.util.RememberMeUtil.generateToken();
+                    String tokenHash = com.campus.lostfound.util.RememberMeUtil.hashToken(token);
+                    java.time.LocalDateTime expiresAt = java.time.LocalDateTime.now().plusDays(30);
+                    DataStore.get().saveUserToken(user.getId(), tokenHash, expiresAt);
+                    com.campus.lostfound.util.RememberMeUtil.setRememberMeCookie(req, resp, token);
+                }
                 resp.sendRedirect(req.getContextPath() + "/items");
             } else {
                 User user = DataStore.get().findUserByEmail(email);
@@ -66,6 +81,14 @@ public class AuthServlet extends HttpServlet {
                     return;
                 }
                 establishSession(req, user);
+                boolean rememberMe = "true".equalsIgnoreCase(req.getParameter("rememberMe")) || "on".equalsIgnoreCase(req.getParameter("rememberMe"));
+                if (rememberMe) {
+                    String token = com.campus.lostfound.util.RememberMeUtil.generateToken();
+                    String tokenHash = com.campus.lostfound.util.RememberMeUtil.hashToken(token);
+                    java.time.LocalDateTime expiresAt = java.time.LocalDateTime.now().plusDays(30);
+                    DataStore.get().saveUserToken(user.getId(), tokenHash, expiresAt);
+                    com.campus.lostfound.util.RememberMeUtil.setRememberMeCookie(req, resp, token);
+                }
                 resp.sendRedirect(req.getContextPath() + "/items");
             }
         } catch (IllegalArgumentException e) {
