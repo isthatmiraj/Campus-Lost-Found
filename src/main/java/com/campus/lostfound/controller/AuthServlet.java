@@ -57,6 +57,9 @@ public class AuthServlet extends HttpServlet {
                 }
                 User user = DataStore.get().createUser(name, email, PasswordUtil.hash(password), "STUDENT");
                 establishSession(req, user);
+                if ("true".equals(req.getParameter("remember"))) {
+                    RememberMeUtil.issueToken(resp, user.getId());
+                }
                 resp.sendRedirect(req.getContextPath() + "/items");
             } else {
                 User user = DataStore.get().findUserByEmail(email);
@@ -66,6 +69,9 @@ public class AuthServlet extends HttpServlet {
                     return;
                 }
                 establishSession(req, user);
+                if ("true".equals(req.getParameter("remember"))) {
+                    RememberMeUtil.issueToken(resp, user.getId());
+                }
                 resp.sendRedirect(req.getContextPath() + "/items");
             }
         } catch (IllegalArgumentException e) {
