@@ -19,7 +19,7 @@
         );
     }
 %>
-\n<%@ page import="java.util.List,com.campus.lostfound.model.UserToken,com.campus.lostfound.util.WebUtil" %>
+<%@ page import="java.util.List,com.campus.lostfound.model.UserToken,com.campus.lostfound.util.WebUtil" %>
 <%
     List<UserToken> rememberedDevices =
         (List<UserToken>) request.getAttribute("rememberedDevices");
