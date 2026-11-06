@@ -72,7 +72,7 @@ public class SessionValidationFilter implements Filter {
             }
         }
 
-        // 2. Validate session user existence and manage CSRF token
+        // 2. Validate session user existence, manage CSRF token, and record activity heartbeat
         if (session != null && session.getAttribute("userId") != null) {
             String userId = (String) session.getAttribute("userId");
 
@@ -101,9 +101,7 @@ public class SessionValidationFilter implements Filter {
 
                 session.setAttribute("csrfToken", token);
             }
-        }
 
-        
             // 3. Heartbeat / Activity throttle: update at most once every 60 seconds
             Long lastActivity = (Long) session.getAttribute("lastActivityRecorded");
             long now = System.currentTimeMillis();
@@ -113,6 +111,7 @@ public class SessionValidationFilter implements Filter {
                     session.setAttribute("lastActivityRecorded", now);
                 } catch (IOException ignored) {}
             }
+        }
 
         chain.doFilter(request, response);
     }
