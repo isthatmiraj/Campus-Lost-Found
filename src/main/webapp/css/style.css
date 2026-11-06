@@ -2161,3 +2161,67 @@ body.cf-photo-editor-open { overflow:hidden; }
   .admin-user-search label { width: 100%; }
   .admin-user-search input { width: 100%; }
 }
+
+/* CampusFind - Admin user presence badges */
+.user-presence {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    margin-left: 10px;
+    padding: 4px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.4;
+    white-space: nowrap;
+    vertical-align: middle;
+    border: 1px solid transparent;
+}
+
+.user-presence-dot {
+    width: 7px;
+    height: 7px;
+    min-width: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.user-presence.is-online {
+    color: #15803d;
+    background: #dcfce7;
+    border-color: #bbf7d0;
+}
+
+.user-presence.is-online .user-presence-dot {
+    background: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.13);
+}
+
+.user-presence.is-offline {
+    color: #b91c1c;
+    background: #fee2e2;
+    border-color: #fecaca;
+}
+
+.user-presence.is-offline .user-presence-dot {
+    background: #dc2626;
+}
+
+.user-presence.is-checking {
+    color: #64748b;
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+}
+
+.user-presence.is-checking .user-presence-dot {
+    background: #94a3b8;
+}
+
+@media (max-width: 600px) {
+    .user-presence {
+        margin-left: 5px;
+        padding: 3px 7px;
+        font-size: 10px;
+    }
+}
+
