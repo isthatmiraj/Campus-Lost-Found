@@ -216,6 +216,8 @@
         </section>
     </div>
 
+    <%@ include file="profile-devices.jspf" %>
+
     <a class="profile-back" href="<%=ctx%>/items">← Back to CampusFind</a>
 </main>
 <script src="<%=ctx%>/js/password-visibility.js" defer></script><div id="cf-loading-overlay" hidden style="display:none" role="status" aria-label="Loading" aria-hidden="true">
@@ -227,6 +229,5 @@
 </div>
 <script src="<%=request.getContextPath()%>/js/campusfind-loader.js?v=2" defer></script>
 
-<%@ include file="profile-devices.jspf" %>
 </body>
 </html>
