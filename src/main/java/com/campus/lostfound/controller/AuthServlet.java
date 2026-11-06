@@ -40,10 +40,6 @@ public class AuthServlet extends HttpServlet {
                 return;
             }
 
-                        // Remove this session's presence record
-            try {
-                DataStore.get().removeSessionActivity(s.getId());
-            } catch (Exception ignored) {}
             s.invalidate();
             resp.sendRedirect(req.getContextPath() + "/");
             return;

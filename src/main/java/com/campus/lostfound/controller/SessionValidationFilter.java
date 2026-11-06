@@ -24,6 +24,7 @@ public class SessionValidationFilter implements Filter {
         HttpServletResponse resp = (HttpServletResponse) response;
 
         HttpSession session = req.getSession(false);
+        String path = req.getServletPath();
 
         if (session != null && session.getAttribute("userId") != null) {
             String userId = (String) session.getAttribute("userId");
@@ -51,16 +52,6 @@ public class SessionValidationFilter implements Filter {
                         .encodeToString(bytes);
 
                 session.setAttribute("csrfToken", token);
-            }
-
-            // 3. Heartbeat / Activity throttle: update at most once every 60 seconds
-            Long lastActivity = (Long) session.getAttribute("lastActivityRecorded");
-            long now = System.currentTimeMillis();
-            if (lastActivity == null || (now - lastActivity) >= 60_000L) {
-                try {
-                    DataStore.get().updateSessionActivity(session.getId(), userId);
-                    session.setAttribute("lastActivityRecorded", now);
-                } catch (IOException ignored) {}
             }
         }
 

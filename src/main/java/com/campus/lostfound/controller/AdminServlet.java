@@ -27,7 +27,6 @@ public class AdminServlet extends HttpServlet {
         req.setAttribute("items", items);
         req.setAttribute("pendingItemEdits", DataStore.get().pendingItemEditProposals());
         req.setAttribute("allUsers", users);
-        req.setAttribute("onlineUserIds", DataStore.get().getOnlineUserIds());
         req.setAttribute("auditEntries", WorkflowStore.get().recentAudit(30));
         req.setAttribute("listingFlags", CommunityStore.get().flags());
         req.setAttribute("returnedCount", items.stream().filter(i -> "RETURNED".equals(i.getStatus())).count());
