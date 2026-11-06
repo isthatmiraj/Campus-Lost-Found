@@ -5,12 +5,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-/**
- * Additive PostgreSQL schema for CampusFind.
- * Existing chat tables are deliberately left untouched.
- */
 public final class DatabaseSchema {
-
     private DatabaseSchema() {}
 
     private static final List<String> DDL = List.of(
@@ -119,7 +114,16 @@ public final class DatabaseSchema {
         "CREATE INDEX IF NOT EXISTS campus_claims_claimant_idx ON campus_claims(claimant_id)",
         "CREATE INDEX IF NOT EXISTS campus_notifications_user_idx ON campus_notifications(user_id)",
         "CREATE INDEX IF NOT EXISTS campus_audit_created_idx ON campus_audit_logs(created_at)",
-        "CREATE INDEX IF NOT EXISTS campus_flags_status_idx ON campus_listing_flags(status)"
+        "CREATE INDEX IF NOT EXISTS campus_flags_status_idx ON campus_listing_flags(status)",
+        """
+        CREATE TABLE IF NOT EXISTS campus_user_sessions (
+            session_id VARCHAR(128) PRIMARY KEY,
+            user_id VARCHAR(64) NOT NULL,
+            last_seen TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT fk_campus_user_sessions_user FOREIGN KEY (user_id) REFERENCES campus_users(id) ON DELETE CASCADE
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS campus_user_sessions_user_last_seen_idx ON campus_user_sessions(user_id, last_seen)"
     );
 
     public static void initialize() throws SQLException {
