@@ -28,17 +28,17 @@ public class AdminUsersApiServlet extends HttpServlet {
 
         resp.setContentType("application/json;charset=UTF-8");
         StringBuilder sb = new StringBuilder();
-        sb.append("{"users":[");
+        sb.append("{\"users\":[");
         for (int i = 0; i < users.size(); i++) {
             User u = users.get(i);
             boolean isOnline = onlineIds.contains(u.getId());
             if (i > 0) sb.append(",");
             sb.append("{")
-              .append(""id":"").append(escape(u.getId())).append("",")
-              .append(""name":"").append(escape(u.getName())).append("",")
-              .append(""email":"").append(escape(u.getEmail())).append("",")
-              .append(""role":"").append(escape(u.getRole())).append("",")
-              .append(""online":").append(isOnline)
+              .append("\"id\":\"").append(escape(u.getId())).append("\",")
+              .append("\"name\":\"").append(escape(u.getName())).append("\",")
+              .append("\"email\":\"").append(escape(u.getEmail())).append("\",")
+              .append("\"role\":\"").append(escape(u.getRole())).append("\",")
+              .append("\"online\":").append(isOnline)
               .append("}");
         }
         sb.append("]}");
@@ -48,7 +48,7 @@ public class AdminUsersApiServlet extends HttpServlet {
     private String escape(String s) {
         if (s == null) return "";
         return s.replace("\\", "\\\\")
-                .replace(""", "\\"")
+                .replace("\"", "\\\"")
                 .replace("\n", "\\n")
                 .replace("\r", "\\r");
     }

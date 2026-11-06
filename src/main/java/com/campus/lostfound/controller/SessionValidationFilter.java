@@ -103,6 +103,17 @@ public class SessionValidationFilter implements Filter {
             }
         }
 
+        
+            // 3. Heartbeat / Activity throttle: update at most once every 60 seconds
+            Long lastActivity = (Long) session.getAttribute("lastActivityRecorded");
+            long now = System.currentTimeMillis();
+            if (lastActivity == null || (now - lastActivity) >= 60_000L) {
+                try {
+                    DataStore.get().updateSessionActivity(session.getId(), userId);
+                    session.setAttribute("lastActivityRecorded", now);
+                } catch (IOException ignored) {}
+            }
+
         chain.doFilter(request, response);
     }
 }
