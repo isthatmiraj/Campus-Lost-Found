@@ -503,65 +503,59 @@ public final class DataStore {
         }catch(SQLException e){throw io(e);}
     }
 
-    public synchronized void updateSessionActivity(String sessionId, String userId) throws IOException {
-        String sql = """
-            INSERT INTO campus_user_sessions (session_id, user_id, last_seen)
-            VALUES (?, ?, CURRENT_TIMESTAMP)
-            ON CONFLICT (session_id) DO UPDATE SET last_seen = CURRENT_TIMESTAMP
-            """;
+
+    public synchronized void saveUserToken(String userId, String tokenHash, java.time.LocalDateTime expiresAt) throws IOException {
+        String id = UUID.randomUUID().toString();
         try (Connection c = ChatDatabase.getConnection();
-             PreparedStatement p = c.prepareStatement(sql)) {
-            p.setString(1, sessionId);
+             PreparedStatement p = c.prepareStatement(
+                 "INSERT INTO campus_user_tokens (id, user_id, token_hash, expires_at) VALUES (?, ?, ?, ?)")) {
+            p.setString(1, id);
             p.setString(2, userId);
+            p.setString(3, tokenHash);
+            p.setTimestamp(4, Timestamp.valueOf(expiresAt));
             p.executeUpdate();
         } catch (SQLException e) {
             throw io(e);
         }
     }
 
-    public synchronized void removeSessionActivity(String sessionId) throws IOException {
-        String sql = "DELETE FROM campus_user_sessions WHERE session_id = ?";
+    public synchronized com.campus.lostfound.model.UserToken findUserTokenByHash(String tokenHash) throws IOException {
         try (Connection c = ChatDatabase.getConnection();
-             PreparedStatement p = c.prepareStatement(sql)) {
-            p.setString(1, sessionId);
-            p.executeUpdate();
-        } catch (SQLException e) {
-            throw io(e);
-        }
-    }
-
-    public synchronized Set<String> getOnlineUserIds() throws IOException {
-        Set<String> online = new HashSet<>();
-        String sql = "SELECT DISTINCT user_id FROM campus_user_sessions WHERE last_seen >= (CURRENT_TIMESTAMP - INTERVAL '2 minutes')";
-        try (Connection c = ChatDatabase.getConnection();
-             Statement s = c.createStatement();
-             ResultSet r = s.executeQuery(sql)) {
-            while (r.next()) {
-                online.add(r.getString("user_id"));
-            }
-            return online;
-        } catch (SQLException e) {
-            throw io(e);
-        }
-    }
-
-    public synchronized List<User> searchUsers(String query) throws IOException {
-        if (query == null || query.isBlank()) {
-            return allUsers();
-        }
-        String pattern = "%" + query.trim().toLowerCase(Locale.ROOT) + "%";
-        List<User> list = new ArrayList<>();
-        String sql = "SELECT id, name, email, password_hash, role FROM campus_users WHERE lower(name) LIKE ? OR lower(email) LIKE ? ORDER BY name ASC";
-        try (Connection c = ChatDatabase.getConnection();
-             PreparedStatement p = c.prepareStatement(sql)) {
-            p.setString(1, pattern);
-            p.setString(2, pattern);
+             PreparedStatement p = c.prepareStatement(
+                 "SELECT id, user_id, token_hash, created_at, expires_at FROM campus_user_tokens WHERE token_hash = ? LIMIT 1")) {
+            p.setString(1, tokenHash);
             try (ResultSet r = p.executeQuery()) {
-                while (r.next()) {
-                    list.add(user(r));
+                if (r.next()) {
+                    return new com.campus.lostfound.model.UserToken(
+                        r.getString("id"),
+                        r.getString("user_id"),
+                        r.getString("token_hash"),
+                        r.getTimestamp("created_at").toLocalDateTime(),
+                        r.getTimestamp("expires_at").toLocalDateTime()
+                    );
                 }
             }
-            return list;
+            return null;
+        } catch (SQLException e) {
+            throw io(e);
+        }
+    }
+
+    public synchronized void deleteUserTokenByHash(String tokenHash) throws IOException {
+        try (Connection c = ChatDatabase.getConnection();
+             PreparedStatement p = c.prepareStatement("DELETE FROM campus_user_tokens WHERE token_hash = ?")) {
+            p.setString(1, tokenHash);
+            p.executeUpdate();
+        } catch (SQLException e) {
+            throw io(e);
+        }
+    }
+
+    public synchronized void deleteAllTokensForUser(String userId) throws IOException {
+        try (Connection c = ChatDatabase.getConnection();
+             PreparedStatement p = c.prepareStatement("DELETE FROM campus_user_tokens WHERE user_id = ?")) {
+            p.setString(1, userId);
+            p.executeUpdate();
         } catch (SQLException e) {
             throw io(e);
         }
