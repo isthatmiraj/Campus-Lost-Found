@@ -503,64 +503,6 @@ public final class DataStore {
         }catch(SQLException e){throw io(e);}
     }
 
-
-    public synchronized void saveUserToken(String userId, String tokenHash, java.time.LocalDateTime expiresAt) throws IOException {
-        String id = UUID.randomUUID().toString();
-        try (Connection c = ChatDatabase.getConnection();
-             PreparedStatement p = c.prepareStatement(
-                 "INSERT INTO campus_user_tokens (id, user_id, token_hash, expires_at) VALUES (?, ?, ?, ?)")) {
-            p.setString(1, id);
-            p.setString(2, userId);
-            p.setString(3, tokenHash);
-            p.setTimestamp(4, Timestamp.valueOf(expiresAt));
-            p.executeUpdate();
-        } catch (SQLException e) {
-            throw io(e);
-        }
-    }
-
-    public synchronized com.campus.lostfound.model.UserToken findUserTokenByHash(String tokenHash) throws IOException {
-        try (Connection c = ChatDatabase.getConnection();
-             PreparedStatement p = c.prepareStatement(
-                 "SELECT id, user_id, token_hash, created_at, expires_at FROM campus_user_tokens WHERE token_hash = ? LIMIT 1")) {
-            p.setString(1, tokenHash);
-            try (ResultSet r = p.executeQuery()) {
-                if (r.next()) {
-                    return new com.campus.lostfound.model.UserToken(
-                        r.getString("id"),
-                        r.getString("user_id"),
-                        r.getString("token_hash"),
-                        r.getTimestamp("created_at").toLocalDateTime(),
-                        r.getTimestamp("expires_at").toLocalDateTime()
-                    );
-                }
-            }
-            return null;
-        } catch (SQLException e) {
-            throw io(e);
-        }
-    }
-
-    public synchronized void deleteUserTokenByHash(String tokenHash) throws IOException {
-        try (Connection c = ChatDatabase.getConnection();
-             PreparedStatement p = c.prepareStatement("DELETE FROM campus_user_tokens WHERE token_hash = ?")) {
-            p.setString(1, tokenHash);
-            p.executeUpdate();
-        } catch (SQLException e) {
-            throw io(e);
-        }
-    }
-
-    public synchronized void deleteAllTokensForUser(String userId) throws IOException {
-        try (Connection c = ChatDatabase.getConnection();
-             PreparedStatement p = c.prepareStatement("DELETE FROM campus_user_tokens WHERE user_id = ?")) {
-            p.setString(1, userId);
-            p.executeUpdate();
-        } catch (SQLException e) {
-            throw io(e);
-        }
-    }
-
     public synchronized void updateSessionActivity(String sessionId, String userId) throws IOException {
         String sql = """
             INSERT INTO campus_user_sessions (session_id, user_id, last_seen)

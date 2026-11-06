@@ -119,19 +119,7 @@ public final class DatabaseSchema {
         "CREATE INDEX IF NOT EXISTS campus_claims_claimant_idx ON campus_claims(claimant_id)",
         "CREATE INDEX IF NOT EXISTS campus_notifications_user_idx ON campus_notifications(user_id)",
         "CREATE INDEX IF NOT EXISTS campus_audit_created_idx ON campus_audit_logs(created_at)",
-        "CREATE INDEX IF NOT EXISTS campus_flags_status_idx ON campus_listing_flags(status)",
-        """
-        CREATE TABLE IF NOT EXISTS campus_user_tokens (
-            id VARCHAR(64) PRIMARY KEY,
-            user_id VARCHAR(64) NOT NULL,
-            token_hash VARCHAR(64) NOT NULL UNIQUE,
-            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            expires_at TIMESTAMP NOT NULL,
-            CONSTRAINT fk_campus_user_token FOREIGN KEY (user_id) REFERENCES campus_users(id) ON DELETE CASCADE
-        )
-        """,
-        "CREATE INDEX IF NOT EXISTS campus_user_tokens_hash_idx ON campus_user_tokens(token_hash)",
-        "CREATE INDEX IF NOT EXISTS campus_user_tokens_user_idx ON campus_user_tokens(user_id)"
+        "CREATE INDEX IF NOT EXISTS campus_flags_status_idx ON campus_listing_flags(status)"
     );
 
     public static void initialize() throws SQLException {
