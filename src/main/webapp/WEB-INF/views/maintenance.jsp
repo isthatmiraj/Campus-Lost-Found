@@ -12,6 +12,145 @@ String error = (String) request.getAttribute("maintenanceError");
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Chat Management | CampusFind</title>
     <link rel="stylesheet" href="<%=request.getContextPath()%>/css/style.css">
+
+    <style>
+    /* CampusFind chat management styles */
+    .maintenance-panel {
+        margin: 24px 0;
+        padding: 22px;
+        border: 1px solid var(--line, #dbe2ea);
+        border-radius: 14px;
+        background: var(--surface, #fff);
+        color: var(--text);
+        box-shadow: 0 5px 20px rgba(0,0,0,.04);
+    }
+
+    .maintenance-panel h2,
+    .maintenance-panel h3 {
+        color: var(--text);
+        margin-top: 0;
+    }
+
+    .maintenance-muted {
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    .maintenance-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 14px 0;
+    }
+
+    .maintenance-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        margin: 18px 0;
+        border: 1px solid var(--line, #dbe2ea);
+        border-radius: 10px;
+    }
+
+    .maintenance-table {
+        width: 100%;
+        min-width: 650px;
+        border-collapse: collapse;
+        background: var(--surface, #fff);
+        color: var(--text);
+    }
+
+    .maintenance-table th {
+        background: var(--bg, #f8fafc);
+        color: var(--muted);
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .maintenance-table th,
+    .maintenance-table td {
+        padding: 12px;
+        border-bottom: 1px solid var(--line, #dbe2ea);
+        vertical-align: middle;
+    }
+
+    .maintenance-table tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .maintenance-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 38px;
+        padding: 8px 14px;
+        border: 1px solid var(--accent, #64748b);
+        border-radius: 8px;
+        background: var(--accent, #334155);
+        color: #fff;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .maintenance-button:hover {
+        opacity: .88;
+    }
+
+    .maintenance-button.secondary {
+        background: var(--surface, #fff);
+        color: var(--text);
+        border-color: var(--line, #cbd5e1);
+    }
+
+    .maintenance-button.danger {
+        background: var(--danger, #dc2626);
+        border-color: var(--danger, #dc2626);
+        color: #fff;
+    }
+
+    .maintenance-panel input:not([type="checkbox"]),
+    .maintenance-panel textarea,
+    .maintenance-panel select {
+        max-width: 100%;
+        background: var(--surface, #fff);
+        color: var(--text);
+        border: 1px solid var(--line, #cbd5e1);
+        border-radius: 8px;
+        padding: 9px 11px;
+    }
+
+    .maintenance-panel input[type="checkbox"] {
+        accent-color: var(--accent, #64748b);
+    }
+
+    .maintenance-panel a:not(.maintenance-button) {
+        color: var(--accent, #526fc5);
+    }
+
+    @media (max-width: 640px) {
+        .maintenance-panel {
+            padding: 14px;
+            margin: 16px 0;
+        }
+
+        .maintenance-row {
+            align-items: stretch;
+        }
+
+        .maintenance-row > * {
+            max-width: 100%;
+        }
+
+        .maintenance-button {
+            min-height: 40px;
+        }
+    }
+    </style>
+
 </head>
 <body>
 <%@ include file="partials.jspf" %>
