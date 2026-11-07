@@ -14,7 +14,8 @@ String error = (String) request.getAttribute("maintenanceError");
     <link rel="stylesheet" href="<%=request.getContextPath()%>/css/style.css">
 </head>
 <body>
-<%@ include file="partials/nav.jspf" %>
+<%@ include file="partials.jspf" %>
+<%@ include file="nav.jspf" %>
 <main class="container page">
     <p class="eyebrow">ADMINISTRATION</p>
     <h1>Chat Management</h1>
