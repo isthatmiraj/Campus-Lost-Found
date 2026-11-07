@@ -471,6 +471,59 @@ public final class ChatStore {
         return messages;
     }
 
+    /** Permanently deletes complete conversation threads and their messages. */
+    public static int adminDeleteConversations(Collection<UUID> conversationIds)
+            throws SQLException {
+        if (conversationIds == null || conversationIds.isEmpty()) {
+            throw new IllegalArgumentException("Select at least one conversation.");
+        }
+
+        Set<UUID> uniqueIds = new LinkedHashSet<>(conversationIds);
+        if (uniqueIds.contains(null)) {
+            throw new IllegalArgumentException("Invalid conversation selection.");
+        }
+
+        List<UUID> ids = new ArrayList<>(uniqueIds);
+        int deletedConversations = 0;
+
+        try (Connection connection = ChatDatabase.getConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                for (int offset = 0; offset < ids.size(); offset += 500) {
+                    List<UUID> batch = ids.subList(offset,
+                            Math.min(offset + 500, ids.size()));
+                    String placeholders = String.join(",",
+                            Collections.nCopies(batch.size(), "?"));
+
+                    try (PreparedStatement ps = connection.prepareStatement(
+                            "DELETE FROM chat_messages WHERE conversation_id IN ("
+                                    + placeholders + ")")) {
+                        for (int i = 0; i < batch.size(); i++) {
+                            ps.setObject(i + 1, batch.get(i));
+                        }
+                        ps.executeUpdate();
+                    }
+
+                    try (PreparedStatement ps = connection.prepareStatement(
+                            "DELETE FROM chat_conversations WHERE id IN ("
+                                    + placeholders + ")")) {
+                        for (int i = 0; i < batch.size(); i++) {
+                            ps.setObject(i + 1, batch.get(i));
+                        }
+                        deletedConversations += ps.executeUpdate();
+                    }
+                }
+
+                connection.commit();
+                return deletedConversations;
+            } catch (Exception e) {
+                connection.rollback();
+                if (e instanceof SQLException) throw (SQLException) e;
+                throw new SQLException("Could not delete selected conversations.", e);
+            }
+        }
+    }
+
     public static boolean adminDeleteMessage(UUID conversationId, long messageId)
             throws SQLException {
         try (Connection connection = ChatDatabase.getConnection()) {

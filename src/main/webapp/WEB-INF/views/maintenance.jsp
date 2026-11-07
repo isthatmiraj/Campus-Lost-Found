@@ -39,6 +39,7 @@
  background:var(--primary-color,#2563eb);color:white;font-weight:600}
 .maintenance-button.secondary{background:#64748b}
 .maintenance-button.danger{background:#b91c1c}
+.maintenance-button:disabled{opacity:.45;cursor:not-allowed}
 .maintenance-alert{padding:13px 15px;border-radius:9px;margin:14px 0;
  background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35)}
 .maintenance-error{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.4)}
@@ -247,10 +248,22 @@
             </div>
         </form>
 
+        <form method="post" action="<%=request.getContextPath()%>/admin/maintenance#chat-manager"
+            onsubmit="return confirmBulkConversationDelete(this);">
+            <input type="hidden" name="csrfToken" value="<%=WebUtil.h(csrf)%>">
+            <input type="hidden" name="action" value="bulkDeleteConversations">
+            <input type="hidden" name="chatSearch"
+                value="<%=WebUtil.h(String.valueOf(request.getAttribute("chatSearch")))%>">
+
         <div class="maintenance-table-wrap">
             <table class="maintenance-table">
                 <thead>
                     <tr>
+                        <th><label class="maintenance-check">
+                            <input type="checkbox" id="select-all-conversations"
+                                aria-label="Select all listed conversations"
+                                onchange="toggleAllConversations(this)"> All
+                        </label></th>
                         <th>Listing</th><th>Participants</th><th>Messages</th>
                         <th>Last activity</th><th></th>
                     </tr>
@@ -263,11 +276,18 @@
                     String selectedChat = (String) request.getAttribute("selectedConversationId");
                     if (adminConversations == null || adminConversations.isEmpty()) {
                 %>
-                    <tr><td colspan="5">No conversations found.</td></tr>
+                    <tr><td colspan="6">No conversations found.</td></tr>
                 <% } else {
                     for (com.campus.lostfound.util.ChatStore.AdminConversation conversation : adminConversations) {
                 %>
                     <tr>
+                        <td>
+                            <input type="checkbox" class="conversation-select"
+                                name="conversationIds"
+                                value="<%=WebUtil.h(conversation.id.toString())%>"
+                                aria-label="Select conversation <%=WebUtil.h(conversation.id.toString())%>"
+                                onchange="updateConversationSelection()">
+                        </td>
                         <td>
                             <strong><%=WebUtil.h(conversation.itemTitle)%></strong>
                             <div class="maintenance-muted">Item: <%=WebUtil.h(String.valueOf(conversation.itemId))%></div>
@@ -290,6 +310,17 @@
                 </tbody>
             </table>
         </div>
+
+        <div class="maintenance-row">
+            <span id="conversation-selection-count" class="maintenance-muted">
+                0 conversations selected
+            </span>
+            <button class="maintenance-button danger" type="submit"
+                id="bulk-delete-conversations" disabled>
+                Delete selected conversations
+            </button>
+        </div>
+        </form>
 
         <% if (selectedChat != null) {
             List<com.campus.lostfound.util.ChatStore.Message> adminMessages =
@@ -359,5 +390,56 @@
         </p>
     </section>
 </main>
+
+<script>
+function conversationCheckboxes() {
+    return Array.from(document.querySelectorAll('.conversation-select'));
+}
+
+function toggleAllConversations(master) {
+    conversationCheckboxes().forEach(function(box) {
+        box.checked = master.checked;
+    });
+    updateConversationSelection();
+}
+
+function updateConversationSelection() {
+    var boxes = conversationCheckboxes();
+    var selected = boxes.filter(function(box) {
+        return box.checked;
+    }).length;
+
+    var count = document.getElementById('conversation-selection-count');
+    var button = document.getElementById('bulk-delete-conversations');
+    var master = document.getElementById('select-all-conversations');
+
+    if (count) count.textContent = selected + ' conversation(s) selected';
+    if (button) button.disabled = selected === 0;
+
+    if (master) {
+        master.checked = boxes.length > 0 && selected === boxes.length;
+        master.indeterminate = selected > 0 && selected < boxes.length;
+    }
+}
+
+function confirmBulkConversationDelete(form) {
+    var selected = form.querySelectorAll(
+        'input[name="conversationIds"]:checked'
+    ).length;
+
+    if (selected === 0) {
+        alert('Select at least one conversation first.');
+        return false;
+    }
+
+    return confirm(
+        'PERMANENTLY DELETE ' + selected +
+        ' complete conversation(s), including every message?\n\n' +
+        'This cannot be undone.'
+    );
+}
+
+document.addEventListener('DOMContentLoaded', updateConversationSelection);
+</script>
 </body>
 </html>

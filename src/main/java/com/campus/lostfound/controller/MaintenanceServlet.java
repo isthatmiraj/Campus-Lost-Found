@@ -95,6 +95,46 @@ public class MaintenanceServlet extends HttpServlet {
 
         try {
 
+            if ("bulkDeleteConversations".equals(action)) {
+                String[] selected = req.getParameterValues("conversationIds");
+                if (selected == null || selected.length == 0) {
+                    throw new IllegalArgumentException(
+                        "Select at least one conversation to delete.");
+                }
+
+                List<UUID> conversationIds = new ArrayList<>();
+                for (String value : selected) {
+                    if (value == null || value.isBlank()) continue;
+                    conversationIds.add(UUID.fromString(value));
+                }
+
+                if (conversationIds.isEmpty()) {
+                    throw new IllegalArgumentException(
+                        "Select at least one valid conversation to delete.");
+                }
+
+                int deleted = ChatStore.adminDeleteConversations(conversationIds);
+
+                if (deleted > 0) {
+                    MaintenanceStore.recordChatAdminAction(
+                        "CHAT_CONVERSATION_DELETE", deleted,
+                        String.valueOf(WebUtil.userId(req)));
+                }
+
+                req.getSession().setAttribute("maintenanceFlash",
+                    deleted + " complete conversation(s) and all their messages permanently deleted.");
+
+                String search = req.getParameter("chatSearch");
+                String redirect = req.getContextPath() + "/admin/maintenance";
+                if (search != null && !search.isBlank()) {
+                    redirect += "?chatSearch=" + java.net.URLEncoder.encode(
+                        search, StandardCharsets.UTF_8);
+                }
+
+                resp.sendRedirect(redirect + "#chat-manager");
+                return;
+            }
+
             if ("deleteChatMessage".equals(action)) {
                 UUID conversationId = UUID.fromString(req.getParameter("conversationId"));
                 long messageId = Long.parseLong(req.getParameter("messageId"));
