@@ -3,14 +3,14 @@
 <%
     List<Map<String,Object>> settings =
         (List<Map<String,Object>>) request.getAttribute("maintenanceSettings");
-    Map<String,Object> config =
+    Map<String,Object> maintenanceConfig =
         (Map<String,Object>) request.getAttribute("maintenanceConfig");
     List<Map<String,Object>> history =
         (List<Map<String,Object>>) request.getAttribute("maintenanceHistory");
 
     String csrf = (String) session.getAttribute("csrfToken");
-    Boolean autoEnabled = (Boolean) config.get("enabled");
-    Integer intervalHours = (Integer) config.get("hours");
+    Boolean autoEnabled = (Boolean) maintenanceConfig.get("enabled");
+    Integer intervalHours = (Integer) maintenanceConfig.get("hours");
 
     String previewCategory = (String) request.getAttribute("previewCategory");
     Integer previewDays = (Integer) request.getAttribute("previewDays");
