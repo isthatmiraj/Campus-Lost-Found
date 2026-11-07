@@ -323,6 +323,26 @@ public final class MaintenanceStore {
         }
     }
 
+
+    public static void recordChatAdminAction(
+            String category, long deletedCount, String actor) throws SQLException {
+        if (!Set.of("CHAT_MESSAGE_DELETE", "CHAT_CONVERSATION_CLEAR").contains(category)) {
+            throw new IllegalArgumentException("Invalid chat maintenance action.");
+        }
+
+        try (Connection c = ChatDatabase.getConnection();
+             PreparedStatement p = c.prepareStatement("""
+                INSERT INTO campus_maintenance_history
+                    (category, deleted_count, cutoff_at, run_type, actor_id)
+                VALUES (?, ?, NOW(), 'ADMIN', ?)
+             """)) {
+            p.setString(1, category);
+            p.setLong(2, deletedCount);
+            p.setString(3, actor);
+            p.executeUpdate();
+        }
+    }
+
     public static List<Map<String, Object>> history() throws SQLException {
         List<Map<String, Object>> result = new ArrayList<>();
 

@@ -1,6 +1,7 @@
 package com.campus.lostfound.controller;
 
 import com.campus.lostfound.util.MaintenanceStore;
+import com.campus.lostfound.util.ChatStore;
 import com.campus.lostfound.util.WebUtil;
 
 import jakarta.servlet.ServletException;
@@ -93,6 +94,39 @@ public class MaintenanceServlet extends HttpServlet {
         String action = req.getParameter("action");
 
         try {
+
+            if ("deleteChatMessage".equals(action)) {
+                UUID conversationId = UUID.fromString(req.getParameter("conversationId"));
+                long messageId = Long.parseLong(req.getParameter("messageId"));
+
+                boolean deleted = ChatStore.adminDeleteMessage(conversationId, messageId);
+                if (deleted) {
+                    MaintenanceStore.recordChatAdminAction(
+                        "CHAT_MESSAGE_DELETE", 1, String.valueOf(WebUtil.userId(req)));
+                }
+
+                req.getSession().setAttribute("maintenanceFlash",
+                    deleted ? "Message permanently deleted." : "Message was not found.");
+                resp.sendRedirect(req.getContextPath()
+                    + "/admin/maintenance?conversationId=" + conversationId);
+                return;
+            }
+
+            if ("clearChatConversation".equals(action)) {
+                UUID conversationId = UUID.fromString(req.getParameter("conversationId"));
+                int deleted = ChatStore.adminClearConversation(conversationId);
+
+                MaintenanceStore.recordChatAdminAction(
+                    "CHAT_CONVERSATION_CLEAR", deleted,
+                    String.valueOf(WebUtil.userId(req)));
+
+                req.getSession().setAttribute("maintenanceFlash",
+                    deleted + " messages permanently deleted. The conversation record remains.");
+                resp.sendRedirect(req.getContextPath()
+                    + "/admin/maintenance?conversationId=" + conversationId);
+                return;
+            }
+
             if ("save".equals(action)) {
                 Map<String, Integer> days = new HashMap<>();
                 Set<String> enabled = new HashSet<>();
@@ -160,6 +194,19 @@ public class MaintenanceServlet extends HttpServlet {
             req.setAttribute("maintenanceConfig", MaintenanceStore.config());
             req.setAttribute("maintenanceHistory", MaintenanceStore.history());
 
+            String chatSearch = req.getParameter("chatSearch");
+            req.setAttribute("chatSearch", chatSearch == null ? "" : chatSearch);
+            req.setAttribute("adminConversations",
+                ChatStore.getAdminConversations(chatSearch));
+
+            String selectedId = req.getParameter("conversationId");
+            if (selectedId != null && !selectedId.isBlank()) {
+                UUID conversationId = UUID.fromString(selectedId);
+                req.setAttribute("selectedConversationId", conversationId.toString());
+                req.setAttribute("adminChatMessages",
+                    ChatStore.getAdminMessages(conversationId));
+            }
+
             HttpSession session = req.getSession(false);
             if (session != null) {
                 Object flash = session.getAttribute("maintenanceFlash");
@@ -171,7 +218,7 @@ public class MaintenanceServlet extends HttpServlet {
 
             req.getRequestDispatcher("/WEB-INF/views/maintenance.jsp")
                 .forward(req, resp);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             throw new ServletException("Could not load maintenance dashboard.", e);
         }
     }

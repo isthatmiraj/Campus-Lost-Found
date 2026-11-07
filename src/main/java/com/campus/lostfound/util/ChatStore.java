@@ -346,6 +346,206 @@ public final class ChatStore {
         return conversations;
     }
 
+
+    public static final class AdminConversation {
+        public final UUID id;
+        public final String itemId;
+        public final String itemTitle;
+        public final String reporterId;
+        public final String reporterName;
+        public final String contactId;
+        public final String contactName;
+        public final Timestamp lastMessageAt;
+        public final String latestMessage;
+        public final long messageCount;
+
+        public AdminConversation(UUID id, String itemId, String itemTitle,
+                String reporterId, String reporterName,
+                String contactId, String contactName,
+                Timestamp lastMessageAt, String latestMessage,
+                long messageCount) {
+            this.id = id;
+            this.itemId = itemId;
+            this.itemTitle = itemTitle;
+            this.reporterId = reporterId;
+            this.reporterName = reporterName;
+            this.contactId = contactId;
+            this.contactName = contactName;
+            this.lastMessageAt = lastMessageAt;
+            this.latestMessage = latestMessage;
+            this.messageCount = messageCount;
+        }
+    }
+
+    // Admin-only listing. Authorization is enforced by MaintenanceServlet.
+    public static List<AdminConversation> getAdminConversations(String search)
+            throws Exception {
+        List<AdminConversation> result = new ArrayList<>();
+        String term = search == null ? "" : search.trim().toLowerCase(Locale.ROOT);
+
+        String sql = """
+            SELECT c.id, c.item_id, c.reporter_id, c.contact_id,
+                   c.last_message_at,
+                   COUNT(m.id) AS message_count,
+                   (SELECT m2.message_text
+                    FROM chat_messages m2
+                    WHERE m2.conversation_id = c.id
+                    ORDER BY m2.sent_at DESC, m2.id DESC
+                    LIMIT 1) AS latest_message
+            FROM chat_conversations c
+            LEFT JOIN chat_messages m ON m.conversation_id = c.id
+            GROUP BY c.id
+            ORDER BY c.last_message_at DESC NULLS LAST
+            """;
+
+        try (Connection connection = ChatDatabase.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                String itemId = rs.getString("item_id");
+                String reporterId = rs.getString("reporter_id");
+                String contactId = rs.getString("contact_id");
+
+                Item item = DataStore.get().findItem(itemId);
+                User reporter = DataStore.get().findUserById(reporterId);
+                User contact = DataStore.get().findUserById(contactId);
+
+                String itemTitle = item == null ? "Campus listing" : item.getTitle();
+                String reporterName = reporter == null ? "Unknown user" : reporter.getName();
+                String contactName = contact == null ? "Unknown user" : contact.getName();
+                String latest = rs.getString("latest_message");
+                if (latest == null || latest.isBlank()) latest = "No messages yet";
+
+                UUID id = rs.getObject("id", UUID.class);
+                String searchable = (id + " " + itemId + " " + itemTitle + " "
+                        + reporterId + " " + reporterName + " "
+                        + contactId + " " + contactName + " " + latest)
+                        .toLowerCase(Locale.ROOT);
+
+                if (!term.isEmpty() && !searchable.contains(term)) continue;
+
+                result.add(new AdminConversation(
+                        id, itemId, itemTitle,
+                        reporterId, reporterName,
+                        contactId, contactName,
+                        rs.getTimestamp("last_message_at"),
+                        latest, rs.getLong("message_count")));
+            }
+        }
+
+        return result;
+    }
+
+    // Unlike getMessages(), this method NEVER marks messages as read.
+    public static List<Message> getAdminMessages(UUID conversationId)
+            throws Exception {
+        List<Message> messages = new ArrayList<>();
+
+        try (Connection connection = ChatDatabase.getConnection()) {
+            if (findConversation(connection, conversationId) == null) {
+                throw new IllegalArgumentException("Conversation not found.");
+            }
+
+            try (PreparedStatement ps = connection.prepareStatement("""
+                    SELECT id, sender_id, message_text, sent_at, read_at
+                    FROM chat_messages
+                    WHERE conversation_id = ?
+                    ORDER BY sent_at ASC, id ASC
+                    """)) {
+                ps.setObject(1, conversationId);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        messages.add(new Message(
+                                rs.getLong("id"),
+                                rs.getString("sender_id"),
+                                rs.getString("message_text"),
+                                rs.getTimestamp("sent_at"),
+                                rs.getTimestamp("read_at") != null));
+                    }
+                }
+            }
+        }
+
+        return messages;
+    }
+
+    public static boolean adminDeleteMessage(UUID conversationId, long messageId)
+            throws SQLException {
+        try (Connection connection = ChatDatabase.getConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                int deleted;
+                try (PreparedStatement ps = connection.prepareStatement("""
+                        DELETE FROM chat_messages
+                        WHERE id = ? AND conversation_id = ?
+                        """)) {
+                    ps.setLong(1, messageId);
+                    ps.setObject(2, conversationId);
+                    deleted = ps.executeUpdate();
+                }
+
+                if (deleted > 0) {
+                    try (PreparedStatement ps = connection.prepareStatement("""
+                            UPDATE chat_conversations
+                            SET last_message_at = COALESCE(
+                                (SELECT MAX(sent_at) FROM chat_messages
+                                 WHERE conversation_id = ?),
+                                CURRENT_TIMESTAMP)
+                            WHERE id = ?
+                            """)) {
+                        ps.setObject(1, conversationId);
+                        ps.setObject(2, conversationId);
+                        ps.executeUpdate();
+                    }
+                }
+
+                connection.commit();
+                return deleted > 0;
+            } catch (Exception e) {
+                connection.rollback();
+                if (e instanceof SQLException) throw (SQLException) e;
+                throw new SQLException(e);
+            }
+        }
+    }
+
+    public static int adminClearConversation(UUID conversationId)
+            throws SQLException {
+        try (Connection connection = ChatDatabase.getConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                if (findConversation(connection, conversationId) == null) {
+                    throw new SQLException("Conversation not found.");
+                }
+
+                int deleted;
+                try (PreparedStatement ps = connection.prepareStatement(
+                        "DELETE FROM chat_messages WHERE conversation_id = ?")) {
+                    ps.setObject(1, conversationId);
+                    deleted = ps.executeUpdate();
+                }
+
+                try (PreparedStatement ps = connection.prepareStatement("""
+                        UPDATE chat_conversations
+                        SET last_message_at = CURRENT_TIMESTAMP
+                        WHERE id = ?
+                        """)) {
+                    ps.setObject(1, conversationId);
+                    ps.executeUpdate();
+                }
+
+                connection.commit();
+                return deleted;
+            } catch (Exception e) {
+                connection.rollback();
+                if (e instanceof SQLException) throw (SQLException) e;
+                throw new SQLException(e);
+            }
+        }
+    }
+
     public static int getUnreadCount(String userId) throws Exception {
         if (userId == null || userId.isBlank()) {
             throw new SecurityException("Please sign in first.");
