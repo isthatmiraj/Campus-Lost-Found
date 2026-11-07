@@ -116,8 +116,90 @@ private String formatAuditDate(String value) {
 </form>
 
 <%if(u.getId().equals(currentAdminId)){%><span class="muted">Cannot delete yourself</span><%}else{%><form method="post" action="<%=ctx%>/admin" onsubmit="return confirm('Delete this account? Their reports and related claims will also be removed. This cannot be undone.');"><input type="hidden" name="action" value="deleteUser"><input type="hidden" name="userId" value="<%=WebUtil.h(u.getId())%>"><button class="btn btn-small btn-danger" type="submit">Delete account</button></form><%}%></td></tr><%}if(allUsers.isEmpty()){%><tr><td colspan="5">No users yet.</td></tr><%}%><tr id="admin-users-no-results" hidden><td colspan="5">No users match your search.</td></tr></tbody></table></div>
-<h2>Listing reports</h2><p class="muted">Review flags submitted by users.</p><div class="table-wrap"><table><thead><tr><th>Reporter ID</th><th>Item ID</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead><tbody><% List<String[]> listingFlags=(List<String[]>)request.getAttribute("listingFlags"); if(listingFlags!=null)for(String[] f:listingFlags){%><tr><td><%=WebUtil.h(f[1])%></td><td><a href="<%=ctx%>/item?id=<%=java.net.URLEncoder.encode(f[2],java.nio.charset.StandardCharsets.UTF_8)%>"><%=WebUtil.h(f[2])%></a></td><td><%=WebUtil.h(f[3])%></td><td><%=WebUtil.h(f[4])%></td><td><%if("OPEN".equals(f[4])){%><form method="post" action="<%=ctx%>/admin"><input type="hidden" name="action" value="resolveFlag"><input type="hidden" name="flagId" value="<%=WebUtil.h(f[0])%>"><button class="btn btn-small" name="flagStatus" value="REVIEWED">Mark reviewed</button><button class="btn btn-small btn-light" name="flagStatus" value="DISMISSED">Dismiss</button></form><%}else{%>—<%}%></td></tr><%}if(listingFlags==null||listingFlags.isEmpty()){%><tr><td colspan="5">No listing flags.</td></tr><%}%></tbody></table></div>
-<h2>Recent audit log</h2><p class="muted">Recent system actions for basic accountability. This log is stored separately from the core records.</p><div class="table-wrap"><table><thead><tr><th>Time</th><th>Actor ID</th><th>Action</th><th>Details</th></tr></thead><tbody><% List<String[]> auditEntries=(List<String[]>)request.getAttribute("auditEntries"); if(auditEntries!=null)for(String[] a:auditEntries){%><tr><td><%=WebUtil.h(formatAuditDate(a[0]))%></td><td><small><%=WebUtil.h(a[1])%></small></td><td><%=WebUtil.h(a[2])%></td><td><%=WebUtil.h(a[3])%></td></tr><%}if(auditEntries==null||auditEntries.isEmpty()){%><tr><td colspan="4">No audit entries yet.</td></tr><%}%></tbody></table></div></main><script src="<%=ctx%>/js/password-visibility.js" defer></script><script src="<%=ctx%>/js/admin-user-management.js" defer></script><div id="cf-loading-overlay" hidden style="display:none" role="status" aria-label="Loading" aria-hidden="true">
+<h2>Listing reports</h2>
+<p class="muted">Review or delete flags submitted by users. Deleting a flag does not delete its listing.</p>
+
+<form id="deleteFlagsForm" method="post" action="<%=ctx%>/admin"
+      onsubmit="return document.querySelector('.flag-select:checked') && confirm('Delete the selected listing flags? This cannot be undone.');">
+    <input type="hidden" name="action" value="deleteListingFlags">
+    <input type="hidden" name="csrfToken" value="<%=WebUtil.h((String)session.getAttribute("csrfToken"))%>">
+    <button class="btn btn-small btn-danger" type="submit">Delete selected flags</button>
+</form>
+
+<div class="table-wrap">
+<table>
+<thead><tr>
+<th><input type="checkbox" onchange="document.querySelectorAll('.flag-select').forEach(c => c.checked = this.checked)" aria-label="Select all flags"></th>
+<th>Reporter ID</th><th>Item ID</th><th>Reason</th><th>Status</th><th>Action</th>
+</tr></thead>
+<tbody>
+<%
+List<String[]> listingFlags=(List<String[]>)request.getAttribute("listingFlags");
+if(listingFlags!=null)for(String[] f:listingFlags){
+%>
+<tr>
+<td><input class="flag-select" type="checkbox" name="flagIds" value="<%=WebUtil.h(f[0])%>" form="deleteFlagsForm"></td>
+<td><%=WebUtil.h(f[1])%></td>
+<td><a href="<%=ctx%>/item?id=<%=java.net.URLEncoder.encode(f[2],java.nio.charset.StandardCharsets.UTF_8)%>"><%=WebUtil.h(f[2])%></a></td>
+<td><%=WebUtil.h(f[3])%></td>
+<td><%=WebUtil.h(f[4])%></td>
+<td>
+<%if("OPEN".equals(f[4])){%>
+<form method="post" action="<%=ctx%>/admin">
+<input type="hidden" name="action" value="resolveFlag">
+<input type="hidden" name="flagId" value="<%=WebUtil.h(f[0])%>">
+<input type="hidden" name="csrfToken" value="<%=WebUtil.h((String)session.getAttribute("csrfToken"))%>">
+<button class="btn btn-small" name="flagStatus" value="REVIEWED">Mark reviewed</button>
+<button class="btn btn-small btn-light" name="flagStatus" value="DISMISSED">Dismiss</button>
+</form>
+<%}else{%>—<%}%>
+</td>
+</tr>
+<%}
+if(listingFlags==null||listingFlags.isEmpty()){%>
+<tr><td colspan="6">No listing flags.</td></tr>
+<%}%>
+</tbody>
+</table>
+</div>
+
+<h2>Recent audit log</h2>
+<p class="muted">Recent system actions for basic accountability. This log is stored separately from the core records.</p>
+
+<form id="deleteAuditForm" method="post" action="<%=ctx%>/admin"
+      onsubmit="return !!document.querySelector('.audit-select:checked') && confirm('Permanently delete the selected audit log entries?');">
+    <input type="hidden" name="action" value="deleteAuditLogs">
+    <input type="hidden" name="csrfToken" value="<%=WebUtil.h((String)session.getAttribute("csrfToken"))%>">
+    <button class="btn btn-small btn-danger" type="submit">Delete selected audit logs</button>
+</form>
+
+<div class="table-wrap">
+<table>
+<thead><tr>
+<th><input type="checkbox" onchange="document.querySelectorAll('.audit-select').forEach(c => c.checked = this.checked)" aria-label="Select all audit logs"></th>
+<th>Time</th><th>Actor ID</th><th>Action</th><th>Details</th>
+</tr></thead>
+<tbody>
+<%
+List<String[]> auditEntries=(List<String[]>)request.getAttribute("auditEntries");
+if(auditEntries!=null)for(String[] a:auditEntries){
+%>
+<tr>
+<td><input class="audit-select" type="checkbox" name="auditIds" value="<%=WebUtil.h(a[4])%>" form="deleteAuditForm"></td>
+<td><%=WebUtil.h(formatAuditDate(a[0]))%></td>
+<td><small><%=WebUtil.h(a[1])%></small></td>
+<td><%=WebUtil.h(a[2])%></td>
+<td><%=WebUtil.h(a[3])%></td>
+</tr>
+<%}
+if(auditEntries==null||auditEntries.isEmpty()){%>
+<tr><td colspan="5">No audit entries yet.</td></tr>
+<%}%>
+</tbody>
+</table>
+</div>
+
+<script src="<%=ctx%>/js/password-visibility.js" defer></script><script src="<%=ctx%>/js/admin-user-management.js" defer></script><div id="cf-loading-overlay" hidden style="display:none" role="status" aria-label="Loading" aria-hidden="true">
   <div class="cf-loader-content">
     <div class="cf-logo-wrap">
       <img class="cf-logo" src="<%=request.getContextPath()%>/images/campusfind-loader.png" alt="">

@@ -51,10 +51,37 @@ public class AdminServlet extends HttpServlet {
         }
     }
 
+    private boolean validAdminCsrf(HttpServletRequest req) {
+        HttpSession session = req.getSession(false);
+
+        if (session == null) {
+            return false;
+        }
+
+        String expected = (String) session.getAttribute("csrfToken");
+        String supplied = req.getParameter("csrfToken");
+
+        return expected != null && supplied != null &&
+            java.security.MessageDigest.isEqual(
+                expected.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                supplied.getBytes(java.nio.charset.StandardCharsets.UTF_8)
+            );
+    }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (!WebUtil.admin(req)) { resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Admin access required."); return; }
         String action = req.getParameter("action");
+
+        if ("deleteAuditLogs".equals(action) || "deleteListingFlags".equals(action)) {
+            if (!validAdminCsrf(req)) {
+                resp.sendError(
+                    HttpServletResponse.SC_FORBIDDEN,
+                    "Invalid or missing security token."
+                );
+                return;
+            }
+        }
 if ("resetUserPassword".equals(action)) {
     String targetUserId = req.getParameter("userId");
     String newPassword = req.getParameter("newPassword");
@@ -96,6 +123,57 @@ if ("resetUserPassword".equals(action)) {
     return;
 }
         try {
+
+            if ("deleteAuditLogs".equals(action)) {
+                String[] selected = req.getParameterValues("auditIds");
+
+                if (selected == null || selected.length == 0) {
+                    throw new IllegalArgumentException(
+                        "Select at least one audit entry."
+                    );
+                }
+
+                List<Long> ids = new java.util.ArrayList<>();
+
+                for (String value : selected) {
+                    try {
+                        ids.add(Long.parseLong(value));
+                    } catch (NumberFormatException ignored) {}
+                }
+
+                int deleted = WorkflowStore.get().deleteAuditLogs(ids);
+
+                resp.sendRedirect(
+                    req.getContextPath() + "/admin?auditDeleted=" + deleted
+                );
+                return;
+            }
+
+            if ("deleteListingFlags".equals(action)) {
+                String[] selected = req.getParameterValues("flagIds");
+
+                if (selected == null || selected.length == 0) {
+                    throw new IllegalArgumentException(
+                        "Select at least one listing flag."
+                    );
+                }
+
+                int deleted = CommunityStore.get().deleteFlags(
+                    java.util.Arrays.asList(selected)
+                );
+
+                WorkflowStore.get().audit(
+                    WebUtil.userId(req),
+                    "FLAGS_DELETED",
+                    deleted + " listing flag(s) deleted by administrator."
+                );
+
+                resp.sendRedirect(
+                    req.getContextPath() + "/admin?flagsDeleted=" + deleted
+                );
+                return;
+            }
+
             if ("deleteItem".equals(action)) {
                 String itemId = req.getParameter("itemId");
                 if (itemId == null || itemId.isBlank()) {

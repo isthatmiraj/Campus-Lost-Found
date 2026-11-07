@@ -1,6 +1,5 @@
 package com.campus.lostfound.controller;
 
-import com.campus.lostfound.util.MaintenanceStore;
 import com.campus.lostfound.util.ChatStore;
 import com.campus.lostfound.util.WebUtil;
 
@@ -13,43 +12,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.*;
 
-@WebServlet(urlPatterns = "/admin/maintenance", loadOnStartup = 2)
+@WebServlet(urlPatterns = "/admin/maintenance")
 public class MaintenanceServlet extends HttpServlet {
-    private ScheduledExecutorService scheduler;
-
-    @Override
-    public void init() throws ServletException {
-        try {
-            MaintenanceStore.initialize();
-        } catch (SQLException e) {
-            throw new ServletException("Could not initialize maintenance tables.", e);
-        }
-
-        scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread t = new Thread(r, "CampusFind-Maintenance");
-            t.setDaemon(true);
-            return t;
-        });
-
-        scheduler.scheduleWithFixedDelay(() -> {
-            try {
-                MaintenanceStore.automaticCleanup();
-            } catch (Exception e) {
-                getServletContext().log("Automatic maintenance failed.", e);
-            }
-        }, 5, 15, TimeUnit.MINUTES);
-    }
-
-    @Override
-    public void destroy() {
-        if (scheduler != null) scheduler.shutdownNow();
-    }
-
-    private boolean admin(HttpServletRequest req) {
-        return WebUtil.admin(req);
-    }
 
     private boolean validCsrf(HttpServletRequest req) {
         HttpSession session = req.getSession(false);
@@ -57,7 +22,6 @@ public class MaintenanceServlet extends HttpServlet {
 
         String expected = (String) session.getAttribute("csrfToken");
         String supplied = req.getParameter("csrfToken");
-
         if (expected == null || supplied == null) return false;
 
         return MessageDigest.isEqual(
@@ -69,7 +33,7 @@ public class MaintenanceServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        if (!admin(req)) {
+        if (!WebUtil.admin(req)) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
@@ -79,11 +43,10 @@ public class MaintenanceServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        if (!admin(req)) {
+        if (!WebUtil.admin(req)) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
-
         if (!validCsrf(req)) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN,
                 "Invalid or missing security token. Refresh the page and try again.");
@@ -94,7 +57,6 @@ public class MaintenanceServlet extends HttpServlet {
         String action = req.getParameter("action");
 
         try {
-
             if ("bulkDeleteConversations".equals(action)) {
                 String[] selected = req.getParameterValues("conversationIds");
                 if (selected == null || selected.length == 0) {
@@ -102,35 +64,27 @@ public class MaintenanceServlet extends HttpServlet {
                         "Select at least one conversation to delete.");
                 }
 
-                List<UUID> conversationIds = new ArrayList<>();
+                List<UUID> ids = new ArrayList<>();
                 for (String value : selected) {
-                    if (value == null || value.isBlank()) continue;
-                    conversationIds.add(UUID.fromString(value));
+                    if (value != null && !value.isBlank()) {
+                        ids.add(UUID.fromString(value));
+                    }
                 }
-
-                if (conversationIds.isEmpty()) {
+                if (ids.isEmpty()) {
                     throw new IllegalArgumentException(
                         "Select at least one valid conversation to delete.");
                 }
 
-                int deleted = ChatStore.adminDeleteConversations(conversationIds);
-
-                if (deleted > 0) {
-                    MaintenanceStore.recordChatAdminAction(
-                        "CHAT_CONVERSATION_DELETE", deleted,
-                        String.valueOf(WebUtil.userId(req)));
-                }
-
+                int deleted = ChatStore.adminDeleteConversations(ids);
                 req.getSession().setAttribute("maintenanceFlash",
                     deleted + " complete conversation(s) and all their messages permanently deleted.");
 
-                String search = req.getParameter("chatSearch");
                 String redirect = req.getContextPath() + "/admin/maintenance";
+                String search = req.getParameter("chatSearch");
                 if (search != null && !search.isBlank()) {
-                    redirect += "?chatSearch=" + java.net.URLEncoder.encode(
-                        search, StandardCharsets.UTF_8);
+                    redirect += "?chatSearch=" +
+                        java.net.URLEncoder.encode(search, StandardCharsets.UTF_8);
                 }
-
                 resp.sendRedirect(redirect + "#chat-manager");
                 return;
             }
@@ -140,15 +94,11 @@ public class MaintenanceServlet extends HttpServlet {
                 long messageId = Long.parseLong(req.getParameter("messageId"));
 
                 boolean deleted = ChatStore.adminDeleteMessage(conversationId, messageId);
-                if (deleted) {
-                    MaintenanceStore.recordChatAdminAction(
-                        "CHAT_MESSAGE_DELETE", 1, String.valueOf(WebUtil.userId(req)));
-                }
-
                 req.getSession().setAttribute("maintenanceFlash",
                     deleted ? "Message permanently deleted." : "Message was not found.");
+
                 resp.sendRedirect(req.getContextPath()
-                    + "/admin/maintenance?conversationId=" + conversationId);
+                    + "/admin/maintenance?conversationId=" + conversationId + "#chat-manager");
                 return;
             }
 
@@ -156,62 +106,11 @@ public class MaintenanceServlet extends HttpServlet {
                 UUID conversationId = UUID.fromString(req.getParameter("conversationId"));
                 int deleted = ChatStore.adminClearConversation(conversationId);
 
-                MaintenanceStore.recordChatAdminAction(
-                    "CHAT_CONVERSATION_CLEAR", deleted,
-                    String.valueOf(WebUtil.userId(req)));
-
                 req.getSession().setAttribute("maintenanceFlash",
                     deleted + " messages permanently deleted. The conversation record remains.");
+
                 resp.sendRedirect(req.getContextPath()
-                    + "/admin/maintenance?conversationId=" + conversationId);
-                return;
-            }
-
-            if ("save".equals(action)) {
-                Map<String, Integer> days = new HashMap<>();
-                Set<String> enabled = new HashSet<>();
-
-                for (String[] category : MaintenanceStore.CATEGORIES) {
-                    String key = category[0];
-                    days.put(key, Integer.parseInt(req.getParameter("days_" + key)));
-                    if ("on".equals(req.getParameter("enabled_" + key))) {
-                        enabled.add(key);
-                    }
-                }
-
-                boolean auto = "on".equals(req.getParameter("auto_enabled"));
-                int interval = Integer.parseInt(req.getParameter("interval_hours"));
-
-                MaintenanceStore.saveSettings(days, enabled, auto, interval);
-                req.getSession().setAttribute("maintenanceFlash",
-                    "Maintenance settings saved.");
-                resp.sendRedirect(req.getContextPath() + "/admin/maintenance");
-                return;
-            }
-
-            if ("preview".equals(action)) {
-                String category = req.getParameter("category");
-                int days = Integer.parseInt(req.getParameter("days"));
-                long count = MaintenanceStore.preview(category, days);
-
-                req.setAttribute("previewCategory", category);
-                req.setAttribute("previewDays", days);
-                req.setAttribute("previewCount", count);
-                render(req, resp);
-                return;
-            }
-
-            if ("confirm".equals(action)) {
-                String category = req.getParameter("category");
-                int days = Integer.parseInt(req.getParameter("days"));
-
-                long deleted = MaintenanceStore.cleanup(
-                    category, days, String.valueOf(WebUtil.userId(req)), "MANUAL");
-
-                req.getSession().setAttribute("maintenanceFlash",
-                    deleted + " records deleted from " +
-                    MaintenanceStore.label(category) + ".");
-                resp.sendRedirect(req.getContextPath() + "/admin/maintenance");
+                    + "/admin/maintenance?conversationId=" + conversationId + "#chat-manager");
                 return;
             }
 
@@ -220,7 +119,7 @@ public class MaintenanceServlet extends HttpServlet {
             req.setAttribute("maintenanceError", e.getMessage());
             render(req, resp);
         } catch (SQLException e) {
-            getServletContext().log("Maintenance action failed.", e);
+            getServletContext().log("Chat maintenance action failed.", e);
             req.setAttribute("maintenanceError",
                 "The database operation failed. Check the server logs for details.");
             render(req, resp);
@@ -230,10 +129,6 @@ public class MaintenanceServlet extends HttpServlet {
     private void render(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         try {
-            req.setAttribute("maintenanceSettings", MaintenanceStore.settings());
-            req.setAttribute("maintenanceConfig", MaintenanceStore.config());
-            req.setAttribute("maintenanceHistory", MaintenanceStore.history());
-
             String chatSearch = req.getParameter("chatSearch");
             req.setAttribute("chatSearch", chatSearch == null ? "" : chatSearch);
             req.setAttribute("adminConversations",
@@ -259,7 +154,7 @@ public class MaintenanceServlet extends HttpServlet {
             req.getRequestDispatcher("/WEB-INF/views/maintenance.jsp")
                 .forward(req, resp);
         } catch (Exception e) {
-            throw new ServletException("Could not load maintenance dashboard.", e);
+            throw new ServletException("Could not load chat management dashboard.", e);
         }
     }
 }

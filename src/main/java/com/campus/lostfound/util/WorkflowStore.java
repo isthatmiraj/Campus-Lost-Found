@@ -27,11 +27,74 @@ public final class WorkflowStore {
         if(limit<=0)return new ArrayList<>();
         List<String[]> out=new ArrayList<>();
         try(Connection c=ChatDatabase.getConnection();PreparedStatement p=c.prepareStatement(
-            "SELECT created_at,actor_id,action,detail FROM campus_audit_logs ORDER BY created_at DESC,id DESC LIMIT ?")){
+            "SELECT created_at,actor_id,action,detail,id FROM campus_audit_logs ORDER BY created_at DESC,id DESC LIMIT ?")){
             p.setInt(1,limit);try(ResultSet r=p.executeQuery()){while(r.next())out.add(new String[]{
-                r.getString("created_at"),r.getString("actor_id"),r.getString("action"),r.getString("detail")});}
+                r.getString("created_at"),r.getString("actor_id"),r.getString("action"),r.getString("detail"),r.getString("id")});}
             return out;
         }catch(SQLException e){throw io(e);}
+    }
+
+    public synchronized int deleteAuditLogs(java.util.Collection<Long> ids) throws IOException {
+        if (ids == null || ids.isEmpty()) {
+            throw new IllegalArgumentException("Select at least one audit entry.");
+        }
+
+        java.util.LinkedHashSet<Long> unique = new java.util.LinkedHashSet<>();
+
+        for (Long id : ids) {
+            if (id != null && id > 0) {
+                unique.add(id);
+            }
+        }
+
+        if (unique.isEmpty()) {
+            throw new IllegalArgumentException("No valid audit entries were selected.");
+        }
+
+        try (Connection c = ChatDatabase.getConnection()) {
+            c.setAutoCommit(false);
+
+            try {
+                String sql = "DELETE FROM campus_audit_logs WHERE id IN (" +
+                    String.join(",", java.util.Collections.nCopies(unique.size(), "?")) + ")";
+
+                int deleted;
+
+                try (PreparedStatement p = c.prepareStatement(sql)) {
+                    int i = 1;
+
+                    for (Long id : unique) {
+                        p.setLong(i++, id);
+                    }
+
+                    deleted = p.executeUpdate();
+                }
+
+                c.commit();
+                return deleted;
+
+            } catch (Exception e) {
+                try {
+                    c.rollback();
+                } catch (SQLException x) {
+                    e.addSuppressed(x);
+                }
+
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException)e;
+                }
+
+                throw new IOException(e);
+
+            } finally {
+                try {
+                    c.setAutoCommit(true);
+                } catch (SQLException ignored) {}
+            }
+
+        } catch (SQLException e) {
+            throw io(e);
+        }
     }
 
     public synchronized void notifyUser(String userId,String message,String url) throws IOException {

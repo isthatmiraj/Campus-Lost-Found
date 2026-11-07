@@ -91,6 +91,69 @@ public final class CommunityStore {
         }catch(SQLException e){throw io(e);}
     }
 
+    public synchronized int deleteFlags(java.util.Collection<String> ids) throws IOException {
+        if (ids == null || ids.isEmpty()) {
+            throw new IllegalArgumentException("Select at least one listing flag.");
+        }
+
+        java.util.LinkedHashSet<String> unique = new java.util.LinkedHashSet<>();
+
+        for (String id : ids) {
+            if (id != null && id.matches("[a-fA-F0-9-]{36}")) {
+                unique.add(id);
+            }
+        }
+
+        if (unique.isEmpty()) {
+            throw new IllegalArgumentException("No valid listing flags were selected.");
+        }
+
+        try (Connection c = ChatDatabase.getConnection()) {
+            c.setAutoCommit(false);
+
+            try {
+                String sql = "DELETE FROM campus_listing_flags WHERE id IN (" +
+                    String.join(",", java.util.Collections.nCopies(unique.size(), "?")) + ")";
+
+                int deleted;
+
+                try (PreparedStatement p = c.prepareStatement(sql)) {
+                    int i = 1;
+
+                    for (String id : unique) {
+                        p.setString(i++, id);
+                    }
+
+                    deleted = p.executeUpdate();
+                }
+
+                c.commit();
+                return deleted;
+
+            } catch (Exception e) {
+                try {
+                    c.rollback();
+                } catch (SQLException x) {
+                    e.addSuppressed(x);
+                }
+
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException)e;
+                }
+
+                throw new IOException(e);
+
+            } finally {
+                try {
+                    c.setAutoCommit(true);
+                } catch (SQLException ignored) {}
+            }
+
+        } catch (SQLException e) {
+            throw io(e);
+        }
+    }
+
     public synchronized void resolveFlag(String id,String status) throws IOException {
         if(!"REVIEWED".equals(status)&&!"DISMISSED".equals(status))
             throw new IllegalArgumentException("Invalid flag decision.");
