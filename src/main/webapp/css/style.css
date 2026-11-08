@@ -3102,3 +3102,47 @@ html[data-theme="dark"] .btn-light.cf-nav-click-loading .cf-nav-click-spinner::a
     border-right-color: #ffffff !important;
 }
 
+
+/* CAMPUSFIND FIX: REMOVE PAGE BOUNCE + CORRECT PRIMARY SPINNER CONTRAST */
+
+/* Never move or scale the entire page during navigation.
+   Keep the existing independent card and section animations. */
+body main.container {
+    animation: none !important;
+    transform: none !important;
+}
+
+/* Green primary buttons: white spinner for clear contrast.
+   Covers Login and Publish Report (.btn). */
+.cf-nav-click-loading.btn:not(.btn-light):not(.btn-danger) .cf-nav-click-spinner::after {
+    border-color: rgba(255, 255, 255, .30) !important;
+    border-top-color: #ffffff !important;
+    border-right-color: #ffffff !important;
+}
+
+/* Light secondary buttons: dark green spinner. */
+html:not([data-theme="dark"]) .btn-light.cf-nav-click-loading .cf-nav-click-spinner::after {
+    border-color: rgba(0, 90, 65, .22) !important;
+    border-top-color: #075b43 !important;
+    border-right-color: #075b43 !important;
+}
+
+html[data-theme="dark"] .btn-light.cf-nav-click-loading .cf-nav-click-spinner::after {
+    border-color: rgba(0, 120, 90, .25) !important;
+    border-top-color: #007a58 !important;
+    border-right-color: #007a58 !important;
+}
+
+/* View Details is styled green despite using btn-light. */
+.item-actions .btn-light.cf-nav-click-loading .cf-nav-click-spinner::after {
+    border-color: rgba(255, 255, 255, .30) !important;
+    border-top-color: #ffffff !important;
+    border-right-color: #ffffff !important;
+}
+
+/* Danger buttons retain a white spinner. */
+.cf-nav-click-loading.btn-danger .cf-nav-click-spinner::after {
+    border-color: rgba(255, 255, 255, .30) !important;
+    border-top-color: #ffffff !important;
+    border-right-color: #ffffff !important;
+}

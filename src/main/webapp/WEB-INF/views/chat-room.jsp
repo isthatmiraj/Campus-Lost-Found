@@ -370,7 +370,7 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--chat-bg);c
     } else {
         loadMessages();
         checkTyping();
-        setInterval(loadMessages, 3500);
+        setInterval(loadMessages, 2000);
         setInterval(checkTyping, 2000);
     }
 })();
