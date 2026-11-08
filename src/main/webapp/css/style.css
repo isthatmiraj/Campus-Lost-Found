@@ -3111,14 +3111,6 @@ body main.container {
     transform: none !important;
 }
 
-/* Bring back the premium bounce on the content, not the page shell. */
-main.container > .panel,
-main.container > .admin-stat,
-main.container > .table-wrap,
-main.container > .edit-review-card,
-main.container .item-card {
-    animation: cf-card-pop .48s cubic-bezier(.2, 1.2, .4, 1) both !important;
-}
 
 /* Green primary buttons: white spinner for clear contrast.
    Covers Login and Publish Report (.btn). */
@@ -3153,4 +3145,10 @@ html[data-theme="dark"] .btn-light.cf-nav-click-loading .cf-nav-click-spinner::a
     border-color: rgba(255, 255, 255, .30) !important;
     border-top-color: #ffffff !important;
     border-right-color: #ffffff !important;
+}
+
+
+/* Browse page only: restore the original smooth entrance bounce. */
+body main.cf-browse-page {
+    animation: cf-page-pop .48s cubic-bezier(.2, 1.4, .4, 1) both !important;
 }
