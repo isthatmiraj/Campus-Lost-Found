@@ -700,24 +700,29 @@
 </script>
 
 
-<!-- cf-nav-progress-v1 -->
-<div id="cf-nav-progress" class="cf-nav-progress"
-     role="status" aria-label="Loading next page" aria-hidden="true">
-    <span class="cf-nav-progress-ring"></span>
-</div>
 
+
+
+<!-- cf-button-navigation-spinner-v1 -->
 <script>
 (function () {
     "use strict";
 
-    var indicator = document.getElementById("cf-nav-progress");
-    if (!indicator) return;
-
+    var activeElement = null;
     var fallbackTimer = null;
 
-    function hide() {
-        indicator.classList.remove("cf-nav-progress-active");
-        indicator.setAttribute("aria-hidden", "true");
+    function restore() {
+        if (activeElement) {
+            activeElement.classList.remove("cf-nav-click-loading");
+            activeElement.setAttribute("aria-busy", "false");
+
+            var spinner = activeElement.querySelector(
+                ":scope > .cf-nav-click-spinner"
+            );
+
+            if (spinner) spinner.remove();
+            activeElement = null;
+        }
 
         if (fallbackTimer) {
             window.clearTimeout(fallbackTimer);
@@ -725,26 +730,35 @@
         }
     }
 
-    function show() {
-        indicator.classList.add("cf-nav-progress-active");
-        indicator.setAttribute("aria-hidden", "false");
+    function show(element) {
+        if (activeElement) restore();
 
-        if (fallbackTimer) window.clearTimeout(fallbackTimer);
+        activeElement = element;
+        element.classList.add("cf-nav-click-loading");
+        element.setAttribute("aria-busy", "true");
 
-        fallbackTimer = window.setTimeout(hide, 15000);
+        var spinner = document.createElement("span");
+        spinner.className = "cf-nav-click-spinner";
+        spinner.setAttribute("aria-hidden", "true");
+
+        element.appendChild(spinner);
+
+        // Recover if navigation is cancelled or interrupted.
+        fallbackTimer = window.setTimeout(restore, 30000);
     }
 
     document.addEventListener("click", function (event) {
         if (event.defaultPrevented || event.button !== 0) return;
-        if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        if (event.ctrlKey || event.metaKey ||
+            event.shiftKey || event.altKey) return;
 
         var target = event.target;
         if (!target || !target.closest) return;
 
         var anchor = target.closest("a");
-        if (!anchor || anchor.target && anchor.target !== "_self") return;
-        if (anchor.hasAttribute("download")) return;
-        if (anchor.relList && anchor.relList.contains("external")) return;
+        if (!anchor || anchor.hasAttribute("download")) return;
+        if (anchor.target && anchor.target !== "_self") return;
+        if (anchor.closest("[data-no-nav-spinner]")) return;
 
         var url;
 
@@ -757,23 +771,22 @@
         if (url.origin !== window.location.origin) return;
         if (url.protocol !== "http:" && url.protocol !== "https:") return;
 
+        // Ignore links that only change the current page's fragment.
         if (url.pathname === window.location.pathname &&
             url.search === window.location.search &&
-            url.hash) return;
+            url.hash !== window.location.hash) return;
 
         if (url.href === window.location.href) return;
 
-        show();
-    });
+        show(anchor);
+    }, true);
 
-    window.addEventListener("pageshow", hide);
-    document.addEventListener("visibilitychange", function () {
-        if (document.visibilityState === "visible" &&
-            !window.performance.getEntriesByType("navigation")[0]?.type) {
-            hide();
+    window.addEventListener("pageshow", restore);
+    window.addEventListener("pagehide", function () {
+        if (fallbackTimer) {
+            window.clearTimeout(fallbackTimer);
+            fallbackTimer = null;
         }
     });
-
-    hide();
 })();
 </script>
