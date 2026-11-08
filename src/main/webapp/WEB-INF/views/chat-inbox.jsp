@@ -410,7 +410,32 @@ body {
             .person-name { font-size: 14px; }
             .latest-message { font-size: 12px; }
         }
-    </style>
+    
+/* Live unread indicators */
+.conversation { transition: background .18s ease, transform .18s ease; }
+.conversation:hover { transform: translateX(3px); }
+.conversation-unread {
+    min-width: 23px; height: 23px; padding: 0 7px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 999px; background: #00c995; color: #042016;
+    font-size: 11px; font-weight: 900;
+    box-shadow: 0 0 0 3px rgba(0,214,160,.12);
+}
+.conversation-unread[hidden] { display: none; }
+.conversation.has-unread .person-name { color: #00a77d; }
+:root[data-theme="dark"] .conversation.has-unread .person-name { color: #00e6ad; }
+.conversation.has-unread .latest-message {
+    color: var(--inbox-text); font-weight: 650;
+}
+.conversation:focus-visible, .back:focus-visible, .theme-toggle:focus-visible {
+    outline: 3px solid rgba(0,214,160,.4); outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+    .conversation { transition: none; }
+    .conversation:hover { transform: none; }
+}
+
+</style>
 </head>
 
 <body>
@@ -450,8 +475,13 @@ body {
     const list = document.getElementById('conversations');
     const status = document.getElementById('status');
     const count = document.getElementById('conversationCount');
+    let lastRendered = '';
+    let loading = false;
 
     async function loadInbox() {
+        if (loading || document.visibilityState === 'hidden') return;
+        loading = true;
+        try {
         try {
             const response = await fetch(context + '/chat/inbox-data', {
                 credentials: 'same-origin',
@@ -462,8 +492,16 @@ body {
 
             const data = await response.json();
             const conversations = data.conversations || [];
+            const serialized = JSON.stringify(conversations);
 
+            count.textContent = conversations.length +
+                (conversations.length === 1 ? ' conversation' : ' conversations');
+
+            if (serialized === lastRendered) return;
+            lastRendered = serialized;
             list.replaceChildren();
+
+            /* The conversation list is rebuilt only when its data changes. */
             count.textContent = conversations.length +
                 (conversations.length === 1 ? ' conversation' : ' conversations');
 
@@ -536,23 +574,41 @@ body {
                         ? '' : date.toLocaleDateString();
                 }
 
+                const unread = document.createElement('span');
+                unread.className = 'conversation-unread';
+                const unreadCount = Number(conversation.unreadCount) || 0;
+                unread.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
+                unread.hidden = unreadCount < 1;
+
                 const open = document.createElement('div');
                 open.className = 'open-label';
-                open.textContent = 'Open →';
+                open.textContent = unreadCount > 0 ? 'New message' : 'Open →';
 
-                meta.append(time, open);
+                if (unreadCount > 0) {
+                    link.classList.add('has-unread');
+                }
+
+                meta.append(time, unread, open);
                 link.append(avatar, details, meta);
                 list.appendChild(link);
             }
         } catch (error) {
-            status.hidden = false;
-            status.textContent =
-                'Could not load conversations. Please refresh and try again.';
-            count.textContent = 'Unavailable';
+            if (!lastRendered) {
+                status.hidden = false;
+                status.textContent =
+                    'Could not load conversations. Please refresh and try again.';
+                count.textContent = 'Unavailable';
+            }
+        } finally {
+            loading = false;
         }
     }
 
     loadInbox();
+    window.setInterval(loadInbox, 5000);
+    document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') loadInbox();
+    });
 })();
 </script>
 <script>

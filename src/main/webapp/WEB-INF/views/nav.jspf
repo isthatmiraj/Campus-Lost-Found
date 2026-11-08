@@ -66,17 +66,13 @@
 
             <a href="<%=request.getContextPath()%>/dashboard">
                 Dashboard
-                <% try {
-                    long n = com.campus.lostfound.util.WorkflowStore
-                        .get().unreadCount(WebUtil.userId(request));
-                    if (n > 0) {
-                %>
-                    (<%=n%>)
-                <%  }
-                } catch (Exception ignored) {} %>
+                <span class="cf-nav-unread" id="cf-notification-count" hidden></span>
             </a>
 
-            <a href="<%=request.getContextPath()%>/chat/inbox">Inbox</a>
+            <a href="<%=request.getContextPath()%>/chat/inbox">
+                Inbox
+                <span class="cf-nav-unread" id="cf-chat-count" hidden></span>
+            </a>
 
             <% if (WebUtil.admin(request)) { %>
                 <a href="<%=request.getContextPath()%>/admin">Admin</a>
@@ -243,6 +239,61 @@
             markActivity();
             heartbeat();
         }
+    });
+})();
+</script>
+<% } %>
+
+
+<% if (WebUtil.loggedIn(request)) { %>
+<style>
+.cf-nav-unread {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 19px; height: 19px; margin-left: 5px; padding: 0 6px;
+    border-radius: 999px; background: #00c995; color: #042016;
+    font-size: 10px; font-weight: 900; line-height: 1;
+    vertical-align: middle; box-shadow: 0 0 0 3px rgba(0,214,160,.12);
+}
+.cf-nav-unread[hidden] { display: none; }
+</style>
+<script>
+(function () {
+    var endpoint = '<%=request.getContextPath()%>/chat/updates';
+    var notificationBadge = document.getElementById('cf-notification-count');
+    var chatBadge = document.getElementById('cf-chat-count');
+    var busy = false;
+
+    function updateBadge(element, value) {
+        if (!element) return;
+        var n = Number(value) || 0;
+        element.textContent = n > 99 ? '99+' : String(n);
+        element.hidden = n < 1;
+        element.setAttribute('aria-label', n + ' unread');
+    }
+
+    async function refreshUnread() {
+        if (busy || document.visibilityState === 'hidden') return;
+        busy = true;
+        try {
+            var response = await fetch(endpoint, {
+                credentials: 'same-origin', cache: 'no-store',
+                headers: {'Accept':'application/json'}
+            });
+            if (!response.ok) return;
+            var data = await response.json();
+            updateBadge(notificationBadge, data.unreadNotifications);
+            updateBadge(chatBadge, data.unreadMessages);
+        } catch (error) {
+            // Retain the last successful counts during temporary network errors.
+        } finally {
+            busy = false;
+        }
+    }
+
+    refreshUnread();
+    window.setInterval(refreshUnread, 8000);
+    document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') refreshUnread();
     });
 })();
 </script>

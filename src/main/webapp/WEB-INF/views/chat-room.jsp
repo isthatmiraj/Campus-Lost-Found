@@ -63,6 +63,25 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--chat-bg);c
 #send:disabled,#message:disabled{opacity:.5;cursor:not-allowed}
 .note{font-size:11px;color:var(--chat-muted);text-align:center;padding:0 10px 12px}
 @media(max-width:600px){.app{padding:8px;height:100dvh}.top{padding:8px 4px 12px}.panel{border-radius:17px}.badge{display:none}#messages{padding:16px 12px}.message{max-width:88%}.composer{padding:10px;gap:8px}#send{padding:13px 14px}}
+
+/* Chat typing and delivery feedback */
+.back,.theme-toggle,#send {
+    transition: transform .18s ease, filter .18s ease, border-color .18s ease;
+}
+.back:hover,.theme-toggle:hover { transform: translateY(-2px); border-color: #00d6a0; }
+.back:active,.theme-toggle:active,#send:active:not(:disabled) { transform: scale(.96); }
+.stamp.receipt-seen { color: #00a77d; font-weight: 800; }
+:root[data-theme="dark"] .stamp.receipt-seen { color: #00e6ad; }
+.typing-indicator {
+    padding: 0 24px 10px; color: var(--chat-muted);
+    font-size: 12px; font-style: italic; min-height: 22px;
+}
+.typing-indicator[hidden] { display: none; }
+@media (max-width:600px) { .typing-indicator { padding: 0 14px 8px; } }
+@media (prefers-reduced-motion:reduce) {
+    .back,.theme-toggle,#send { transition: none; }
+}
+
 </style>
 </head>
 <body>
@@ -124,7 +143,19 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--chat-bg);c
     const form = document.getElementById('composer');
     const input = document.getElementById('message');
     const send = document.getElementById('send');
+    const csrfToken = '<%= WebUtil.h(csrfToken) %>';
     let lastRendered = '';
+    let loadingMessages = false;
+    let typingActive = false;
+    let typingTimer = null;
+    let lastTypingSent = 0;
+
+    const typingIndicator = document.createElement('div');
+    typingIndicator.id = 'typing-indicator';
+    typingIndicator.className = 'typing-indicator';
+    typingIndicator.textContent = 'The other person is typing…';
+    typingIndicator.hidden = true;
+    messagesEl.insertAdjacentElement('afterend', typingIndicator);
 
     function showState(text) {
         messagesEl.replaceChildren();
@@ -146,14 +177,22 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--chat-bg);c
         const stamp = document.createElement('div');
         stamp.className = 'stamp';
         const date = new Date(message.sentAt);
-        stamp.textContent = Number.isNaN(date.getTime()) ? '' :
-            date.toLocaleString([], {hour:'2-digit', minute:'2-digit'});
+        const time = Number.isNaN(date.getTime()) ? '' :
+            date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        const mine = message.senderId === currentUserId;
+        stamp.textContent = time +
+            (mine ? (message.read ? '  ·  Seen' : '  ·  Sent') : '');
+        if (mine && message.read) stamp.classList.add('receipt-seen');
 
         row.append(bubble, stamp);
         messagesEl.appendChild(row);
     }
 
     async function loadMessages() {
+        if (!conversationId || loadingMessages ||
+                document.visibilityState === 'hidden') return;
+        loadingMessages = true;
+        try {
         if (!conversationId) {
             showState('No conversation was selected. Return to your inbox.');
             return;
@@ -178,7 +217,8 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--chat-bg);c
             }
 
             const data = await response.json();
-            document.getElementById('chat-title').textContent = data.participantName || 'Campus user';
+            document.getElementById('chat-title').textContent =
+                data.participantName || 'Campus user';
             document.getElementById('subtitle').textContent = 'Regarding: ' + (data.itemTitle || 'Campus listing');
             const serialized = JSON.stringify(data.messages || []);
             if (serialized === lastRendered) return;
@@ -198,8 +238,59 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--chat-bg);c
             if (nearBottom) messagesEl.scrollTop = messagesEl.scrollHeight;
         } catch (error) {
             if (!lastRendered) showState('Unable to load messages. Please refresh and try again.');
+        } finally {
+            loadingMessages = false;
         }
     }
+
+    async function setTyping(active) {
+        if (!conversationId || typingActive === active) return;
+        typingActive = active;
+        try {
+            await fetch(context + '/chat/typing', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+                body: new URLSearchParams({
+                    conversationId: conversationId,
+                    typing: String(active),
+                    csrfToken: csrfToken
+                })
+            });
+        } catch (error) {}
+    }
+
+    async function checkTyping() {
+        if (!conversationId || document.visibilityState === 'hidden') return;
+        try {
+            const response = await fetch(
+                context + '/chat/typing-status?conversationId=' +
+                encodeURIComponent(conversationId),
+                {credentials:'same-origin', cache:'no-store'}
+            );
+            if (!response.ok) return;
+            const data = await response.json();
+            typingIndicator.hidden = !data.typing;
+        } catch (error) {}
+    }
+
+    input.addEventListener('input', function () {
+        if (!input.value.trim()) {
+            clearTimeout(typingTimer);
+            setTyping(false);
+            return;
+        }
+
+        if (Date.now() - lastTypingSent > 1800) {
+            lastTypingSent = Date.now();
+            setTyping(true);
+        }
+
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(function () {
+            setTyping(false);
+        }, 3000);
+    });
 
     input.addEventListener('keydown', event => {
         if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
@@ -217,6 +308,8 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--chat-bg);c
 
         send.disabled = true;
         input.disabled = true;
+        clearTimeout(typingTimer);
+        await setTyping(false);
 
         try {
            const body = new URLSearchParams({
@@ -250,13 +343,26 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--chat-bg);c
         }
     });
 
+    document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'hidden') {
+            clearTimeout(typingTimer);
+            setTyping(false);
+            typingIndicator.hidden = true;
+        } else {
+            loadMessages();
+            checkTyping();
+        }
+    });
+
     if (!conversationId) {
         showState('No conversation was selected. Return to your inbox.');
         input.disabled = true;
         send.disabled = true;
     } else {
         loadMessages();
-        setInterval(loadMessages, 4000);
+        checkTyping();
+        setInterval(loadMessages, 3500);
+        setInterval(checkTyping, 2000);
     }
 })();
 </script>

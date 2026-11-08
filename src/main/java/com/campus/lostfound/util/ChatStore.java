@@ -37,17 +37,26 @@ public final class ChatStore {
         public final String itemTitle;
         public final String otherParticipantName;
         public final String latestMessage;
+        public final int unreadCount;
 
         public Conversation(UUID id, String itemId, String reporterId,
                             String contactId, Timestamp lastMessageAt) {
             this(id, itemId, reporterId, contactId, lastMessageAt,
-                    "Campus listing", "Campus user", "No messages yet");
+                    "Campus listing", "Campus user", "No messages yet", 0);
         }
 
         public Conversation(UUID id, String itemId, String reporterId,
                             String contactId, Timestamp lastMessageAt,
                             String itemTitle, String otherParticipantName,
                             String latestMessage) {
+            this(id, itemId, reporterId, contactId, lastMessageAt,
+                    itemTitle, otherParticipantName, latestMessage, 0);
+        }
+
+        public Conversation(UUID id, String itemId, String reporterId,
+                            String contactId, Timestamp lastMessageAt,
+                            String itemTitle, String otherParticipantName,
+                            String latestMessage, int unreadCount) {
             this.id = id;
             this.itemId = itemId;
             this.reporterId = reporterId;
@@ -56,6 +65,7 @@ public final class ChatStore {
             this.itemTitle = itemTitle == null || itemTitle.isBlank() ? "Campus listing" : itemTitle;
             this.otherParticipantName = otherParticipantName == null || otherParticipantName.isBlank() ? "Campus user" : otherParticipantName;
             this.latestMessage = latestMessage == null || latestMessage.isBlank() ? "No messages yet" : latestMessage;
+            this.unreadCount = Math.max(0, unreadCount);
         }
     }
 
@@ -190,6 +200,8 @@ public final class ChatStore {
                 }
 
                 requireParticipant(conversation, senderId);
+                String recipientId = senderId.equals(conversation.reporterId)
+                        ? conversation.contactId : conversation.reporterId;
 
                 // Confirm the reporter still matches the stored item.
                 Item item = findEligibleItemForExistingChat(
@@ -223,6 +235,18 @@ public final class ChatStore {
                 }
 
                 connection.commit();
+
+                // Notification failure must never undo a successfully sent message.
+                String preview = messageText.trim().replaceAll("\\s+", " ");
+                if (preview.length() > 90) preview = preview.substring(0, 87) + "...";
+                try {
+                    WorkflowStore.get().notifyUser(
+                            recipientId,
+                            "New chat message: " + preview,
+                            "/chat/room?conversationId=" + conversationId);
+                } catch (IOException notificationError) {
+                    // The message is already committed; the next inbox poll still finds it.
+                }
             } catch (Exception e) {
                 connection.rollback();
                 throw e;
@@ -259,6 +283,20 @@ public final class ChatStore {
 
             requireParticipant(conversation, userId);
 
+            // Mark incoming messages read BEFORE selecting them so the returned
+            // read flags are immediately accurate for the sender's next poll.
+            try (PreparedStatement ps = connection.prepareStatement("""
+                    UPDATE chat_messages
+                    SET read_at = CURRENT_TIMESTAMP
+                    WHERE conversation_id = ?
+                      AND sender_id <> ?
+                      AND read_at IS NULL
+                    """)) {
+                ps.setObject(1, conversationId);
+                ps.setString(2, userId);
+                ps.executeUpdate();
+            }
+
             String sql = """
                     SELECT id, sender_id, message_text, sent_at, read_at
                     FROM chat_messages
@@ -282,18 +320,6 @@ public final class ChatStore {
                 }
             }
 
-            // Mark the other participant's messages as read.
-            try (PreparedStatement ps = connection.prepareStatement("""
-                    UPDATE chat_messages
-                    SET read_at = CURRENT_TIMESTAMP
-                    WHERE conversation_id = ?
-                      AND sender_id <> ?
-                      AND read_at IS NULL
-                    """)) {
-                ps.setObject(1, conversationId);
-                ps.setString(2, userId);
-                ps.executeUpdate();
-            }
         }
 
         return messages;
@@ -312,7 +338,11 @@ public final class ChatStore {
                 SELECT c.id, c.item_id, c.reporter_id, c.contact_id, c.last_message_at,
                        (SELECT m.message_text FROM chat_messages m
                         WHERE m.conversation_id = c.id
-                        ORDER BY m.sent_at DESC, m.id DESC LIMIT 1) AS latest_message
+                        ORDER BY m.sent_at DESC, m.id DESC LIMIT 1) AS latest_message,
+                       (SELECT COUNT(*) FROM chat_messages um
+                        WHERE um.conversation_id = c.id
+                          AND um.sender_id <> ?
+                          AND um.read_at IS NULL) AS unread_count
                 FROM chat_conversations c
                 WHERE c.reporter_id = ? OR c.contact_id = ?
                 ORDER BY c.last_message_at DESC
@@ -324,6 +354,7 @@ public final class ChatStore {
 
             ps.setString(1, userId);
             ps.setString(2, userId);
+            ps.setString(3, userId);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -338,7 +369,8 @@ public final class ChatStore {
                             rs.getTimestamp("last_message_at"),
                             item == null ? "Campus listing" : item.getTitle(),
                             other == null ? "Campus user" : other.getName(),
-                            rs.getString("latest_message")));
+                            rs.getString("latest_message"),
+                            rs.getInt("unread_count")));
                 }
             }
         }
@@ -346,6 +378,76 @@ public final class ChatStore {
         return conversations;
     }
 
+
+    /** Updates the current participant's typing heartbeat. */
+    public static void setTyping(UUID conversationId, String userId,
+                                 boolean typing) throws Exception {
+        try (Connection connection = ChatDatabase.getConnection()) {
+            Conversation conversation = findConversation(connection, conversationId);
+            if (conversation == null) {
+                throw new IllegalArgumentException("Conversation not found.");
+            }
+            requireParticipant(conversation, userId);
+
+            if (typing) {
+                try (PreparedStatement ps = connection.prepareStatement("""
+                        INSERT INTO chat_typing_status
+                            (conversation_id, user_id, updated_at)
+                        VALUES (?, ?, CURRENT_TIMESTAMP)
+                        ON CONFLICT (conversation_id, user_id)
+                        DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+                        """)) {
+                    ps.setObject(1, conversationId);
+                    ps.setString(2, userId);
+                    ps.executeUpdate();
+                }
+            } else {
+                try (PreparedStatement ps = connection.prepareStatement("""
+                        DELETE FROM chat_typing_status
+                        WHERE conversation_id = ? AND user_id = ?
+                        """)) {
+                    ps.setObject(1, conversationId);
+                    ps.setString(2, userId);
+                    ps.executeUpdate();
+                }
+            }
+
+            // Opportunistically discard expired typing records.
+            try (PreparedStatement ps = connection.prepareStatement("""
+                    DELETE FROM chat_typing_status
+                    WHERE updated_at < CURRENT_TIMESTAMP - INTERVAL '15 seconds'
+                    """)) {
+                ps.executeUpdate();
+            }
+        }
+    }
+
+    /** Checks only the other participant; stale typing states expire quickly. */
+    public static boolean isOtherParticipantTyping(UUID conversationId,
+                                                   String userId) throws Exception {
+        try (Connection connection = ChatDatabase.getConnection()) {
+            Conversation conversation = findConversation(connection, conversationId);
+            if (conversation == null) {
+                throw new IllegalArgumentException("Conversation not found.");
+            }
+            requireParticipant(conversation, userId);
+
+            try (PreparedStatement ps = connection.prepareStatement("""
+                    SELECT EXISTS (
+                        SELECT 1 FROM chat_typing_status
+                        WHERE conversation_id = ?
+                          AND user_id <> ?
+                          AND updated_at > CURRENT_TIMESTAMP - INTERVAL '6 seconds'
+                    )
+                    """)) {
+                ps.setObject(1, conversationId);
+                ps.setString(2, userId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    return rs.next() && rs.getBoolean(1);
+                }
+            }
+        }
+    }
 
     public static final class AdminConversation {
         public final UUID id;

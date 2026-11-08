@@ -164,7 +164,16 @@ public final class DatabaseSchema {
             last_seen TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
         """,
-        "CREATE INDEX IF NOT EXISTS campus_user_active_sessions_seen_idx ON campus_user_active_sessions(last_seen)"
+        "CREATE INDEX IF NOT EXISTS campus_user_active_sessions_seen_idx ON campus_user_active_sessions(last_seen)",
+        """
+        CREATE TABLE IF NOT EXISTS chat_typing_status (
+            conversation_id UUID NOT NULL,
+            user_id VARCHAR(64) NOT NULL,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (conversation_id, user_id)
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS chat_typing_status_updated_idx ON chat_typing_status(updated_at)"
     );
 
     public static void initialize() throws SQLException {
