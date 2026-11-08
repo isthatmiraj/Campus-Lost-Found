@@ -2866,41 +2866,55 @@ nav a.nav-cta:active {
 }
 
 
-/* cf-button-navigation-spinner-v1 */
+/* cf-button-navigation-spinner-v2 */
 .cf-nav-click-loading {
     position: relative !important;
     color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
     text-shadow: none !important;
     cursor: wait !important;
 }
 
-.cf-nav-click-loading > * {
+/* Hide original button contents, but NEVER hide the spinner. */
+.cf-nav-click-loading > :not(.cf-nav-click-spinner) {
     opacity: 0 !important;
+    visibility: hidden !important;
 }
 
 .cf-nav-click-spinner {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 17px;
-    height: 17px;
-    box-sizing: border-box;
-    border: 2px solid rgba(255, 255, 255, .35);
-    border-top-color: currentColor;
-    border-right-color: currentColor;
-    border-radius: 50%;
-    color: var(--primary-color, #ffffff);
-    transform: translate(-50%, -50%);
-    animation: cf-button-spinner-rotate .65s linear infinite;
-    pointer-events: none;
+    position: absolute !important;
+    display: block !important;
+    left: 50% !important;
+    top: 50% !important;
+    width: 17px !important;
+    height: 17px !important;
+    min-width: 17px !important;
+    min-height: 17px !important;
+    box-sizing: border-box !important;
+    border: 2px solid rgba(255, 255, 255, .30) !important;
+    border-top-color: #ffffff !important;
+    border-right-color: #ffffff !important;
+    border-radius: 50% !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translate(-50%, -50%) !important;
+    animation: cf-button-spinner-rotate .65s linear infinite !important;
+    pointer-events: none !important;
+}
+
+/* Dark spinner for light buttons. */
+.btn-light.cf-nav-click-loading > .cf-nav-click-spinner {
+    border-color: rgba(36, 87, 197, .18) !important;
+    border-top-color: #2457c5 !important;
+    border-right-color: #2457c5 !important;
 }
 
 @keyframes cf-button-spinner-rotate {
-    to { rotate: 360deg; }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .cf-nav-click-spinner {
-        animation-duration: 1.5s;
+        animation-duration: 1.5s !important;
     }
 }

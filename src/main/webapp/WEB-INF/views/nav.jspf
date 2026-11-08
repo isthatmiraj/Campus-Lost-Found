@@ -703,13 +703,33 @@
 
 
 
-<!-- cf-button-navigation-spinner-v1 -->
+
+
+
+<!-- cf-button-navigation-spinner-v2 -->
 <script>
 (function () {
     "use strict";
 
     var activeElement = null;
     var fallbackTimer = null;
+
+    function show(element) {
+        if (!element || activeElement === element) return;
+
+        restore();
+
+        activeElement = element;
+        element.classList.add("cf-nav-click-loading");
+        element.setAttribute("aria-busy", "true");
+
+        var spinner = document.createElement("span");
+        spinner.className = "cf-nav-click-spinner";
+        spinner.setAttribute("aria-hidden", "true");
+        element.appendChild(spinner);
+
+        fallbackTimer = window.setTimeout(restore, 30000);
+    }
 
     function restore() {
         if (activeElement) {
@@ -730,23 +750,28 @@
         }
     }
 
-    function show(element) {
-        if (activeElement) restore();
+    function validDestination(anchor) {
+        if (!anchor || anchor.hasAttribute("download")) return false;
+        if (anchor.target && anchor.target !== "_self") return false;
+        if (anchor.closest("[data-no-nav-spinner]")) return false;
 
-        activeElement = element;
-        element.classList.add("cf-nav-click-loading");
-        element.setAttribute("aria-busy", "true");
+        try {
+            var url = new URL(anchor.href, window.location.href);
 
-        var spinner = document.createElement("span");
-        spinner.className = "cf-nav-click-spinner";
-        spinner.setAttribute("aria-hidden", "true");
+            if (url.origin !== window.location.origin) return false;
+            if (!/^https?:$/.test(url.protocol)) return false;
 
-        element.appendChild(spinner);
+            if (url.pathname === window.location.pathname &&
+                url.search === window.location.search &&
+                url.hash !== window.location.hash) return false;
 
-        // Recover if navigation is cancelled or interrupted.
-        fallbackTimer = window.setTimeout(restore, 30000);
+            return url.href !== window.location.href;
+        } catch (error) {
+            return false;
+        }
     }
 
+    // Ordinary internal navigation links, including View Details.
     document.addEventListener("click", function (event) {
         if (event.defaultPrevented || event.button !== 0) return;
         if (event.ctrlKey || event.metaKey ||
@@ -755,31 +780,28 @@
         var target = event.target;
         if (!target || !target.closest) return;
 
-        var anchor = target.closest("a");
-        if (!anchor || anchor.hasAttribute("download")) return;
-        if (anchor.target && anchor.target !== "_self") return;
-        if (anchor.closest("[data-no-nav-spinner]")) return;
-
-        var url;
-
-        try {
-            url = new URL(anchor.href, window.location.href);
-        } catch (error) {
-            return;
-        }
-
-        if (url.origin !== window.location.origin) return;
-        if (url.protocol !== "http:" && url.protocol !== "https:") return;
-
-        // Ignore links that only change the current page's fragment.
-        if (url.pathname === window.location.pathname &&
-            url.search === window.location.search &&
-            url.hash !== window.location.hash) return;
-
-        if (url.href === window.location.href) return;
+        var anchor = target.closest("a[href]");
+        if (!validDestination(anchor)) return;
 
         show(anchor);
     }, true);
+
+    // Buttons that submit forms and cause normal page navigation.
+    document.addEventListener("submit", function (event) {
+        if (event.defaultPrevented) return;
+
+        var form = event.target;
+        if (!(form instanceof HTMLFormElement)) return;
+        if (form.target && form.target !== "_self") return;
+        if (form.hasAttribute("data-no-nav-spinner")) return;
+
+        var submitter = event.submitter;
+
+        if (!submitter || submitter.disabled ||
+            submitter.tagName !== "BUTTON") return;
+
+        show(submitter);
+    });
 
     window.addEventListener("pageshow", restore);
     window.addEventListener("pagehide", function () {
@@ -788,5 +810,6 @@
             fallbackTimer = null;
         }
     });
+
 })();
 </script>
