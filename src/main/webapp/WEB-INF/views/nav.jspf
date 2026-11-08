@@ -408,9 +408,19 @@
 @media(max-width:600px) {
     #cf-live-chat-toast-stack {
         right: 12px;
-        bottom: 12px;
+        top: max(12px, env(safe-area-inset-top));
+        bottom: auto;
         width: calc(100vw - 24px);
     }
+
+    .cf-live-chat-toast {
+        animation-name: cf-toast-mobile-in;
+    }
+}
+
+@keyframes cf-toast-mobile-in {
+    from { opacity: 0; transform: translateY(-24px) scale(.94); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @media(prefers-reduced-motion:reduce) {
@@ -508,7 +518,7 @@
         close.type = 'button';
         close.className = 'cf-live-chat-close';
         close.setAttribute('aria-label', 'Dismiss message notification');
-        close.textContent = '×';
+        close.textContent = '\u00D7';
 
         close.addEventListener('click', function (event) {
             event.stopPropagation();
