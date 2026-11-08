@@ -2492,3 +2492,617 @@ textarea:focus {
         transform: none !important;
     }
 }
+
+/* =========================================================
+   CAMPUSFIND — PREMIUM MOTION SYSTEM V2
+   ========================================================= */
+
+:root {
+    --cf-motion-fast: 180ms;
+    --cf-motion-normal: 350ms;
+    --cf-motion-smooth: cubic-bezier(.2,.8,.2,1);
+    --cf-motion-bounce: cubic-bezier(.34,1.56,.64,1);
+}
+
+/* ---------- KEYFRAMES ---------- */
+
+@keyframes cf-fade-rise {
+    from { opacity: 0; transform: translateY(28px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cf-fade-scale {
+    from { opacity: 0; transform: scale(.94); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes cf-slide-left {
+    from { opacity: 0; transform: translateX(24px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes cf-slide-right {
+    from { opacity: 0; transform: translateX(-24px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes cf-glow-pulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(99,102,241,0); }
+    50% { box-shadow: 0 0 24px rgba(99,102,241,.18); }
+}
+
+@keyframes cf-border-glow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes cf-shine {
+    0% { transform: translateX(-150%) skewX(-20deg); }
+    100% { transform: translateX(250%) skewX(-20deg); }
+}
+
+@keyframes cf-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes cf-breathe {
+    0%, 100% { opacity: .65; }
+    50% { opacity: 1; }
+}
+
+@keyframes cf-pop-in {
+    0% { opacity: 0; transform: scale(.82); }
+    70% { opacity: 1; transform: scale(1.035); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes cf-underline {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+
+/* ---------- PAGE ENTRANCES ---------- */
+
+body main.container {
+    animation: cf-fade-rise .65s var(--cf-motion-smooth) both;
+}
+
+main.container > h1,
+main.container > h2 {
+    animation: cf-fade-rise .7s var(--cf-motion-smooth) both;
+}
+
+main.container > .eyebrow {
+    animation: cf-slide-left .6s var(--cf-motion-smooth) both;
+}
+
+main.container > .panel,
+main.container > .item-card,
+main.container > .admin-stat,
+main.container > .edit-review-card {
+    animation: cf-fade-scale .55s var(--cf-motion-smooth) both;
+}
+
+/* ---------- LISTING CARDS ---------- */
+
+.item-card {
+    position: relative;
+    overflow: hidden;
+    transition:
+        transform .4s var(--cf-motion-bounce),
+        box-shadow .4s ease,
+        border-color .3s ease;
+    will-change: transform;
+}
+
+.item-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+        125deg,
+        transparent 15%,
+        var(--accent) 45%,
+        transparent 75%
+    );
+    background-size: 250% 250%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .35s ease;
+    animation: cf-border-glow 4s linear infinite;
+}
+
+.item-card:hover {
+    transform: translateY(-9px) scale(1.012);
+    box-shadow: 0 18px 38px rgba(0,0,0,.12);
+}
+
+.item-card:hover::before {
+    opacity: .7;
+}
+
+.item-card img {
+    transition: transform .65s var(--cf-motion-smooth),
+                filter .4s ease;
+}
+
+.item-card:hover img {
+    transform: scale(1.055);
+    filter: saturate(1.08);
+}
+
+.item-card:nth-child(2) { animation-delay: 70ms; }
+.item-card:nth-child(3) { animation-delay: 140ms; }
+.item-card:nth-child(4) { animation-delay: 210ms; }
+.item-card:nth-child(5) { animation-delay: 280ms; }
+.item-card:nth-child(6) { animation-delay: 350ms; }
+.item-card:nth-child(7) { animation-delay: 420ms; }
+.item-card:nth-child(8) { animation-delay: 490ms; }
+
+/* ---------- PANELS AND DASHBOARD ---------- */
+
+.panel,
+.admin-stat,
+.edit-review-card,
+.maintenance-panel {
+    transition:
+        transform .35s var(--cf-motion-smooth),
+        box-shadow .35s ease,
+        border-color .3s ease;
+}
+
+.panel:hover,
+.edit-review-card:hover,
+.maintenance-panel:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 32px rgba(0,0,0,.08);
+}
+
+.admin-stat:hover {
+    transform: translateY(-7px) scale(1.025);
+    box-shadow: 0 16px 32px rgba(0,0,0,.12);
+}
+
+.admin-stat:nth-child(2) { animation-delay: 100ms; }
+.admin-stat:nth-child(3) { animation-delay: 180ms; }
+.admin-stat:nth-child(4) { animation-delay: 260ms; }
+.admin-stat:nth-child(5) { animation-delay: 340ms; }
+
+/* ---------- BUTTONS ---------- */
+
+.btn,
+button,
+.maintenance-button,
+.nav-cta {
+    transition:
+        transform .22s var(--cf-motion-bounce),
+        box-shadow .25s ease,
+        filter .25s ease,
+        background-color .25s ease;
+}
+
+.btn:hover,
+button:hover,
+.maintenance-button:hover,
+.nav-cta:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+}
+
+.btn:active,
+button:active,
+.maintenance-button:active,
+.nav-cta:active {
+    transform: scale(.96);
+}
+
+.btn,
+.maintenance-button,
+.nav-cta {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::after,
+.maintenance-button::after,
+.nav-cta::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: 0;
+    width: 35%;
+    height: 200%;
+    background: rgba(255,255,255,.18);
+    transform: translateX(-150%) skewX(-20deg);
+    pointer-events: none;
+}
+
+.btn:hover::after,
+.maintenance-button:hover::after,
+.nav-cta:hover::after {
+    animation: cf-shine .7s ease;
+}
+
+/* ---------- NAVIGATION ---------- */
+
+nav a {
+    position: relative;
+    transition: color .25s ease, transform .25s ease;
+}
+
+nav a:not(.nav-cta)::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -5px;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .3s var(--cf-motion-smooth);
+}
+
+nav a:not(.nav-cta):hover::after {
+    transform: scaleX(1);
+}
+
+nav a:hover {
+    transform: translateY(-2px);
+}
+
+.site-nav.is-open {
+    animation: cf-fade-rise .3s var(--cf-motion-smooth) both;
+}
+
+/* ---------- PROFILE DROPDOWN ---------- */
+
+.profile-menu.is-open .profile-dropdown {
+    transform-origin: top right;
+    animation: cf-pop-in .32s var(--cf-motion-bounce) both;
+}
+
+/* ---------- FORMS ---------- */
+
+input,
+textarea,
+select {
+    transition:
+        border-color .25s ease,
+        box-shadow .25s ease,
+        background-color .25s ease,
+        transform .25s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 0 0 4px rgba(99,102,241,.13);
+}
+
+label {
+    transition: color .2s ease;
+}
+
+/* ---------- ALERTS AND NOTIFICATIONS ---------- */
+
+.alert,
+.success {
+    animation: cf-fade-rise .45s var(--cf-motion-smooth) both;
+}
+
+.empty {
+    animation: cf-fade-scale .6s var(--cf-motion-smooth) both;
+}
+
+.count {
+    animation: cf-pop-in .5s var(--cf-motion-bounce) both;
+}
+
+/* ---------- TABLES ---------- */
+
+.table-wrap {
+    animation: cf-fade-rise .5s var(--cf-motion-smooth) both;
+}
+
+table tbody tr {
+    transition: background-color .2s ease;
+}
+
+table tbody tr:hover {
+    background-color: rgba(99,102,241,.055);
+}
+
+table tbody tr td {
+    transition: color .2s ease;
+}
+
+/* ---------- PHOTO EDITOR / DIALOGS ---------- */
+
+.cf-photo-editor__dialog {
+    animation: cf-pop-in .35s var(--cf-motion-bounce) both;
+}
+
+/* ---------- SUBTLE FLOATING ACCENTS ---------- */
+
+.admin-stat .count {
+    display: inline-block;
+    animation: cf-float 4s ease-in-out infinite;
+}
+
+/* ---------- SCROLLBAR ---------- */
+
+html {
+    scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar-thumb {
+    transition: background-color .25s ease;
+}
+
+/* ---------- ACCESSIBILITY ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto !important;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .item-card:hover,
+    .panel:hover,
+    .admin-stat:hover,
+    .edit-review-card:hover,
+    .maintenance-panel:hover,
+    .btn:hover,
+    button:hover {
+        transform: none !important;
+    }
+}
+
+/* ---------- MOBILE PERFORMANCE ---------- */
+
+@media (max-width: 768px) {
+    .item-card:hover,
+    .admin-stat:hover,
+    .panel:hover {
+        transform: translateY(-3px);
+    }
+
+    .item-card img {
+        transition-duration: .35s;
+    }
+
+    .item-card:hover img {
+        transform: scale(1.025);
+    }
+}
+
+
+/* =========================================================
+   CAMPUSFIND — MOBILE WOW EXPERIENCE
+   ========================================================= */
+
+@keyframes cf-mobile-enter {
+    0% {
+        opacity: 0;
+        transform: translateY(35px) scale(.96);
+    }
+    65% {
+        opacity: 1;
+        transform: translateY(-3px) scale(1.005);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes cf-mobile-menu {
+    0% {
+        opacity: 0;
+        transform: translateY(-18px) scale(.97);
+        clip-path: inset(0 0 100% 0);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        clip-path: inset(0 0 0 0);
+    }
+}
+
+@keyframes cf-mobile-link {
+    from {
+        opacity: 0;
+        transform: translateX(-18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes cf-mobile-tap {
+    0% { transform: scale(1); }
+    45% { transform: scale(.94); }
+    100% { transform: scale(1); }
+}
+
+@keyframes cf-mobile-glow {
+    0%, 100% {
+        box-shadow: 0 5px 18px rgba(99,102,241,.08);
+    }
+    50% {
+        box-shadow: 0 8px 28px rgba(99,102,241,.19);
+    }
+}
+
+@keyframes cf-mobile-image {
+    from {
+        opacity: .5;
+        transform: scale(1.08);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes cf-mobile-heading {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+        letter-spacing: -.06em;
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        letter-spacing: normal;
+    }
+}
+
+@media (max-width: 768px) {
+
+    /* Main page entrance */
+    body main.container {
+        animation: cf-mobile-enter .7s cubic-bezier(.2,.8,.2,1) both;
+    }
+
+    main.container > h1 {
+        animation: cf-mobile-heading .75s ease both;
+    }
+
+    /* Listing cards */
+    .item-card {
+        animation: cf-mobile-enter .65s cubic-bezier(.2,.8,.2,1) both;
+        transform-origin: center bottom;
+        border-radius: 18px;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .item-card:nth-child(2) { animation-delay: 70ms; }
+    .item-card:nth-child(3) { animation-delay: 140ms; }
+    .item-card:nth-child(4) { animation-delay: 210ms; }
+    .item-card:nth-child(5) { animation-delay: 280ms; }
+    .item-card:nth-child(6) { animation-delay: 350ms; }
+
+    .item-card img {
+        animation: cf-mobile-image .8s ease both;
+        transform-origin: center;
+    }
+
+    /* Panels and dashboard */
+    .panel,
+    .admin-stat,
+    .edit-review-card,
+    .maintenance-panel,
+    .table-wrap {
+        animation: cf-mobile-enter .6s cubic-bezier(.2,.8,.2,1) both;
+        border-radius: 16px;
+    }
+
+    .admin-stat {
+        animation: cf-mobile-enter .65s ease both,
+                   cf-mobile-glow 5s ease-in-out 1s infinite;
+    }
+
+    /* Mobile navigation */
+    .site-nav.is-open {
+        animation: cf-mobile-menu .38s cubic-bezier(.2,.8,.2,1) both;
+        transform-origin: top center;
+    }
+
+    .site-nav.is-open a {
+        animation: cf-mobile-link .4s ease both;
+    }
+
+    .site-nav.is-open a:nth-child(1) { animation-delay: 50ms; }
+    .site-nav.is-open a:nth-child(2) { animation-delay: 100ms; }
+    .site-nav.is-open a:nth-child(3) { animation-delay: 150ms; }
+    .site-nav.is-open a:nth-child(4) { animation-delay: 200ms; }
+    .site-nav.is-open a:nth-child(5) { animation-delay: 250ms; }
+    .site-nav.is-open a:nth-child(6) { animation-delay: 300ms; }
+
+    /* Touch feedback */
+    .btn:active,
+    button:active,
+    .nav-cta:active,
+    .maintenance-button:active,
+    .item-card:active {
+        animation: cf-mobile-tap .28s ease;
+        filter: brightness(.94);
+    }
+
+    /* Larger, more satisfying touch controls */
+    .btn,
+    .maintenance-button,
+    .nav-cta {
+        transition:
+            transform .2s ease,
+            filter .2s ease,
+            box-shadow .25s ease;
+    }
+
+    /* Inputs */
+    input:focus,
+    textarea:focus,
+    select:focus {
+        transform: scale(1.008);
+        box-shadow: 0 0 0 4px rgba(99,102,241,.15);
+    }
+
+    /* Profile dropdown */
+    .profile-menu.is-open .profile-dropdown {
+        animation: cf-mobile-enter .35s cubic-bezier(.2,.8,.2,1) both;
+        transform-origin: top right;
+    }
+
+    /* Alerts and empty states */
+    .alert,
+    .success,
+    .empty {
+        animation: cf-mobile-enter .5s ease both;
+    }
+
+    /* Dialogs */
+    .cf-photo-editor__dialog {
+        animation: cf-mobile-enter .4s cubic-bezier(.2,.8,.2,1) both;
+    }
+
+    /* Avoid hover-only effects on touch devices */
+    .item-card:hover {
+        transform: none;
+    }
+
+    .item-card:active {
+        transform: scale(.985);
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    @media (max-width: 768px) {
+        .item-card,
+        .panel,
+        .admin-stat,
+        .edit-review-card,
+        .maintenance-panel,
+        .table-wrap,
+        .site-nav.is-open,
+        .site-nav.is-open a {
+            animation: none !important;
+        }
+    }
+}
+
