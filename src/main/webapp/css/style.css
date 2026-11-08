@@ -2832,7 +2832,7 @@ nav a.nav-cta:active {
 
 /* cf-instant-navigation-v1 */
 @view-transition {
-    navigation: auto;
+    navigation: none;
 }
 
 ::view-transition-old(root) {
@@ -2862,5 +2862,69 @@ nav a.nav-cta:active {
     ::view-transition-old(root),
     ::view-transition-new(root) {
         animation: none !important;
+    }
+}
+
+
+/* cf-nav-progress-v1 */
+.cf-nav-progress {
+    position: fixed;
+    top: 16px;
+    right: 18px;
+    z-index: 2147483000;
+    width: 25px;
+    height: 25px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--card-bg, #ffffff);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, .16);
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(.75);
+    transition: opacity .14s ease, transform .14s ease,
+                visibility .14s ease;
+    pointer-events: none;
+}
+
+.cf-nav-progress-active {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+.cf-nav-progress-ring {
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(100, 116, 139, .25);
+    border-top-color: var(--primary-color, #356df3);
+    border-right-color: var(--primary-color, #356df3);
+    border-radius: 50%;
+    animation: cf-nav-spin .65s linear infinite;
+}
+
+@keyframes cf-nav-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cf-nav-progress,
+    .cf-nav-progress-ring {
+        transition: none;
+        animation-duration: 1.5s;
+    }
+}
+
+@media (max-width: 600px) {
+    .cf-nav-progress {
+        top: 12px;
+        right: 12px;
+        width: 23px;
+        height: 23px;
+    }
+
+    .cf-nav-progress-ring {
+        width: 14px;
+        height: 14px;
     }
 }

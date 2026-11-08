@@ -698,3 +698,82 @@
     }, { passive: true });
 })();
 </script>
+
+
+<!-- cf-nav-progress-v1 -->
+<div id="cf-nav-progress" class="cf-nav-progress"
+     role="status" aria-label="Loading next page" aria-hidden="true">
+    <span class="cf-nav-progress-ring"></span>
+</div>
+
+<script>
+(function () {
+    "use strict";
+
+    var indicator = document.getElementById("cf-nav-progress");
+    if (!indicator) return;
+
+    var fallbackTimer = null;
+
+    function hide() {
+        indicator.classList.remove("cf-nav-progress-active");
+        indicator.setAttribute("aria-hidden", "true");
+
+        if (fallbackTimer) {
+            window.clearTimeout(fallbackTimer);
+            fallbackTimer = null;
+        }
+    }
+
+    function show() {
+        indicator.classList.add("cf-nav-progress-active");
+        indicator.setAttribute("aria-hidden", "false");
+
+        if (fallbackTimer) window.clearTimeout(fallbackTimer);
+
+        fallbackTimer = window.setTimeout(hide, 15000);
+    }
+
+    document.addEventListener("click", function (event) {
+        if (event.defaultPrevented || event.button !== 0) return;
+        if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+
+        var target = event.target;
+        if (!target || !target.closest) return;
+
+        var anchor = target.closest("a");
+        if (!anchor || anchor.target && anchor.target !== "_self") return;
+        if (anchor.hasAttribute("download")) return;
+        if (anchor.relList && anchor.relList.contains("external")) return;
+
+        var url;
+
+        try {
+            url = new URL(anchor.href, window.location.href);
+        } catch (error) {
+            return;
+        }
+
+        if (url.origin !== window.location.origin) return;
+        if (url.protocol !== "http:" && url.protocol !== "https:") return;
+
+        if (url.pathname === window.location.pathname &&
+            url.search === window.location.search &&
+            url.hash) return;
+
+        if (url.href === window.location.href) return;
+
+        show();
+    });
+
+    window.addEventListener("pageshow", hide);
+    document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === "visible" &&
+            !window.performance.getEntriesByType("navigation")[0]?.type) {
+            hide();
+        }
+    });
+
+    hide();
+})();
+</script>
