@@ -2275,576 +2275,310 @@ html[data-theme="dark"] .user-presence.is-remembered {
     border-color: rgba(96, 165, 250, 0.22);
 }
 
-/* CAMPUSFIND GLOBAL MOTION SYSTEM */
 
+/* =========================================================
+   CAMPUSFIND — CONSOLIDATED PREMIUM MOTION SYSTEM
+   ========================================================= */
 
-/* CAMPUSFIND GLOBAL MOTION SYSTEM */
-
-/* Smooth page entrance */
-@keyframes cf-page-enter {
-    from {
-        opacity: 0;
-        transform: translateY(12px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+@keyframes cf-gentle-page-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
-@keyframes cf-element-enter {
-    from {
-        opacity: 0;
-        transform: translateY(9px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+@keyframes cf-gentle-element-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
-@keyframes cf-soft-pop {
-    from {
-        opacity: 0;
-        transform: scale(.97);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* Main page content */
+/* Slower, calmer initial page entrance. No diagonal movement. */
 body main.container {
-    animation: cf-page-enter .48s cubic-bezier(.2,.7,.2,1) both;
+    animation: cf-gentle-page-fade 1.1s ease-out both;
 }
 
-/* Cards and panels */
-.item-card,
-.panel,
-.admin-stat,
-.table-wrap,
-.empty,
-.count,
-.edit-review-card,
-.maintenance-panel {
-    animation: cf-element-enter .45s cubic-bezier(.2,.7,.2,1) both;
-}
-
-/* Gentle stagger for listing grids */
-.item-card:nth-child(2),
-.admin-stat:nth-child(2) {
-    animation-delay: 45ms;
-}
-
-.item-card:nth-child(3),
-.admin-stat:nth-child(3) {
-    animation-delay: 90ms;
-}
-
-.item-card:nth-child(4),
-.admin-stat:nth-child(4) {
-    animation-delay: 135ms;
-}
-
-.item-card:nth-child(5) {
-    animation-delay: 180ms;
-}
-
-.item-card:nth-child(6) {
-    animation-delay: 225ms;
-}
-
-/* Interactive cards */
-.item-card {
-    transition:
-        transform .24s ease,
-        box-shadow .24s ease,
-        border-color .24s ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .item-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 14px 32px rgba(15, 23, 42, .10);
-    }
-
-    .admin-stat:hover,
-    .edit-review-card:hover {
-        transform: translateY(-3px);
-    }
-}
-
-/* Buttons */
-.btn,
-.maintenance-button,
-.nav-cta,
-button:not(.theme-toggle) {
-    transition:
-        transform .18s ease,
-        box-shadow .18s ease,
-        background-color .2s ease,
-        border-color .2s ease,
-        color .2s ease,
-        opacity .2s ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .btn:not(:disabled):hover,
-    .maintenance-button:not(:disabled):hover,
-    button:not(:disabled):not(.theme-toggle):hover {
-        transform: translateY(-2px);
-    }
-}
-
-.btn:active,
-.maintenance-button:active,
-button:not(.theme-toggle):active {
-    transform: scale(.97);
-}
-
-/* Navigation links */
-header.topbar nav a {
-    transition:
-        color .2s ease,
-        background-color .2s ease,
-        transform .2s ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    header.topbar nav a:hover {
-        transform: translateY(-2px);
-    }
-}
-
-/* Form interaction */
-input,
-select,
-textarea {
-    transition:
-        border-color .2s ease,
-        box-shadow .2s ease,
-        background-color .2s ease;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-    transition: border-color .2s ease, box-shadow .2s ease;
-}
-
-/* Feedback messages */
-.alert,
-.success {
-    animation: cf-soft-pop .3s ease-out both;
-}
-
-/* Profile dropdown entrance */
-.profile-dropdown {
-    transform-origin: top right;
-}
-
-.profile-menu.is-open .profile-dropdown {
-    animation: cf-soft-pop .18s ease-out both;
-}
-
-/* Photo editor dialog */
-.cf-photo-editor__dialog {
-    animation: cf-soft-pop .22s ease-out both;
-}
-
-/* Keep motion comfortable for accessibility */
-@media (prefers-reduced-motion: reduce) {
-    body main.container,
-    .item-card,
-    .panel,
-    .admin-stat,
-    .table-wrap,
-    .empty,
-    .count,
-    .edit-review-card,
-    .maintenance-panel,
-    .alert,
-    .success,
-    .profile-menu.is-open .profile-dropdown,
-    .cf-photo-editor__dialog {
-        animation: none !important;
-    }
-
-    .item-card,
-    .btn,
-    button,
-    .maintenance-button,
-    .nav-cta,
-    header.topbar nav a,
-    input,
-    select,
-    textarea {
-        transition: none !important;
-    }
-
-    .item-card:hover,
-    .admin-stat:hover,
-    .edit-review-card:hover,
-    .btn:hover,
-    button:hover,
-    header.topbar nav a:hover {
-        transform: none !important;
-    }
+/* Gentle entrance for content sections. */
+main.container > .panel,
+main.container > .admin-stat,
+main.container > .table-wrap,
+main.container > .edit-review-card {
+    animation: cf-gentle-element-fade .85s ease-out both;
 }
 
 /* =========================================================
-   CAMPUSFIND — PREMIUM MOTION SYSTEM V2
+   LISTING CARDS — STATIC GREEN GRADIENT
+   No scanner, no travelling shine, no diagonal movement.
    ========================================================= */
-
-:root {
-    --cf-motion-fast: 180ms;
-    --cf-motion-normal: 350ms;
-    --cf-motion-smooth: cubic-bezier(.2,.8,.2,1);
-    --cf-motion-bounce: cubic-bezier(.34,1.56,.64,1);
-}
-
-/* ---------- KEYFRAMES ---------- */
-
-@keyframes cf-fade-rise {
-    from { opacity: 0; transform: translateY(28px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes cf-fade-scale {
-    from { opacity: 0; transform: scale(.94); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes cf-slide-left {
-    from { opacity: 0; transform: translateX(24px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes cf-slide-right {
-    from { opacity: 0; transform: translateX(-24px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes cf-glow-pulse {
-    0%, 100% { box-shadow: 0 0 0 rgba(99,102,241,0); }
-    50% { box-shadow: 0 0 24px rgba(99,102,241,.18); }
-}
-
-@keyframes cf-border-glow {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-}
-
-@keyframes cf-shine {
-    0% { transform: translateX(-150%) skewX(-20deg); }
-    100% { transform: translateX(250%) skewX(-20deg); }
-}
-
-@keyframes cf-float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-}
-
-@keyframes cf-breathe {
-    0%, 100% { opacity: .65; }
-    50% { opacity: 1; }
-}
-
-@keyframes cf-pop-in {
-    0% { opacity: 0; transform: scale(.82); }
-    70% { opacity: 1; transform: scale(1.035); }
-    100% { opacity: 1; transform: scale(1); }
-}
-
-@keyframes cf-underline {
-    from { transform: scaleX(0); }
-    to { transform: scaleX(1); }
-}
-
-/* ---------- PAGE ENTRANCES ---------- */
-
-body main.container {
-    animation: cf-fade-rise .65s var(--cf-motion-smooth) both;
-}
-
-main.container > h1,
-main.container > h2 {
-    animation: cf-fade-rise .7s var(--cf-motion-smooth) both;
-}
-
-main.container > .eyebrow {
-    animation: cf-slide-left .6s var(--cf-motion-smooth) both;
-}
-
-main.container > .panel,
-main.container > .item-card,
-main.container > .admin-stat,
-main.container > .edit-review-card {
-    animation: cf-fade-scale .55s var(--cf-motion-smooth) both;
-}
-
-/* ---------- LISTING CARDS ---------- */
 
 .item-card {
     position: relative;
+    isolation: isolate;
     overflow: hidden;
+    border-radius: 15px;
+
     transition:
-        transform .4s var(--cf-motion-bounce),
-        box-shadow .4s ease,
-        border-color .3s ease;
-    will-change: transform;
+        transform .28s ease,
+        box-shadow .32s ease,
+        border-color .32s ease !important;
 }
 
+/* Static gradient overlay. Only its opacity changes. */
 .item-card::before {
     content: "";
     position: absolute;
     inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(
-        125deg,
-        transparent 15%,
-        var(--accent) 45%,
-        transparent 75%
-    );
-    background-size: 250% 250%;
-    opacity: 0;
+    z-index: 0;
     pointer-events: none;
-    transition: opacity .35s ease;
-    animation: cf-border-glow 4s linear infinite;
+    border-radius: inherit;
+
+    background: linear-gradient(
+        135deg,
+        rgba(3, 201, 149, .13) 0%,
+        rgba(3, 201, 149, .055) 48%,
+        rgba(3, 201, 149, .015) 100%
+    );
+
+    opacity: 0;
+    animation: none !important;
+    transform: none !important;
+    transition: opacity .35s ease !important;
 }
 
-.item-card:hover {
-    transform: translateY(-9px) scale(1.012);
-    box-shadow: 0 18px 38px rgba(0,0,0,.12);
+/* Keep card contents above the gradient. */
+.item-card > * {
+    position: relative;
+    z-index: 1;
 }
 
 .item-card:hover::before {
-    opacity: .7;
+    opacity: 1;
 }
 
+.item-card:hover {
+    transform: translateY(-3px) !important;
+    border-color: rgba(3, 201, 149, .38);
+    box-shadow: 0 12px 28px rgba(3, 201, 149, .09);
+}
+
+/* No image zoom or filter gimmicks. */
 .item-card img {
-    transition: transform .65s var(--cf-motion-smooth),
-                filter .4s ease;
+    transition: none !important;
+    animation: none !important;
+    filter: none;
+    transform: none !important;
 }
 
-.item-card:hover img {
-    transform: scale(1.055);
-    filter: saturate(1.08);
+/* =========================================================
+   BUTTONS — CLEAN FEEDBACK
+   ========================================================= */
+
+.btn,
+.nav-cta,
+.maintenance-button,
+button:not(.password-visibility-toggle) {
+    transition:
+        background-color .22s ease,
+        border-color .22s ease,
+        color .22s ease,
+        box-shadow .22s ease,
+        transform .22s ease !important;
 }
 
-.item-card:nth-child(2) { animation-delay: 70ms; }
-.item-card:nth-child(3) { animation-delay: 140ms; }
-.item-card:nth-child(4) { animation-delay: 210ms; }
-.item-card:nth-child(5) { animation-delay: 280ms; }
-.item-card:nth-child(6) { animation-delay: 350ms; }
-.item-card:nth-child(7) { animation-delay: 420ms; }
-.item-card:nth-child(8) { animation-delay: 490ms; }
+/* Restrained hover, no travelling shine. */
+.btn:hover,
+.nav-cta:hover,
+.maintenance-button:hover,
+button:not(.password-visibility-toggle):not(.theme-toggle):hover {
+    transform: translateY(-1px);
+}
 
-/* ---------- PANELS AND DASHBOARD ---------- */
+/* Remove all scanner/shine pseudo-elements. */
+.btn::after,
+.nav-cta::after,
+.maintenance-button::after {
+    animation: none !important;
+    content: none !important;
+}
+
+.btn:active,
+.nav-cta:active,
+.maintenance-button:active,
+button:not(.password-visibility-toggle):active {
+    transform: scale(.98);
+}
+
+/* =========================================================
+   PASSWORD VISIBILITY — NEVER MOVE
+   Preserve vertical centering in every interaction state.
+   ========================================================= */
+
+.password-field {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+.password-field input {
+    width: 100%;
+    box-sizing: border-box;
+    padding-right: 48px !important;
+}
+
+.password-visibility-toggle,
+.password-visibility-toggle:hover,
+.password-visibility-toggle:focus,
+.password-visibility-toggle:focus-visible,
+.password-visibility-toggle:active,
+.password-visibility-toggle.is-visible {
+    position: absolute !important;
+    top: 50% !important;
+    right: 8px !important;
+
+    transform: translateY(-50%) !important;
+    animation: none !important;
+
+    box-shadow: none !important;
+    filter: none !important;
+
+    transition:
+        background-color .2s ease,
+        border-color .2s ease,
+        color .2s ease !important;
+}
+
+.password-visibility-toggle:hover {
+    background: var(--surface-hover, var(--surface, #f1f5f9));
+}
+
+.password-visibility-toggle:active {
+    transform: translateY(-50%) !important;
+}
+
+.password-visibility-toggle::before,
+.password-visibility-toggle::after {
+    content: none !important;
+    animation: none !important;
+}
+
+/* =========================================================
+   NAVIGATION AND DROPDOWNS
+   ========================================================= */
+
+nav a {
+    transition: color .22s ease, background-color .22s ease !important;
+}
+
+nav a:hover {
+    transform: none !important;
+}
+
+.profile-menu.is-open .profile-dropdown {
+    animation: cf-gentle-element-fade .25s ease-out both;
+}
+
+.site-nav.is-open {
+    animation: cf-gentle-element-fade .25s ease-out both;
+}
+
+.site-nav.is-open a {
+    animation: none !important;
+}
+
+/* =========================================================
+   PANELS, TABLES AND NOTIFICATIONS
+   ========================================================= */
 
 .panel,
 .admin-stat,
 .edit-review-card,
-.maintenance-panel {
+.maintenance-panel,
+.table-wrap {
     transition:
-        transform .35s var(--cf-motion-smooth),
-        box-shadow .35s ease,
-        border-color .3s ease;
+        box-shadow .25s ease,
+        border-color .25s ease !important;
 }
 
 .panel:hover,
+.admin-stat:hover,
 .edit-review-card:hover,
 .maintenance-panel:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 14px 32px rgba(0,0,0,.08);
+    transform: none !important;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .055);
 }
-
-.admin-stat:hover {
-    transform: translateY(-7px) scale(1.025);
-    box-shadow: 0 16px 32px rgba(0,0,0,.12);
-}
-
-.admin-stat:nth-child(2) { animation-delay: 100ms; }
-.admin-stat:nth-child(3) { animation-delay: 180ms; }
-.admin-stat:nth-child(4) { animation-delay: 260ms; }
-.admin-stat:nth-child(5) { animation-delay: 340ms; }
-
-/* ---------- BUTTONS ---------- */
-
-.btn,
-button,
-.maintenance-button,
-.nav-cta {
-    transition:
-        transform .22s var(--cf-motion-bounce),
-        box-shadow .25s ease,
-        filter .25s ease,
-        background-color .25s ease;
-}
-
-.btn:hover,
-button:hover,
-.maintenance-button:hover,
-.nav-cta:hover {
-    transform: translateY(-2px);
-    filter: brightness(1.06);
-}
-
-.btn:active,
-button:active,
-.maintenance-button:active,
-.nav-cta:active {
-    transform: scale(.96);
-}
-
-.btn,
-.maintenance-button,
-.nav-cta {
-    position: relative;
-    overflow: hidden;
-}
-
-.btn::after,
-.maintenance-button::after,
-.nav-cta::after {
-    content: "";
-    position: absolute;
-    top: -50%;
-    left: 0;
-    width: 35%;
-    height: 200%;
-    background: rgba(255,255,255,.18);
-    transform: translateX(-150%) skewX(-20deg);
-    pointer-events: none;
-}
-
-.btn:hover::after,
-.maintenance-button:hover::after,
-.nav-cta:hover::after {
-    animation: cf-shine .7s ease;
-}
-
-/* ---------- NAVIGATION ---------- */
-
-nav a {
-    position: relative;
-    transition: color .25s ease, transform .25s ease;
-}
-
-nav a:not(.nav-cta)::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -5px;
-    height: 2px;
-    background: var(--accent);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform .3s var(--cf-motion-smooth);
-}
-
-nav a:not(.nav-cta):hover::after {
-    transform: scaleX(1);
-}
-
-nav a:hover {
-    transform: translateY(-2px);
-}
-
-.site-nav.is-open {
-    animation: cf-fade-rise .3s var(--cf-motion-smooth) both;
-}
-
-/* ---------- PROFILE DROPDOWN ---------- */
-
-.profile-menu.is-open .profile-dropdown {
-    transform-origin: top right;
-    animation: cf-pop-in .32s var(--cf-motion-bounce) both;
-}
-
-/* ---------- FORMS ---------- */
-
-input,
-textarea,
-select {
-    transition:
-        border-color .25s ease,
-        box-shadow .25s ease,
-        background-color .25s ease,
-        transform .25s ease;
-}
-
-input:focus,
-textarea:focus,
-select:focus {
-    transform: translateY(-1px);
-    box-shadow: 0 0 0 4px rgba(99,102,241,.13);
-}
-
-label {
-    transition: color .2s ease;
-}
-
-/* ---------- ALERTS AND NOTIFICATIONS ---------- */
 
 .alert,
-.success {
-    animation: cf-fade-rise .45s var(--cf-motion-smooth) both;
-}
-
-.empty {
-    animation: cf-fade-scale .6s var(--cf-motion-smooth) both;
-}
-
-.count {
-    animation: cf-pop-in .5s var(--cf-motion-bounce) both;
-}
-
-/* ---------- TABLES ---------- */
-
-.table-wrap {
-    animation: cf-fade-rise .5s var(--cf-motion-smooth) both;
+.success,
+.empty,
+.count,
+.cf-photo-editor__dialog {
+    animation: cf-gentle-element-fade .65s ease-out both;
 }
 
 table tbody tr {
     transition: background-color .2s ease;
 }
 
-table tbody tr:hover {
-    background-color: rgba(99,102,241,.055);
+/* Form controls: smooth focus, no jumping. */
+input,
+textarea,
+select {
+    transition:
+        border-color .22s ease,
+        box-shadow .22s ease,
+        background-color .22s ease !important;
 }
 
-table tbody tr td {
-    transition: color .2s ease;
+input:focus,
+textarea:focus,
+select:focus {
+    transform: none !important;
 }
 
-/* ---------- PHOTO EDITOR / DIALOGS ---------- */
+/* =========================================================
+   MOBILE — NATIVE FEEL, NOT EXCESSIVE BOUNCING
+   ========================================================= */
 
-.cf-photo-editor__dialog {
-    animation: cf-pop-in .35s var(--cf-motion-bounce) both;
+@media (max-width: 768px) {
+    body main.container {
+        animation-duration: 1.15s;
+    }
+
+    .item-card {
+        transition:
+            box-shadow .25s ease,
+            border-color .25s ease !important;
+    }
+
+    .item-card:hover {
+        transform: none !important;
+    }
+
+    .item-card:active {
+        transform: scale(.99) !important;
+    }
+
+    .item-card::before {
+        transition: opacity .25s ease !important;
+    }
+
+    .btn:active,
+    .nav-cta:active,
+    .maintenance-button:active {
+        transform: scale(.98);
+    }
+
+    .password-visibility-toggle,
+    .password-visibility-toggle:hover,
+    .password-visibility-toggle:active {
+        transform: translateY(-50%) !important;
+    }
+
+    .site-nav.is-open {
+        animation-duration: .3s;
+    }
 }
 
-/* ---------- SUBTLE FLOATING ACCENTS ---------- */
-
-.admin-stat .count {
-    display: inline-block;
-    animation: cf-float 4s ease-in-out infinite;
-}
-
-/* ---------- SCROLLBAR ---------- */
-
-html {
-    scroll-behavior: smooth;
-}
-
-::-webkit-scrollbar-thumb {
-    transition: background-color .25s ease;
-}
-
-/* ---------- ACCESSIBILITY ---------- */
+/* =========================================================
+   ACCESSIBILITY
+   ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
     html {
@@ -2861,248 +2595,17 @@ html {
     }
 
     .item-card:hover,
-    .panel:hover,
-    .admin-stat:hover,
-    .edit-review-card:hover,
-    .maintenance-panel:hover,
+    .item-card:active,
     .btn:hover,
-    button:hover {
-        transform: none !important;
-    }
-}
-
-/* ---------- MOBILE PERFORMANCE ---------- */
-
-@media (max-width: 768px) {
-    .item-card:hover,
+    button:hover,
     .admin-stat:hover,
     .panel:hover {
-        transform: translateY(-3px);
+        transform: none !important;
     }
 
-    .item-card img {
-        transition-duration: .35s;
-    }
-
-    .item-card:hover img {
-        transform: scale(1.025);
+    .password-visibility-toggle,
+    .password-visibility-toggle:hover,
+    .password-visibility-toggle:active {
+        transform: translateY(-50%) !important;
     }
 }
-
-
-/* =========================================================
-   CAMPUSFIND — MOBILE WOW EXPERIENCE
-   ========================================================= */
-
-@keyframes cf-mobile-enter {
-    0% {
-        opacity: 0;
-        transform: translateY(35px) scale(.96);
-    }
-    65% {
-        opacity: 1;
-        transform: translateY(-3px) scale(1.005);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes cf-mobile-menu {
-    0% {
-        opacity: 0;
-        transform: translateY(-18px) scale(.97);
-        clip-path: inset(0 0 100% 0);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        clip-path: inset(0 0 0 0);
-    }
-}
-
-@keyframes cf-mobile-link {
-    from {
-        opacity: 0;
-        transform: translateX(-18px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes cf-mobile-tap {
-    0% { transform: scale(1); }
-    45% { transform: scale(.94); }
-    100% { transform: scale(1); }
-}
-
-@keyframes cf-mobile-glow {
-    0%, 100% {
-        box-shadow: 0 5px 18px rgba(99,102,241,.08);
-    }
-    50% {
-        box-shadow: 0 8px 28px rgba(99,102,241,.19);
-    }
-}
-
-@keyframes cf-mobile-image {
-    from {
-        opacity: .5;
-        transform: scale(1.08);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-@keyframes cf-mobile-heading {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-        letter-spacing: -.06em;
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-        letter-spacing: normal;
-    }
-}
-
-@media (max-width: 768px) {
-
-    /* Main page entrance */
-    body main.container {
-        animation: cf-mobile-enter .7s cubic-bezier(.2,.8,.2,1) both;
-    }
-
-    main.container > h1 {
-        animation: cf-mobile-heading .75s ease both;
-    }
-
-    /* Listing cards */
-    .item-card {
-        animation: cf-mobile-enter .65s cubic-bezier(.2,.8,.2,1) both;
-        transform-origin: center bottom;
-        border-radius: 18px;
-        -webkit-tap-highlight-color: transparent;
-    }
-
-    .item-card:nth-child(2) { animation-delay: 70ms; }
-    .item-card:nth-child(3) { animation-delay: 140ms; }
-    .item-card:nth-child(4) { animation-delay: 210ms; }
-    .item-card:nth-child(5) { animation-delay: 280ms; }
-    .item-card:nth-child(6) { animation-delay: 350ms; }
-
-    .item-card img {
-        animation: cf-mobile-image .8s ease both;
-        transform-origin: center;
-    }
-
-    /* Panels and dashboard */
-    .panel,
-    .admin-stat,
-    .edit-review-card,
-    .maintenance-panel,
-    .table-wrap {
-        animation: cf-mobile-enter .6s cubic-bezier(.2,.8,.2,1) both;
-        border-radius: 16px;
-    }
-
-    .admin-stat {
-        animation: cf-mobile-enter .65s ease both,
-                   cf-mobile-glow 5s ease-in-out 1s infinite;
-    }
-
-    /* Mobile navigation */
-    .site-nav.is-open {
-        animation: cf-mobile-menu .38s cubic-bezier(.2,.8,.2,1) both;
-        transform-origin: top center;
-    }
-
-    .site-nav.is-open a {
-        animation: cf-mobile-link .4s ease both;
-    }
-
-    .site-nav.is-open a:nth-child(1) { animation-delay: 50ms; }
-    .site-nav.is-open a:nth-child(2) { animation-delay: 100ms; }
-    .site-nav.is-open a:nth-child(3) { animation-delay: 150ms; }
-    .site-nav.is-open a:nth-child(4) { animation-delay: 200ms; }
-    .site-nav.is-open a:nth-child(5) { animation-delay: 250ms; }
-    .site-nav.is-open a:nth-child(6) { animation-delay: 300ms; }
-
-    /* Touch feedback */
-    .btn:active,
-    button:active,
-    .nav-cta:active,
-    .maintenance-button:active,
-    .item-card:active {
-        animation: cf-mobile-tap .28s ease;
-        filter: brightness(.94);
-    }
-
-    /* Larger, more satisfying touch controls */
-    .btn,
-    .maintenance-button,
-    .nav-cta {
-        transition:
-            transform .2s ease,
-            filter .2s ease,
-            box-shadow .25s ease;
-    }
-
-    /* Inputs */
-    input:focus,
-    textarea:focus,
-    select:focus {
-        transform: scale(1.008);
-        box-shadow: 0 0 0 4px rgba(99,102,241,.15);
-    }
-
-    /* Profile dropdown */
-    .profile-menu.is-open .profile-dropdown {
-        animation: cf-mobile-enter .35s cubic-bezier(.2,.8,.2,1) both;
-        transform-origin: top right;
-    }
-
-    /* Alerts and empty states */
-    .alert,
-    .success,
-    .empty {
-        animation: cf-mobile-enter .5s ease both;
-    }
-
-    /* Dialogs */
-    .cf-photo-editor__dialog {
-        animation: cf-mobile-enter .4s cubic-bezier(.2,.8,.2,1) both;
-    }
-
-    /* Avoid hover-only effects on touch devices */
-    .item-card:hover {
-        transform: none;
-    }
-
-    .item-card:active {
-        transform: scale(.985);
-    }
-}
-
-/* Accessibility */
-@media (prefers-reduced-motion: reduce) {
-    @media (max-width: 768px) {
-        .item-card,
-        .panel,
-        .admin-stat,
-        .edit-review-card,
-        .maintenance-panel,
-        .table-wrap,
-        .site-nav.is-open,
-        .site-nav.is-open a {
-            animation: none !important;
-        }
-    }
-}
-
