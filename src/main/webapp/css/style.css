@@ -3105,10 +3105,15 @@ html[data-theme="dark"] .btn-light.cf-nav-click-loading .cf-nav-click-spinner::a
 
 /* CAMPUSFIND FIX: REMOVE PAGE BOUNCE + CORRECT PRIMARY SPINNER CONTRAST */
 
-/* Keep the page shell stable so it cannot bounce into the header. */
+/* Default: keep pages other than Browse and View Details stable. */
 body main.container {
     animation: cf-gentle-page-fade .35s ease-out both !important;
-    transform: none !important;
+}
+
+/* Restore the original whole-page entrance bounce on these two pages only. */
+body main.container.cf-browse-page,
+body main.container.cf-detail-page {
+    animation: cf-page-pop .48s cubic-bezier(.2, 1.4, .4, 1) both !important;
 }
 
 
