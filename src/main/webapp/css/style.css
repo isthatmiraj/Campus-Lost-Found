@@ -3062,3 +3062,43 @@ html[data-theme="dark"] .cf-nav-click-spinner::after {
     to { transform: rotate(360deg); }
 }
 
+
+/* =====================================================
+   CAMPUSFIND — BUTTON-AWARE SPINNER CONTRAST
+   ===================================================== */
+
+/* Default: green primary buttons need a dark spinner. */
+.cf-nav-click-spinner::after {
+    border-color: rgba(4, 30, 20, .22) !important;
+    border-top-color: #063d2c !important;
+    border-right-color: #063d2c !important;
+}
+
+/* Light secondary buttons. */
+html:not([data-theme="dark"]) .btn-light.cf-nav-click-loading .cf-nav-click-spinner::after {
+    border-color: rgba(0, 120, 85, .20) !important;
+    border-top-color: #007a58 !important;
+    border-right-color: #007a58 !important;
+}
+
+/* Dark secondary buttons. */
+html[data-theme="dark"] .btn-light.cf-nav-click-loading .cf-nav-click-spinner::after {
+    border-color: rgba(0, 214, 160, .20) !important;
+    border-top-color: #00d6a0 !important;
+    border-right-color: #00d6a0 !important;
+}
+
+/* View Details uses green even though it has btn-light. */
+.item-actions .btn-light.cf-nav-click-loading .cf-nav-click-spinner::after {
+    border-color: rgba(4, 30, 20, .22) !important;
+    border-top-color: #063d2c !important;
+    border-right-color: #063d2c !important;
+}
+
+/* Red/danger buttons: white spinner. */
+.cf-nav-click-loading.btn-danger .cf-nav-click-spinner::after {
+    border-color: rgba(255, 255, 255, .25) !important;
+    border-top-color: #ffffff !important;
+    border-right-color: #ffffff !important;
+}
+
