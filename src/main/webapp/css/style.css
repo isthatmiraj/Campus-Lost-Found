@@ -2971,3 +2971,20 @@ html:not([data-theme="dark"]) .item-actions .cf-nav-click-loading > .cf-nav-clic
     animation: cf-button-spinner-rotate .65s linear infinite !important;
 }
 
+
+/* cf-spinner-rotation-fix-v2
+   Animate the independent CSS rotate property.
+   This avoids the existing !important translate transform. */
+.cf-nav-click-spinner {
+    animation-name: cf-spinner-rotate-independent !important;
+    animation-duration: .65s !important;
+    animation-timing-function: linear !important;
+    animation-iteration-count: infinite !important;
+    animation-play-state: running !important;
+}
+
+@keyframes cf-spinner-rotate-independent {
+    from { rotate: 0deg; }
+    to   { rotate: 360deg; }
+}
+
