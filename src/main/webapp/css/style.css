@@ -3105,11 +3105,19 @@ html[data-theme="dark"] .btn-light.cf-nav-click-loading .cf-nav-click-spinner::a
 
 /* CAMPUSFIND FIX: REMOVE PAGE BOUNCE + CORRECT PRIMARY SPINNER CONTRAST */
 
-/* Never move or scale the entire page during navigation.
-   Keep the existing independent card and section animations. */
+/* Keep the page shell stable so it cannot bounce into the header. */
 body main.container {
-    animation: none !important;
+    animation: cf-gentle-page-fade .35s ease-out both !important;
     transform: none !important;
+}
+
+/* Bring back the premium bounce on the content, not the page shell. */
+main.container > .panel,
+main.container > .admin-stat,
+main.container > .table-wrap,
+main.container > .edit-review-card,
+main.container .item-card {
+    animation: cf-card-pop .48s cubic-bezier(.2, 1.2, .4, 1) both !important;
 }
 
 /* Green primary buttons: white spinner for clear contrast.
