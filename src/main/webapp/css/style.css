@@ -2988,3 +2988,77 @@ html:not([data-theme="dark"]) .item-actions .cf-nav-click-loading > .cf-nav-clic
     to   { rotate: 360deg; }
 }
 
+
+/* =====================================================
+   CAMPUSFIND — FINAL SINGLE-LAYER NAVIGATION SPINNER
+   ===================================================== */
+
+/* The spinner element is only a positioning anchor. */
+.cf-nav-click-loading {
+    position: relative !important;
+}
+
+.cf-nav-click-spinner {
+    position: absolute !important;
+    display: block !important;
+
+    left: 50% !important;
+    top: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+
+    width: 17px !important;
+    height: 17px !important;
+    min-width: 17px !important;
+    min-height: 17px !important;
+
+    margin: -8.5px 0 0 -8.5px !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+
+    /* Completely remove the old static spinner. */
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+
+    transform: none !important;
+    rotate: none !important;
+    animation: none !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: none !important;
+}
+
+/* The only visible circle and the only animated layer. */
+.cf-nav-click-spinner::after {
+    content: "" !important;
+    position: absolute !important;
+    display: block !important;
+    inset: 0 !important;
+
+    width: 17px !important;
+    height: 17px !important;
+    box-sizing: border-box !important;
+
+    border: 2px solid rgba(0, 120, 85, .20) !important;
+    border-top-color: #007a58 !important;
+    border-right-color: #007a58 !important;
+    border-radius: 50% !important;
+
+    animation: cf-single-spinner-rotation .65s linear infinite !important;
+    transform-origin: center center !important;
+}
+
+html[data-theme="dark"] .cf-nav-click-spinner::after {
+    border-color: rgba(0, 214, 160, .20) !important;
+    border-top-color: #00d6a0 !important;
+    border-right-color: #00d6a0 !important;
+}
+
+@keyframes cf-single-spinner-rotation {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
