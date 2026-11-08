@@ -2928,3 +2928,46 @@ nav a.nav-cta:active {
     from { transform: translate(-50%, -50%) rotate(0deg); }
     to   { transform: translate(-50%, -50%) rotate(360deg); }
 }
+
+/* =====================================================
+   CAMPUSFIND — THEME-AWARE NAVIGATION SPINNER
+   ===================================================== */
+
+/* Light mode: deep green spinner for clear contrast. */
+html:not([data-theme="dark"]) .cf-nav-click-spinner {
+    border-color: rgba(0, 120, 85, .20) !important;
+    border-top-color: #007a58 !important;
+    border-right-color: #007a58 !important;
+}
+
+/* Dark mode: neon green spinner on charcoal buttons. */
+html[data-theme="dark"] .cf-nav-click-spinner {
+    border-color: rgba(0, 214, 160, .20) !important;
+    border-top-color: #00d6a0 !important;
+    border-right-color: #00d6a0 !important;
+}
+
+/* Primary green buttons: use a dark spinner for contrast. */
+html[data-theme="dark"] .cf-nav-click-loading:not(.btn-light):not(.btn-danger) > .cf-nav-click-spinner,
+html[data-theme="dark"] .cf-nav-click-loading.nav-cta > .cf-nav-click-spinner,
+html[data-theme="dark"] .cf-nav-click-loading.login-btn > .cf-nav-click-spinner,
+html:not([data-theme="dark"]) .cf-nav-click-loading:not(.btn-light):not(.btn-danger) > .cf-nav-click-spinner,
+html:not([data-theme="dark"]) .cf-nav-click-loading.nav-cta > .cf-nav-click-spinner {
+    border-color: rgba(4, 30, 20, .20) !important;
+    border-top-color: #063d2c !important;
+    border-right-color: #063d2c !important;
+}
+
+/* View Details uses the green primary style inside listing cards. */
+html[data-theme="dark"] .item-actions .cf-nav-click-loading > .cf-nav-click-spinner,
+html:not([data-theme="dark"]) .item-actions .cf-nav-click-loading > .cf-nav-click-spinner {
+    border-color: rgba(4, 30, 20, .20) !important;
+    border-top-color: #063d2c !important;
+    border-right-color: #063d2c !important;
+}
+
+/* Preserve continuous rotation in both themes. */
+.cf-nav-click-spinner {
+    animation: cf-button-spinner-rotate .65s linear infinite !important;
+}
+
