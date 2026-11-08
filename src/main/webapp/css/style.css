@@ -2743,3 +2743,88 @@ button:not(.password-visibility-toggle):active {
         transition-duration: .01ms !important;
     }
 }
+
+
+/* =====================================================
+   CAMPUSFIND AUTH FORMS — STABLE HOVER
+   ===================================================== */
+
+/* The login/signup card must not jump when the cursor
+   merely enters the form or its surrounding panel. */
+.cf-auth-page .panel:hover,
+.cf-auth-page form:hover,
+.cf-auth-page main:hover {
+    transform: none !important;
+    animation: none !important;
+}
+
+/* Keep the form visually steady; animate its controls instead. */
+.cf-auth-page form {
+    transition: none !important;
+}
+
+/* =====================================================
+   NAV LOGIN / SIGNUP — MATCHING BUTTON MOTION
+   ===================================================== */
+
+nav a[href$="/login"],
+nav a[href$="/register"],
+nav a.nav-cta {
+    display: inline-flex;
+    align-items: center;
+    transition:
+        transform .2s cubic-bezier(.2, 1.35, .4, 1),
+        box-shadow .2s ease,
+        background-color .2s ease !important;
+    will-change: transform;
+}
+
+nav a[href$="/login"]:hover,
+nav a[href$="/register"]:hover,
+nav a.nav-cta:hover {
+    transform: translateY(-2px) scale(1.035) !important;
+    box-shadow: 0 7px 18px rgba(20, 160, 105, .18);
+}
+
+nav a[href$="/login"]:active,
+nav a[href$="/register"]:active,
+nav a.nav-cta:active {
+    transform: scale(.97) !important;
+}
+
+/* Login/signup submit buttons get the same quick spring. */
+.cf-auth-page button[type="submit"],
+.cf-auth-page input[type="submit"] {
+    transition:
+        transform .2s cubic-bezier(.2, 1.35, .4, 1),
+        box-shadow .2s ease !important;
+}
+
+.cf-auth-page button[type="submit"]:hover,
+.cf-auth-page input[type="submit"]:hover {
+    transform: translateY(-2px) scale(1.025) !important;
+}
+
+.cf-auth-page button[type="submit"]:active,
+.cf-auth-page input[type="submit"]:active {
+    transform: scale(.97) !important;
+}
+
+/* Password visibility control remains perfectly stationary. */
+.password-visibility-toggle,
+.password-visibility-toggle:hover,
+.password-visibility-toggle:focus,
+.password-visibility-toggle:active {
+    transform: translateY(-50%) !important;
+    animation: none !important;
+}
+
+/* Respect reduced-motion preferences. */
+@media (prefers-reduced-motion: reduce) {
+    nav a[href$="/login"],
+    nav a[href$="/register"],
+    nav a.nav-cta,
+    .cf-auth-page button[type="submit"] {
+        transition: none !important;
+    }
+}

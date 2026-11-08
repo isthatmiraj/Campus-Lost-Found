@@ -86,6 +86,6 @@ Item item = (Item) request.getAttribute("item");
     </div>
   </div>
 </div>
-<script src="<%=request.getContextPath()%>/js/campusfind-loader.js?v=2" defer></script>
+<script src="<%=request.getContextPath()%>/js/campusfind-loader.js?v=3" defer></script>
 </body>
 </html>
