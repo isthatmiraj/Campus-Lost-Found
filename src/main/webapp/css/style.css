@@ -2828,3 +2828,39 @@ nav a.nav-cta:active {
         transition: none !important;
     }
 }
+
+
+/* cf-instant-navigation-v1 */
+@view-transition {
+    navigation: auto;
+}
+
+::view-transition-old(root) {
+    animation: cf-turbo-out 120ms ease both;
+}
+
+::view-transition-new(root) {
+    animation: cf-turbo-in 180ms cubic-bezier(.2,.75,.3,1) both;
+}
+
+@keyframes cf-turbo-out {
+    to { opacity: .88; }
+}
+
+@keyframes cf-turbo-in {
+    from {
+        opacity: .88;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation: none !important;
+    }
+}

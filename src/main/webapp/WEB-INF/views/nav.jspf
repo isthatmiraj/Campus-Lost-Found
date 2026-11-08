@@ -607,3 +607,94 @@
 })();
 </script>
 <% } %>
+
+
+<!-- cf-smart-prefetch-v1 -->
+<script>
+(function () {
+    "use strict";
+
+    if (!("relList" in HTMLLinkElement.prototype) ||
+        !HTMLLinkElement.prototype.relList.supports("prefetch")) return;
+
+    var connection = navigator.connection || navigator.mozConnection ||
+                     navigator.webkitConnection;
+
+    if (connection && (connection.saveData ||
+        /(^|-)2g$/.test(connection.effectiveType || ""))) return;
+
+    var context = '<%=request.getContextPath()%>';
+    var prefetched = new Set();
+    var pending = new WeakMap();
+    var maximum = 6;
+
+    function eligible(anchor) {
+        if (!anchor || anchor.tagName !== "A") return null;
+        if (anchor.target || anchor.hasAttribute("download")) return null;
+
+        var url;
+        try {
+            url = new URL(anchor.href, window.location.href);
+        } catch (e) {
+            return null;
+        }
+
+        if (url.origin !== window.location.origin) return null;
+        if (url.pathname !== context + "/item") return null;
+        if (!url.searchParams.has("id")) return null;
+
+        url.hash = "";
+        return url.href;
+    }
+
+    function prefetch(anchor) {
+        var href = eligible(anchor);
+        if (!href || prefetched.has(href) ||
+            prefetched.size >= maximum) return;
+
+        prefetched.add(href);
+
+        var link = document.createElement("link");
+        link.rel = "prefetch";
+        link.href = href;
+        document.head.appendChild(link);
+    }
+
+    document.addEventListener("pointerover", function (event) {
+        if (event.pointerType === "touch") return;
+
+        var anchor = event.target.closest("a");
+        if (!anchor || !eligible(anchor)) return;
+
+        var timer = window.setTimeout(function () {
+            prefetch(anchor);
+            pending.delete(anchor);
+        }, 120);
+
+        pending.set(anchor, timer);
+    }, { passive: true });
+
+    document.addEventListener("pointerout", function (event) {
+        var anchor = event.target.closest("a");
+        if (!anchor || anchor.contains(event.relatedTarget)) return;
+
+        var timer = pending.get(anchor);
+        if (timer) {
+            window.clearTimeout(timer);
+            pending.delete(anchor);
+        }
+    }, { passive: true });
+
+    document.addEventListener("focusin", function (event) {
+        var anchor = event.target.closest("a");
+        if (anchor) prefetch(anchor);
+    });
+
+    document.addEventListener("pointerdown", function (event) {
+        if (event.pointerType === "touch" || event.pointerType === "pen") {
+            var anchor = event.target.closest("a");
+            if (anchor) prefetch(anchor);
+        }
+    }, { passive: true });
+})();
+</script>
