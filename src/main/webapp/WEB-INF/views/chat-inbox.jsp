@@ -480,15 +480,19 @@ body {
 
     async function loadInbox() {
         if (loading || document.visibilityState === 'hidden') return;
+
         loading = true;
-        try {
+
         try {
             const response = await fetch(context + '/chat/inbox-data', {
                 credentials: 'same-origin',
-                headers: { 'Accept': 'application/json' }
+                cache: 'no-store',
+                headers: {'Accept': 'application/json'}
             });
 
-            if (!response.ok) throw new Error('Inbox could not be loaded.');
+            if (!response.ok) {
+                throw new Error('Inbox request failed: HTTP ' + response.status);
+            }
 
             const data = await response.json();
             const conversations = data.conversations || [];
@@ -498,12 +502,9 @@ body {
                 (conversations.length === 1 ? ' conversation' : ' conversations');
 
             if (serialized === lastRendered) return;
+
             lastRendered = serialized;
             list.replaceChildren();
-
-            /* The conversation list is rebuilt only when its data changes. */
-            count.textContent = conversations.length +
-                (conversations.length === 1 ? ' conversation' : ' conversations');
 
             if (conversations.length === 0) {
                 status.hidden = true;
@@ -542,7 +543,9 @@ body {
 
                 const avatar = document.createElement('div');
                 avatar.className = 'avatar';
-                avatar.textContent = (conversation.participantName || 'C').trim().charAt(0).toUpperCase();
+                avatar.textContent =
+                    (conversation.participantName || 'C').trim()
+                    .charAt(0).toUpperCase();
 
                 const details = document.createElement('div');
                 details.className = 'details';
@@ -576,6 +579,7 @@ body {
 
                 const unread = document.createElement('span');
                 unread.className = 'conversation-unread';
+
                 const unreadCount = Number(conversation.unreadCount) || 0;
                 unread.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
                 unread.hidden = unreadCount < 1;
@@ -584,15 +588,15 @@ body {
                 open.className = 'open-label';
                 open.textContent = unreadCount > 0 ? 'New message' : 'Open →';
 
-                if (unreadCount > 0) {
-                    link.classList.add('has-unread');
-                }
+                if (unreadCount > 0) link.classList.add('has-unread');
 
                 meta.append(time, unread, open);
                 link.append(avatar, details, meta);
                 list.appendChild(link);
             }
         } catch (error) {
+            console.error('CampusFind inbox loading failed:', error);
+
             if (!lastRendered) {
                 status.hidden = false;
                 status.textContent =

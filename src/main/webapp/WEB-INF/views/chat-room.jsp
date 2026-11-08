@@ -191,23 +191,22 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--chat-bg);c
     async function loadMessages() {
         if (!conversationId || loadingMessages ||
                 document.visibilityState === 'hidden') return;
+
         loadingMessages = true;
-        try {
-        if (!conversationId) {
-            showState('No conversation was selected. Return to your inbox.');
-            return;
-        }
 
         try {
             const response = await fetch(
                 context + '/chat/messages?conversationId=' +
                 encodeURIComponent(conversationId),
-                {credentials:'same-origin', headers:{'Accept':'application/json'}}
+                {
+                    credentials: 'same-origin',
+                    cache: 'no-store',
+                    headers: {'Accept': 'application/json'}
+                }
             );
 
             if (!response.ok) {
-                if (response.status === 403 || response.status === 404 ||
-                    response.status === 400) {
+                if ([400, 403, 404].includes(response.status)) {
                     showState('This conversation is unavailable or you do not have access.');
                     input.disabled = true;
                     send.disabled = true;
@@ -217,9 +216,12 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--chat-bg);c
             }
 
             const data = await response.json();
+
             document.getElementById('chat-title').textContent =
                 data.participantName || 'Campus user';
-            document.getElementById('subtitle').textContent = 'Regarding: ' + (data.itemTitle || 'Campus listing');
+            document.getElementById('subtitle').textContent =
+                'Regarding: ' + (data.itemTitle || 'Campus listing');
+
             const serialized = JSON.stringify(data.messages || []);
             if (serialized === lastRendered) return;
 
@@ -232,12 +234,19 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--chat-bg);c
             if (!data.messages || data.messages.length === 0) {
                 showState('No messages yet. Say hello to start the conversation.');
             } else {
-                data.messages.forEach(message => addMessage(message, data.currentUserId));
+                data.messages.forEach(message =>
+                    addMessage(message, data.currentUserId)
+                );
             }
 
-            if (nearBottom) messagesEl.scrollTop = messagesEl.scrollHeight;
+            if (nearBottom) {
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            }
         } catch (error) {
-            if (!lastRendered) showState('Unable to load messages. Please refresh and try again.');
+            console.error('CampusFind chat loading failed:', error);
+            if (!lastRendered) {
+                showState('Unable to load messages. Please refresh and try again.');
+            }
         } finally {
             loadingMessages = false;
         }
