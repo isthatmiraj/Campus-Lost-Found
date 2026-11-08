@@ -2609,3 +2609,137 @@ select:focus {
         transform: translateY(-50%) !important;
     }
 }
+
+/* =====================================================
+   CAMPUSFIND — BOUNCY & SNAPPY MOTION V3
+   ===================================================== */
+
+@keyframes cf-page-pop {
+    0%   { opacity: 0; transform: translateY(15px) scale(.985); }
+    70%  { opacity: 1; transform: translateY(-2px) scale(1.003); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes cf-card-pop {
+    0%   { opacity: 0; transform: translateY(22px) scale(.94); }
+    75%  { opacity: 1; transform: translateY(-4px) scale(1.015); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes cf-dropdown-pop {
+    0%   { opacity: 0; transform: translateY(-10px) scale(.94); }
+    75%  { opacity: 1; transform: translateY(2px) scale(1.015); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes cf-button-pop {
+    0%   { transform: scale(1); }
+    45%  { transform: scale(.94); }
+    75%  { transform: scale(1.035); }
+    100% { transform: scale(1); }
+}
+
+/* Faster initial entrance */
+body main.container {
+    animation: cf-page-pop .48s cubic-bezier(.2,1.4,.4,1) both !important;
+}
+
+/* Listing cards */
+.item-card {
+    transition:
+        transform .32s cubic-bezier(.34,1.56,.64,1),
+        box-shadow .25s ease,
+        border-color .25s ease !important;
+}
+
+.item-card:hover {
+    transform: translateY(-7px) scale(1.018) !important;
+    box-shadow: 0 15px 30px rgba(3,201,149,.13) !important;
+}
+
+/* Keep the green gradient completely stationary */
+.item-card::before {
+    animation: none !important;
+    transform: none !important;
+    transition: opacity .22s ease !important;
+}
+
+.item-card:hover::before {
+    opacity: 1;
+}
+
+/* Snappy button feedback */
+.btn:hover,
+.nav-cta:hover,
+.maintenance-button:hover,
+button:not(.password-visibility-toggle):not(.theme-toggle):hover {
+    transform: translateY(-2px) scale(1.025) !important;
+}
+
+.btn:active,
+.nav-cta:active,
+.maintenance-button:active,
+button:not(.password-visibility-toggle):active {
+    animation: cf-button-pop .28s ease !important;
+}
+
+/* Panels */
+.panel:hover,
+.admin-stat:hover,
+.edit-review-card:hover,
+.maintenance-panel:hover {
+    transform: translateY(-5px) scale(1.008) !important;
+    box-shadow: 0 13px 28px rgba(0,0,0,.09) !important;
+}
+
+/* Dropdowns */
+.profile-menu.is-open .profile-dropdown {
+    animation: cf-dropdown-pop .3s cubic-bezier(.2,1.4,.4,1) both !important;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    body main.container {
+        animation-duration: .5s !important;
+    }
+
+    .item-card {
+        transition: transform .22s cubic-bezier(.34,1.56,.64,1),
+                    box-shadow .22s ease !important;
+    }
+
+    .item-card:active {
+        transform: scale(.965) !important;
+    }
+
+    .btn:active,
+    .nav-cta:active,
+    .maintenance-button:active {
+        animation: cf-button-pop .25s ease !important;
+    }
+
+    .profile-menu.is-open .profile-dropdown {
+        animation-duration: .25s !important;
+    }
+}
+
+/* Password visibility button must NEVER bounce or move */
+.password-visibility-toggle,
+.password-visibility-toggle:hover,
+.password-visibility-toggle:focus,
+.password-visibility-toggle:active {
+    animation: none !important;
+    transform: translateY(-50%) !important;
+    box-shadow: none !important;
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+    }
+}
