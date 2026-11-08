@@ -2275,3 +2275,220 @@ html[data-theme="dark"] .user-presence.is-remembered {
     border-color: rgba(96, 165, 250, 0.22);
 }
 
+/* CAMPUSFIND GLOBAL MOTION SYSTEM */
+
+
+/* CAMPUSFIND GLOBAL MOTION SYSTEM */
+
+/* Smooth page entrance */
+@keyframes cf-page-enter {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes cf-element-enter {
+    from {
+        opacity: 0;
+        transform: translateY(9px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes cf-soft-pop {
+    from {
+        opacity: 0;
+        transform: scale(.97);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Main page content */
+body main.container {
+    animation: cf-page-enter .48s cubic-bezier(.2,.7,.2,1) both;
+}
+
+/* Cards and panels */
+.item-card,
+.panel,
+.admin-stat,
+.table-wrap,
+.empty,
+.count,
+.edit-review-card,
+.maintenance-panel {
+    animation: cf-element-enter .45s cubic-bezier(.2,.7,.2,1) both;
+}
+
+/* Gentle stagger for listing grids */
+.item-card:nth-child(2),
+.admin-stat:nth-child(2) {
+    animation-delay: 45ms;
+}
+
+.item-card:nth-child(3),
+.admin-stat:nth-child(3) {
+    animation-delay: 90ms;
+}
+
+.item-card:nth-child(4),
+.admin-stat:nth-child(4) {
+    animation-delay: 135ms;
+}
+
+.item-card:nth-child(5) {
+    animation-delay: 180ms;
+}
+
+.item-card:nth-child(6) {
+    animation-delay: 225ms;
+}
+
+/* Interactive cards */
+.item-card {
+    transition:
+        transform .24s ease,
+        box-shadow .24s ease,
+        border-color .24s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .item-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 14px 32px rgba(15, 23, 42, .10);
+    }
+
+    .admin-stat:hover,
+    .edit-review-card:hover {
+        transform: translateY(-3px);
+    }
+}
+
+/* Buttons */
+.btn,
+.maintenance-button,
+.nav-cta,
+button:not(.theme-toggle) {
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease,
+        background-color .2s ease,
+        border-color .2s ease,
+        color .2s ease,
+        opacity .2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .btn:not(:disabled):hover,
+    .maintenance-button:not(:disabled):hover,
+    button:not(:disabled):not(.theme-toggle):hover {
+        transform: translateY(-2px);
+    }
+}
+
+.btn:active,
+.maintenance-button:active,
+button:not(.theme-toggle):active {
+    transform: scale(.97);
+}
+
+/* Navigation links */
+header.topbar nav a {
+    transition:
+        color .2s ease,
+        background-color .2s ease,
+        transform .2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    header.topbar nav a:hover {
+        transform: translateY(-2px);
+    }
+}
+
+/* Form interaction */
+input,
+select,
+textarea {
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease,
+        background-color .2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+/* Feedback messages */
+.alert,
+.success {
+    animation: cf-soft-pop .3s ease-out both;
+}
+
+/* Profile dropdown entrance */
+.profile-dropdown {
+    transform-origin: top right;
+}
+
+.profile-menu.is-open .profile-dropdown {
+    animation: cf-soft-pop .18s ease-out both;
+}
+
+/* Photo editor dialog */
+.cf-photo-editor__dialog {
+    animation: cf-soft-pop .22s ease-out both;
+}
+
+/* Keep motion comfortable for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    body main.container,
+    .item-card,
+    .panel,
+    .admin-stat,
+    .table-wrap,
+    .empty,
+    .count,
+    .edit-review-card,
+    .maintenance-panel,
+    .alert,
+    .success,
+    .profile-menu.is-open .profile-dropdown,
+    .cf-photo-editor__dialog {
+        animation: none !important;
+    }
+
+    .item-card,
+    .btn,
+    button,
+    .maintenance-button,
+    .nav-cta,
+    header.topbar nav a,
+    input,
+    select,
+    textarea {
+        transition: none !important;
+    }
+
+    .item-card:hover,
+    .admin-stat:hover,
+    .edit-review-card:hover,
+    .btn:hover,
+    button:hover,
+    header.topbar nav a:hover {
+        transform: none !important;
+    }
+}
