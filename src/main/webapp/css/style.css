@@ -3157,3 +3157,15 @@ html[data-theme="dark"] .btn-light.cf-nav-click-loading .cf-nav-click-spinner::a
 body main.cf-browse-page {
     animation: cf-page-pop .48s cubic-bezier(.2, 1.4, .4, 1) both !important;
 }
+
+/* View Details: gentle inner content hover */
+body main.cf-detail-page > .panel {
+    transition:
+        transform .45s cubic-bezier(.22, .61, .36, 1),
+        box-shadow .45s ease !important;
+}
+
+body main.cf-detail-page > .panel:hover {
+    transform: translateY(-2px) scale(1) !important;
+    box-shadow: 0 9px 22px rgba(0, 0, 0, .07) !important;
+}
