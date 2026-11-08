@@ -298,3 +298,302 @@
 })();
 </script>
 <% } %>
+
+
+<% if (WebUtil.loggedIn(request)) { %>
+<style>
+#cf-live-chat-toast-stack {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 10050;
+    width: min(390px, calc(100vw - 28px));
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    pointer-events: none;
+}
+
+.cf-live-chat-toast {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) 28px;
+    gap: 11px;
+    align-items: start;
+    padding: 15px;
+    border: 1px solid var(--line, rgba(120,140,160,.25));
+    border-radius: 17px;
+    background: var(--surface, #fff);
+    color: var(--text, #17212b);
+    box-shadow: 0 15px 45px rgba(0,0,0,.22);
+    pointer-events: auto;
+    cursor: pointer;
+    animation: cf-toast-in .42s cubic-bezier(.2,1.35,.4,1) both;
+    backdrop-filter: blur(18px);
+}
+
+.cf-live-chat-toast:hover {
+    transform: translateY(-3px);
+}
+
+.cf-live-chat-avatar {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: linear-gradient(135deg,#00d6a0,#00a9c7);
+    color: #03251d;
+    font-weight: 900;
+    font-size: 17px;
+}
+
+.cf-live-chat-content {
+    min-width: 0;
+}
+
+.cf-live-chat-heading {
+    display: block;
+    font-size: 13px;
+    font-weight: 850;
+    margin: 1px 0 3px;
+}
+
+.cf-live-chat-item {
+    display: block;
+    color: var(--accent,#00a982);
+    font-size: 11px;
+    font-weight: 750;
+    margin-bottom: 5px;
+}
+
+.cf-live-chat-preview {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow-wrap: anywhere;
+    color: var(--muted,#667085);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.cf-live-chat-close {
+    border: 0;
+    background: transparent;
+    color: var(--muted,#667085);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+}
+
+@keyframes cf-toast-in {
+    from {
+        opacity: 0;
+        transform: translate(28px,18px) scale(.92);
+    }
+    to {
+        opacity: 1;
+        transform: translate(0,0) scale(1);
+    }
+}
+
+@keyframes cf-toast-out {
+    to {
+        opacity: 0;
+        transform: translateX(35px) scale(.96);
+    }
+}
+
+@media(max-width:600px) {
+    #cf-live-chat-toast-stack {
+        right: 12px;
+        bottom: 12px;
+        width: calc(100vw - 24px);
+    }
+}
+
+@media(prefers-reduced-motion:reduce) {
+    .cf-live-chat-toast {
+        animation: none;
+    }
+}
+</style>
+
+<div id="cf-live-chat-toast-stack"
+     aria-live="polite"
+     aria-label="New chat messages"></div>
+
+<script>
+(function () {
+    var endpoint = '<%=request.getContextPath()%>/chat/live-messages';
+    var currentUser = '<%=WebUtil.h(WebUtil.userId(request))%>';
+    var stack = document.getElementById('cf-live-chat-toast-stack');
+
+    if (!stack) return;
+
+    var storageKey = 'cf-live-chat-cursor-' + currentUser;
+    var cursor = null;
+    var busy = false;
+    var seen = new Set();
+
+    try {
+        var stored = sessionStorage.getItem(storageKey);
+
+        if (stored && /^\d+$/.test(stored)) {
+            cursor = stored;
+        }
+    } catch (error) {}
+
+    function isCurrentConversation(id) {
+        if (!/\/chat\/room\/?$/.test(window.location.pathname)) {
+            return false;
+        }
+
+        return new URLSearchParams(window.location.search)
+            .get('conversationId') === id;
+    }
+
+    function dismissToast(toast) {
+        if (!toast || !toast.isConnected) return;
+
+        toast.style.animation = 'cf-toast-out .2s ease forwards';
+
+        window.setTimeout(function () {
+            toast.remove();
+        }, 210);
+    }
+
+    function showToast(message) {
+        var id = String(message.id);
+
+        if (!message.id || seen.has(id)) return;
+        seen.add(id);
+
+        if (isCurrentConversation(message.conversationId)) return;
+
+        while (stack.children.length >= 3) {
+            stack.firstElementChild.remove();
+        }
+
+        var toast = document.createElement('div');
+        toast.className = 'cf-live-chat-toast';
+        toast.setAttribute('role', 'status');
+
+        var avatar = document.createElement('div');
+        avatar.className = 'cf-live-chat-avatar';
+        avatar.textContent = (message.senderName || 'C')
+            .trim().charAt(0).toUpperCase();
+
+        var content = document.createElement('div');
+        content.className = 'cf-live-chat-content';
+
+        var heading = document.createElement('strong');
+        heading.className = 'cf-live-chat-heading';
+        heading.textContent = (message.senderName || 'Campus user')
+            + ' sent you a message';
+
+        var item = document.createElement('span');
+        item.className = 'cf-live-chat-item';
+        item.textContent = 'Regarding: '
+            + (message.itemTitle || 'Campus listing');
+
+        var preview = document.createElement('span');
+        preview.className = 'cf-live-chat-preview';
+        preview.textContent = message.text || 'New message';
+
+        content.append(heading, item, preview);
+
+        var close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'cf-live-chat-close';
+        close.setAttribute('aria-label', 'Dismiss message notification');
+        close.textContent = '×';
+
+        close.addEventListener('click', function (event) {
+            event.stopPropagation();
+            dismissToast(toast);
+        });
+
+        toast.append(avatar, content, close);
+
+        toast.addEventListener('click', function () {
+            window.location.href =
+                '<%=request.getContextPath()%>/chat/room?conversationId='
+                + encodeURIComponent(message.conversationId);
+        });
+
+        stack.appendChild(toast);
+
+        window.setTimeout(function () {
+            dismissToast(toast);
+        }, 8500);
+    }
+
+    async function poll() {
+        if (busy || document.visibilityState === 'hidden') return;
+
+        busy = true;
+
+        try {
+            var url = endpoint;
+
+            if (cursor !== null) {
+                url += '?after=' + encodeURIComponent(cursor);
+            }
+
+            var response = await fetch(url, {
+                credentials: 'same-origin',
+                cache: 'no-store',
+                headers: {'Accept':'application/json'}
+            });
+
+            if (!response.ok) return;
+
+            var data = await response.json();
+
+            // First poll establishes the cursor, preventing old-message spam.
+            if (cursor === null) {
+                cursor = String(data.cursor || 0);
+
+                try {
+                    sessionStorage.setItem(storageKey, cursor);
+                } catch (error) {}
+
+                return;
+            }
+
+            (data.messages || []).forEach(function (message) {
+                if (String(message.senderId) !== currentUser) {
+                    showToast(message);
+                }
+            });
+
+            var nextCursor = String(data.cursor || cursor);
+
+            if (/^\d+$/.test(nextCursor)) {
+                cursor = nextCursor;
+
+                try {
+                    sessionStorage.setItem(storageKey, cursor);
+                } catch (error) {}
+            }
+
+        } catch (error) {
+            // Keep the last cursor and retry on the next poll.
+        } finally {
+            busy = false;
+        }
+    }
+
+    poll();
+    window.setInterval(poll, 3000);
+
+    document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') {
+            poll();
+        }
+    });
+})();
+</script>
+<% } %>

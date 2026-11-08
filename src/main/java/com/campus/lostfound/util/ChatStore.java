@@ -28,6 +28,23 @@ public final class ChatStore {
         }
     }
 
+    public static final class LiveMessage {
+        public final long id;
+        public final String conversationId;
+        public final String senderId;
+        public final String messageText;
+        public final String itemId;
+
+        public LiveMessage(long id, UUID conversationId, String senderId,
+                           String messageText, String itemId) {
+            this.id = id;
+            this.conversationId = conversationId.toString();
+            this.senderId = senderId;
+            this.messageText = messageText;
+            this.itemId = itemId;
+        }
+    }
+
     public static final class Conversation {
         public final UUID id;
         public final String itemId;
@@ -265,6 +282,57 @@ public final class ChatStore {
         }
 
         return item;
+    }
+
+    public static long latestMessageIdForUser(String userId)
+            throws SQLException {
+        String sql = "SELECT COALESCE(MAX(m.id), 0) "
+                + "FROM chat_messages m "
+                + "JOIN chat_conversations c ON c.id = m.conversation_id "
+                + "WHERE c.reporter_id = ? OR c.contact_id = ?";
+
+        try (Connection connection = ChatDatabase.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, userId);
+            ps.setString(2, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getLong(1) : 0L;
+            }
+        }
+    }
+
+    public static List<LiveMessage> getMessagesAfter(
+            String userId, long afterId) throws SQLException {
+        List<LiveMessage> result = new ArrayList<>();
+
+        String sql = "SELECT m.id, m.conversation_id, m.sender_id, "
+                + "m.message_text, c.item_id "
+                + "FROM chat_messages m "
+                + "JOIN chat_conversations c ON c.id = m.conversation_id "
+                + "WHERE (c.reporter_id = ? OR c.contact_id = ?) "
+                + "AND m.id > ? "
+                + "ORDER BY m.id ASC LIMIT 25";
+
+        try (Connection connection = ChatDatabase.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, userId);
+            ps.setString(2, userId);
+            ps.setLong(3, afterId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    result.add(new LiveMessage(
+                            rs.getLong("id"),
+                            rs.getObject("conversation_id", UUID.class),
+                            rs.getString("sender_id"),
+                            rs.getString("message_text"),
+                            rs.getString("item_id")));
+                }
+            }
+        }
+
+        return result;
     }
 
     public static List<Message> getMessages(

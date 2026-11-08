@@ -1,6 +1,7 @@
 package com.campus.lostfound.controller;
 
 import com.campus.lostfound.util.ChatStore;
+import com.campus.lostfound.util.DataStore;
 import com.campus.lostfound.util.WebUtil;
 import com.campus.lostfound.util.WorkflowStore;
 
@@ -69,6 +70,85 @@ public class ChatServlet extends HttpServlet {
             }
 
             // Only the other participant's typing state is exposed.
+            if ("/live-messages".equals(path)) {
+                String afterParam = req.getParameter("after");
+
+                // Establish a baseline without replaying historical messages.
+                if (afterParam == null || afterParam.isBlank()) {
+                    long baseline =
+                            ChatStore.latestMessageIdForUser(userId);
+
+                    sendJson(resp, "{\"cursor\":" + baseline
+                            + ",\"messages\":[]}");
+                    return;
+                }
+
+                long afterId;
+                try {
+                    afterId = Long.parseLong(afterParam);
+                    if (afterId < 0) {
+                        throw new NumberFormatException();
+                    }
+                } catch (NumberFormatException invalid) {
+                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                            "Invalid message cursor.");
+                    return;
+                }
+
+                var events = ChatStore.getMessagesAfter(userId, afterId);
+
+                long cursor = events.isEmpty()
+                        ? afterId
+                        : events.get(events.size() - 1).id;
+
+                StringBuilder json = new StringBuilder();
+                json.append("{\"cursor\":").append(cursor)
+                        .append(",\"messages\":[");
+
+                for (int i = 0; i < events.size(); i++) {
+                    ChatStore.LiveMessage event = events.get(i);
+
+                    if (i > 0) {
+                        json.append(",");
+                    }
+
+                    String senderName = "Campus user";
+                    var sender =
+                            DataStore.get().findUserById(event.senderId);
+
+                    if (sender != null && sender.getName() != null
+                            && !sender.getName().isBlank()) {
+                        senderName = sender.getName();
+                    }
+
+                    String itemTitle = "Campus listing";
+                    var item = DataStore.get().findItem(event.itemId);
+
+                    if (item != null && item.getTitle() != null
+                            && !item.getTitle().isBlank()) {
+                        itemTitle = item.getTitle();
+                    }
+
+                    json.append("{")
+                            .append("\"id\":").append(event.id).append(",")
+                            .append("\"conversationId\":\"")
+                            .append(escape(event.conversationId)).append("\",")
+                            .append("\"senderId\":\"")
+                            .append(escape(event.senderId)).append("\",")
+                            .append("\"senderName\":\"")
+                            .append(escape(senderName)).append("\",")
+                            .append("\"itemTitle\":\"")
+                            .append(escape(itemTitle)).append("\",")
+                            .append("\"text\":\"")
+                            .append(escape(event.messageText)).append("\"")
+                            .append("}");
+                }
+
+                json.append("]}");
+                sendJson(resp, json.toString());
+                return;
+            }
+
             if ("/typing-status".equals(path)) {
                 UUID conversationId =
                         parseUuid(req.getParameter("conversationId"));
