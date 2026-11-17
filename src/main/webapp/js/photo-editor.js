@@ -7,6 +7,7 @@
   var image = null, originalFile = null, objectUrl = null;
   var rotation = 0, crop = null, mode = null, pointerStart = null;
   var modal, canvas, ctx, status;
+  var chooser, chooserImage, chooserFile = null, chooserObjectUrl = null;
 
   function build() {
     modal = document.createElement("div");
@@ -21,6 +22,38 @@
       '<p class="cf-photo-editor__status" aria-live="polite"></p>' +
       '<div class="cf-photo-editor__footer"><button type="button" class="btn btn-light" data-action="cancel">Cancel</button><button type="button" class="btn" data-action="apply">Use this crop</button></div></div>';
     document.body.appendChild(modal);
+
+    chooser = document.createElement("div");
+    chooser.className = "cf-photo-choice";
+    chooser.hidden = true;
+    chooser.innerHTML =
+      '<div class="cf-photo-choice__dialog" role="dialog" aria-modal="true" aria-labelledby="cf-photo-choice-title">' +
+      '<p class="eyebrow">ADD A PHOTO</p>' +
+      '<h2 id="cf-photo-choice-title">How would you like to use this photo?</h2>' +
+      '<img class="cf-photo-choice__preview" alt="Selected photo preview">' +
+      '<div class="cf-photo-choice__actions">' +
+      '<button type="button" class="btn" data-choice="original"><span>Upload as is</span><small>Keep the original photo</small></button>' +
+      '<button type="button" class="btn btn-light" data-choice="edit"><span>Edit image</span><small>Crop or rotate before uploading</small></button>' +
+      '</div>' +
+      '<button type="button" class="cf-photo-choice__cancel" data-choice="cancel">Choose another photo</button>' +
+      '</div>';
+    document.body.appendChild(chooser);
+    chooserImage = chooser.querySelector(".cf-photo-choice__preview");
+
+    chooser.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-choice]");
+      if (!b) return;
+      var choice = b.dataset.choice;
+      if (choice === "cancel") clearSelection();
+      if (choice === "original") acceptOriginal();
+      if (choice === "edit") {
+        var file = chooserFile;
+        chooser.hidden = true;
+        document.body.classList.remove("cf-photo-choice-open");
+        if (file) open(file);
+      }
+    });
+
     canvas = modal.querySelector("canvas");
     ctx = canvas.getContext("2d");
     status = modal.querySelector(".cf-photo-editor__status");
@@ -76,7 +109,56 @@
     ["pointerup", "pointercancel", "lostpointercapture"].forEach(function (name) {
       canvas.addEventListener(name, function () { mode = null; pointerStart = null; canvas.classList.remove("is-dragging"); });
     });
-    document.addEventListener("keydown", function (e) { if (!modal.hidden && e.key === "Escape") cancel(); });
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      if (!chooser.hidden) clearSelection();
+      else if (!modal.hidden) cancel();
+    });
+  }
+
+  function showChoice(file) {
+    chooserFile = file;
+    if (chooserObjectUrl) URL.revokeObjectURL(chooserObjectUrl);
+    chooserObjectUrl = URL.createObjectURL(file);
+    chooserImage.src = chooserObjectUrl;
+    chooser.hidden = false;
+    document.body.classList.add("cf-photo-choice-open");
+    chooser.querySelector('[data-choice="original"]').focus();
+  }
+
+  function acceptOriginal() {
+    var file = chooserFile;
+    if (!file) return;
+    chooser.hidden = true;
+    document.body.classList.remove("cf-photo-choice-open");
+
+    var old = document.getElementById("photo-preview");
+    if (old) old.remove();
+
+    var img = document.createElement("img");
+    img.id = "photo-preview";
+    img.alt = "Original photo selected for upload";
+    img.className = "cf-photo-final-preview";
+    img.src = URL.createObjectURL(file);
+    img.onload = function () { URL.revokeObjectURL(img.src); };
+    img.onerror = function () { URL.revokeObjectURL(img.src); };
+    input.insertAdjacentElement("afterend", img);
+
+    chooserFile = null;
+    if (chooserObjectUrl) URL.revokeObjectURL(chooserObjectUrl);
+    chooserObjectUrl = null;
+  }
+
+  function clearSelection() {
+    input.value = "";
+    chooser.hidden = true;
+    document.body.classList.remove("cf-photo-choice-open");
+    var old = document.getElementById("photo-preview");
+    if (old) old.remove();
+    chooserFile = null;
+    if (chooserObjectUrl) URL.revokeObjectURL(chooserObjectUrl);
+    chooserObjectUrl = null;
+    cleanup();
   }
 
   function point(e) {
@@ -174,10 +256,11 @@
     image.src = objectUrl;
   }
   function cancel() {
+    var file = originalFile;
     modal.hidden = true;
     document.body.classList.remove("cf-photo-editor-open");
-    input.value = "";
     cleanup();
+    if (file) showChoice(file);
   }
   function cleanup() {
     image = null; originalFile = null; crop = null;
@@ -252,6 +335,6 @@
       alert("This photo is larger than 20 MB. Please choose a smaller image.");
       return;
     }
-    open(file);
+    showChoice(file);
   });
 })();

@@ -3169,3 +3169,73 @@ body main.cf-detail-page > .panel:hover {
     transform: translateY(-2px) scale(1) !important;
     box-shadow: 0 9px 22px rgba(0, 0, 0, .07) !important;
 }
+
+
+/* Photo upload choice: preserve original or open the existing editor. */
+.cf-photo-choice[hidden] { display: none !important; }
+.cf-photo-choice {
+  position: fixed;
+  inset: 0;
+  z-index: 10020;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, .68);
+}
+.cf-photo-choice__dialog {
+  width: min(100%, 480px);
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface, #fff);
+  color: var(--text, #151a18);
+  box-shadow: 0 24px 70px rgba(0,0,0,.28);
+}
+.cf-photo-choice__dialog h2 {
+  margin: 4px 0 14px;
+  font-size: 1.35rem;
+}
+.cf-photo-choice__preview {
+  display: block;
+  width: 100%;
+  max-height: 210px;
+  object-fit: contain;
+  margin: 0 auto 18px;
+  border-radius: 12px;
+  background: rgba(127,127,127,.10);
+}
+.cf-photo-choice__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.cf-photo-choice__actions button {
+  display: flex;
+  min-height: 76px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  white-space: normal;
+}
+.cf-photo-choice__actions button small {
+  font-size: .76rem;
+  font-weight: 400;
+  opacity: .8;
+}
+.cf-photo-choice__cancel {
+  display: block;
+  margin: 16px auto 0;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+body.cf-photo-choice-open { overflow: hidden; }
+@media(max-width: 420px) {
+  .cf-photo-choice__dialog { padding: 16px; }
+  .cf-photo-choice__actions { grid-template-columns: 1fr; }
+  .cf-photo-choice__actions button { min-height: 64px; }
+}
