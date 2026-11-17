@@ -3479,3 +3479,28 @@ input[type="file"]::-webkit-file-upload-button {
   font-weight: 700;
   cursor: pointer;
 }
+
+/* Make BOTH photo choice buttons consistently CampusFind green */
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__actions button[data-choice="original"],
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__actions button[data-choice="edit"] {
+  background: #03c995 !important;
+  background-color: #03c995 !important;
+  border: 1px solid #03c995 !important;
+  color: #071a14 !important;
+  box-shadow: none;
+}
+
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__actions button[data-choice="original"] span,
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__actions button[data-choice="edit"] span,
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__actions button[data-choice="original"] small,
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__actions button[data-choice="edit"] small {
+  color: #071a14 !important;
+  opacity: 1 !important;
+}
+
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__actions button:hover {
+  background: #00b989 !important;
+  background-color: #00b989 !important;
+  border-color: #00b989 !important;
+}
+
