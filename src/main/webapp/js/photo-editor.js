@@ -16,8 +16,8 @@
     modal.innerHTML =
       '<div class="cf-photo-editor__dialog" role="dialog" aria-modal="true" aria-labelledby="cf-photo-editor-title">' +
       '<div class="cf-photo-editor__header"><div><p class="eyebrow">PHOTO EDITOR</p><h2 id="cf-photo-editor-title">Crop your photo</h2></div><button type="button" class="cf-photo-editor__close" data-action="cancel" aria-label="Close">×</button></div>' +
-      '<p class="cf-photo-editor__hint">Adjust the square crop frame using its corners. The image itself stays still.</p>' +
-      '<div class="cf-photo-editor__stage cf-crop-stage"><canvas width="600" height="600" aria-label="Square crop selection"></canvas></div>' +
+      '<p class="cf-photo-editor__hint">Drag inside the selection to move it. Drag any corner or edge to resize freely.</p>' +
+      '<div class="cf-photo-editor__stage cf-crop-stage"><canvas width="600" height="600" aria-label="Freeform crop selection"></canvas></div>' +
       '<div class="cf-photo-editor__tools"><button type="button" class="btn btn-light" data-action="left">↶ Rotate left</button><button type="button" class="btn btn-light" data-action="right">↷ Rotate right</button></div>' +
       '<p class="cf-photo-editor__status" aria-live="polite"></p>' +
       '<div class="cf-photo-editor__footer"><button type="button" class="btn btn-light" data-action="cancel">Cancel</button><button type="button" class="btn" data-action="apply">Use this crop</button></div></div>';
@@ -71,39 +71,67 @@
     canvas.addEventListener("pointerdown", function (e) {
       var p = point(e);
       var handle = hitHandle(p);
+
       if (handle) {
         mode = handle;
-      } else if (p.x >= crop.x && p.x <= crop.x + crop.size && p.y >= crop.y && p.y <= crop.y + crop.size) {
+      } else if (
+        p.x >= crop.x && p.x <= crop.x + crop.w &&
+        p.y >= crop.y && p.y <= crop.y + crop.h
+      ) {
         mode = "move";
       } else {
         return;
       }
+
       pointerStart = { x: p.x, y: p.y, crop: Object.assign({}, crop) };
       canvas.classList.add("is-dragging");
       canvas.setPointerCapture(e.pointerId);
     });
+
     canvas.addEventListener("pointermove", function (e) {
       if (!mode || !pointerStart) return;
-      var p = point(e), dx = p.x - pointerStart.x, dy = p.y - pointerStart.y;
+
+      var p = point(e);
+      var dx = p.x - pointerStart.x;
+      var dy = p.y - pointerStart.y;
       var c = pointerStart.crop;
       var bounds = imageBounds();
+      var minSize = 35;
+
       if (mode === "move") {
         crop = {
-          x: Math.max(bounds.x, Math.min(bounds.x + bounds.w - c.size, c.x + dx)),
-          y: Math.max(bounds.y, Math.min(bounds.y + bounds.h - c.size, c.y + dy)),
-          size: c.size
+          x: Math.max(bounds.x, Math.min(bounds.x + bounds.w - c.w, c.x + dx)),
+          y: Math.max(bounds.y, Math.min(bounds.y + bounds.h - c.h, c.y + dy)),
+          w: c.w,
+          h: c.h
         };
       } else {
-        var maxCrop = Math.min(bounds.w, bounds.h);
-        var size = Math.max(Math.min(100, maxCrop), Math.min(maxCrop, c.size + (mode.includes("b") ? dy : -dy) / 2 + (mode.includes("r") ? dx : -dx) / 2));
-        var nextX = c.x + (mode.includes("l") ? c.size - size : 0);
-        var nextY = c.y + (mode.includes("t") ? c.size - size : 0);
+        var left = c.x;
+        var top = c.y;
+        var right = c.x + c.w;
+        var bottom = c.y + c.h;
+
+        if (mode.includes("l")) {
+          left = Math.max(bounds.x, Math.min(right - minSize, c.x + dx));
+        }
+        if (mode.includes("r")) {
+          right = Math.min(bounds.x + bounds.w, Math.max(left + minSize, c.x + c.w + dx));
+        }
+        if (mode.includes("t")) {
+          top = Math.max(bounds.y, Math.min(bottom - minSize, c.y + dy));
+        }
+        if (mode.includes("b")) {
+          bottom = Math.min(bounds.y + bounds.h, Math.max(top + minSize, c.y + c.h + dy));
+        }
+
         crop = {
-          x: Math.max(bounds.x, Math.min(bounds.x + bounds.w - size, nextX)),
-          y: Math.max(bounds.y, Math.min(bounds.y + bounds.h - size, nextY)),
-          size: size
+          x: left,
+          y: top,
+          w: right - left,
+          h: bottom - top
         };
       }
+
       render();
     });
     ["pointerup", "pointercancel", "lostpointercapture"].forEach(function (name) {
@@ -167,11 +195,22 @@
   }
   function hitHandle(p) {
     if (!crop) return null;
-    var c = crop, r = 24;
+
+    var c = crop;
+    var right = c.x + c.w;
+    var bottom = c.y + c.h;
+    var r = 20;
+
     if (Math.hypot(p.x - c.x, p.y - c.y) < r) return "tl";
-    if (Math.hypot(p.x - c.x - c.size, p.y - c.y) < r) return "tr";
-    if (Math.hypot(p.x - c.x, p.y - c.y - c.size) < r) return "bl";
-    if (Math.hypot(p.x - c.x - c.size, p.y - c.y - c.size) < r) return "br";
+    if (Math.hypot(p.x - right, p.y - c.y) < r) return "tr";
+    if (Math.hypot(p.x - c.x, p.y - bottom) < r) return "bl";
+    if (Math.hypot(p.x - right, p.y - bottom) < r) return "br";
+
+    if (Math.abs(p.x - c.x) < r && p.y >= c.y + r && p.y <= bottom - r) return "l";
+    if (Math.abs(p.x - right) < r && p.y >= c.y + r && p.y <= bottom - r) return "r";
+    if (Math.abs(p.y - c.y) < r && p.x >= c.x + r && p.x <= right - r) return "t";
+    if (Math.abs(p.y - bottom) < r && p.x >= c.x + r && p.x <= right - r) return "b";
+
     return null;
   }
   function dimensions() {
@@ -196,11 +235,16 @@
     return { scale: scale, width: d.w * scale, height: d.h * scale, x: (targetSize - d.w * scale) / 2, y: (targetSize - d.h * scale) / 2 };
   }
   function initCrop() {
-    var d = dimensions();
-    var side = Math.min(600, d.w / Math.max(d.w, d.h) * 600, d.h / Math.max(d.w, d.h) * 600);
-    // A centered square crop that fits fully inside the displayed image.
-    side = Math.min(540, 600 * Math.min(d.w, d.h) / Math.max(d.w, d.h));
-    crop = { x: (600 - side) / 2, y: (600 - side) / 2, size: side };
+    var bounds = imageBounds();
+    var w = bounds.w * 0.8;
+    var h = bounds.h * 0.8;
+
+    crop = {
+      x: bounds.x + (bounds.w - w) / 2,
+      y: bounds.y + (bounds.h - h) / 2,
+      w: w,
+      h: h
+    };
   }
   function render() {
     if (!image) return;
@@ -209,31 +253,53 @@
     ctx.fillRect(0, 0, 600, 600);
     var geom = drawImage(ctx, 600);
     var c = crop;
-    // Dim everything outside the square selection.
+    // Dim everything outside the freeform selection.
     ctx.fillStyle = "rgba(0,0,0,.62)";
     ctx.fillRect(0, 0, 600, 600);
     ctx.save();
     ctx.beginPath();
-    ctx.rect(c.x, c.y, c.size, c.size);
+    ctx.rect(c.x, c.y, c.w, c.h);
     ctx.clip();
     drawImage(ctx, 600);
     ctx.restore();
-    // Thirds grid and crop border.
+
+    // Thirds grid and rectangular crop border.
     ctx.save();
     ctx.strokeStyle = "rgba(255,255,255,.88)";
     ctx.lineWidth = 1;
+
     for (var i = 1; i <= 2; i++) {
-      var t = c.size * i / 3;
-      ctx.beginPath(); ctx.moveTo(c.x + t, c.y); ctx.lineTo(c.x + t, c.y + c.size); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(c.x, c.y + t); ctx.lineTo(c.x + c.size, c.y + t); ctx.stroke();
+      var tx = c.w * i / 3;
+      var ty = c.h * i / 3;
+      ctx.beginPath();
+      ctx.moveTo(c.x + tx, c.y);
+      ctx.lineTo(c.x + tx, c.y + c.h);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(c.x, c.y + ty);
+      ctx.lineTo(c.x + c.w, c.y + ty);
+      ctx.stroke();
     }
+
     ctx.lineWidth = 2;
-    ctx.strokeRect(c.x, c.y, c.size, c.size);
-    [[c.x,c.y],[c.x+c.size,c.y],[c.x,c.y+c.size],[c.x+c.size,c.y+c.size]].forEach(function (p) {
-      ctx.fillStyle = "#fff"; ctx.fillRect(p[0]-6,p[1]-6,12,12);
+    ctx.strokeRect(c.x, c.y, c.w, c.h);
+
+    [
+      [c.x, c.y],
+      [c.x + c.w, c.y],
+      [c.x, c.y + c.h],
+      [c.x + c.w, c.y + c.h],
+      [c.x + c.w / 2, c.y],
+      [c.x + c.w / 2, c.y + c.h],
+      [c.x, c.y + c.h / 2],
+      [c.x + c.w, c.y + c.h / 2]
+    ].forEach(function (p) {
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(p[0] - 5, p[1] - 5, 10, 10);
     });
+
     ctx.restore();
-    status.textContent = "Drag inside the square to move it · drag a corner to resize";
+    status.textContent = "Drag inside to move · drag any corner or edge to resize freely";
   }
   function open(file) {
     originalFile = file;
@@ -273,16 +339,31 @@
     var scale = Math.min(600 / d.w, 600 / d.h);
     var displayedW = d.w * scale, displayedH = d.h * scale;
     var ox = (600 - displayedW) / 2, oy = (600 - displayedH) / 2;
-    var sx = (crop.x - ox) / scale, sy = (crop.y - oy) / scale, sw = crop.size / scale;
-    sx = Math.max(0, Math.min(d.w - sw, sx)); sy = Math.max(0, Math.min(d.h - sw, sy));
+    var sx = (crop.x - ox) / scale;
+    var sy = (crop.y - oy) / scale;
+    var sw = crop.w / scale;
+    var sh = crop.h / scale;
+
+    sx = Math.max(0, Math.min(d.w - sw, sx));
+    sy = Math.max(0, Math.min(d.h - sh, sy));
+
     var full = document.createElement("canvas");
-    full.width = d.w; full.height = d.h;
+    full.width = d.w;
+    full.height = d.h;
     var fctx = full.getContext("2d");
-    fctx.translate(d.w / 2, d.h / 2); fctx.rotate(rotation * Math.PI / 2);
+    fctx.translate(d.w / 2, d.h / 2);
+    fctx.rotate(rotation * Math.PI / 2);
     fctx.drawImage(image, -image.naturalWidth / 2, -image.naturalHeight / 2);
+
+    // Preserve the selected aspect ratio while limiting output dimensions.
+    var outputScale = Math.min(1, 2048 / Math.max(sw, sh));
+    var outputW = Math.max(1, Math.round(sw * outputScale));
+    var outputH = Math.max(1, Math.round(sh * outputScale));
+
     var out = document.createElement("canvas");
-    out.width = 1080; out.height = 1080;
-    out.getContext("2d").drawImage(full, sx, sy, sw, sw, 0, 0, 1080, 1080);
+    out.width = outputW;
+    out.height = outputH;
+    out.getContext("2d").drawImage(full, sx, sy, sw, sh, 0, 0, outputW, outputH);
     out.toBlob(function (blob) {
       if (!blob) { alert("Could not crop this photo."); return; }
       var edited = new File([blob], (originalFile.name.replace(/\.[^.]+$/, "") || "campusfind-photo") + "-crop.jpg", { type: "image/jpeg", lastModified: Date.now() });
@@ -329,7 +410,7 @@
       return;
     }
     // Phone camera originals can be much larger than 5 MB. They are resized
-    // and exported as a compressed 1080x1080 JPEG by the crop editor before upload.
+    // and exported as a compressed JPEG preserving the selected crop dimensions by the crop editor before upload.
     if (file.size > 20 * 1024 * 1024) {
       input.value = "";
       alert("This photo is larger than 20 MB. Please choose a smaller image.");
