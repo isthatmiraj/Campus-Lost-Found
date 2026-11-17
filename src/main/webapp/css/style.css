@@ -3182,6 +3182,8 @@ body main.cf-detail-page > .panel:hover {
   padding: 18px;
   overflow-y: auto;
   background: rgba(0, 0, 0, .68);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 .cf-photo-choice__dialog {
   width: min(100%, 480px);

@@ -24,10 +24,10 @@
     document.body.appendChild(modal);
 
     chooser = document.createElement("div");
-    chooser.className = "cf-photo-choice";
+    chooser.className = "cf-photo-editor cf-photo-choice";
     chooser.hidden = true;
     chooser.innerHTML =
-      '<div class="cf-photo-choice__dialog" role="dialog" aria-modal="true" aria-labelledby="cf-photo-choice-title">' +
+      '<div class="cf-photo-editor__dialog cf-photo-choice__dialog" role="dialog" aria-modal="true" aria-labelledby="cf-photo-choice-title">' +
       '<p class="eyebrow">ADD A PHOTO</p>' +
       '<h2 id="cf-photo-choice-title">How would you like to use this photo?</h2>' +
       '<img class="cf-photo-choice__preview" alt="Selected photo preview">' +
@@ -49,7 +49,7 @@
       if (choice === "edit") {
         var file = chooserFile;
         chooser.hidden = true;
-        document.body.classList.remove("cf-photo-choice-open");
+        document.body.classList.remove("cf-photo-editor-open");
         if (file) open(file);
       }
     });
@@ -122,7 +122,7 @@
     chooserObjectUrl = URL.createObjectURL(file);
     chooserImage.src = chooserObjectUrl;
     chooser.hidden = false;
-    document.body.classList.add("cf-photo-choice-open");
+    document.body.classList.add("cf-photo-editor-open");
     chooser.querySelector('[data-choice="original"]').focus();
   }
 
@@ -130,7 +130,7 @@
     var file = chooserFile;
     if (!file) return;
     chooser.hidden = true;
-    document.body.classList.remove("cf-photo-choice-open");
+    document.body.classList.remove("cf-photo-editor-open");
 
     var old = document.getElementById("photo-preview");
     if (old) old.remove();
@@ -152,7 +152,7 @@
   function clearSelection() {
     input.value = "";
     chooser.hidden = true;
-    document.body.classList.remove("cf-photo-choice-open");
+    document.body.classList.remove("cf-photo-editor-open");
     var old = document.getElementById("photo-preview");
     if (old) old.remove();
     chooserFile = null;
