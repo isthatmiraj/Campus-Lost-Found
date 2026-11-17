@@ -28,10 +28,7 @@
     chooser.hidden = true;
     chooser.innerHTML =
       '<div class="cf-photo-editor__dialog cf-photo-choice__dialog" role="dialog" aria-modal="true" aria-labelledby="cf-photo-choice-title">' +
-      '<div class="cf-photo-choice__top">
-      <p class="eyebrow">ADD A PHOTO</p>
-      <button type="button" class="cf-photo-choice__close" data-choice="cancel" aria-label="Close photo selection">×</button>
-      </div>' +
+      '<div class="cf-photo-choice__top"><p class="eyebrow">ADD A PHOTO</p><button type="button" class="cf-photo-choice__close" data-choice="cancel" aria-label="Close photo selection">×</button></div>' +
       '<h2 id="cf-photo-choice-title">How would you like to use this photo?</h2>' +
       '<img class="cf-photo-choice__preview" alt="Selected photo preview">' +
       '<div class="cf-photo-choice__actions">' +
