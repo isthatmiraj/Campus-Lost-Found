@@ -3241,3 +3241,144 @@ body.cf-photo-choice-open { overflow: hidden; }
   .cf-photo-choice__actions { grid-template-columns: 1fr; }
   .cf-photo-choice__actions button { min-height: 64px; }
 }
+
+/* CampusFind photo choice modal: responsive image and clear actions */
+.cf-photo-editor.cf-photo-choice {
+  box-sizing: border-box;
+  padding: 16px;
+  overflow: auto;
+  place-items: center;
+}
+
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__dialog {
+  box-sizing: border-box;
+  width: min(620px, 94vw);
+  max-width: 620px;
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  height: auto;
+  min-height: 0;
+  overflow: hidden;
+  padding: clamp(16px, 3vw, 26px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: #f3f7f5;
+}
+
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__dialog h2 {
+  margin: 0;
+  color: #f3f7f5;
+  font-size: clamp(1.15rem, 2.5vw, 1.45rem);
+  line-height: 1.3;
+}
+
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__preview {
+  display: block;
+  box-sizing: border-box;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: min(48vh, 460px) !important;
+  max-height: min(48dvh, 460px) !important;
+  object-fit: contain !important;
+  flex: 0 1 auto;
+  align-self: center;
+  margin: 2px auto;
+  border-radius: 12px;
+  background: #080d0b;
+}
+
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__actions button {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 76px;
+  padding: 13px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 11px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  white-space: normal;
+  cursor: pointer;
+}
+
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__actions [data-choice="original"] {
+  background: #03c995;
+  border: 1px solid #03c995;
+  color: #071a14;
+}
+
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__actions [data-choice="edit"] {
+  background: #1b2822;
+  border: 1px solid #496257;
+  color: #f3f7f5;
+}
+
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__actions button span {
+  display: block;
+  color: inherit;
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__actions button small {
+  display: block;
+  color: inherit;
+  opacity: .9;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__actions button:focus-visible,
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__cancel:focus-visible {
+  outline: 3px solid #03c995;
+  outline-offset: 3px;
+}
+
+.cf-photo-editor.cf-photo-choice .cf-photo-choice__cancel {
+  align-self: center;
+  margin: 0;
+  padding: 7px 12px;
+  color: #cbd8d2;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .cf-photo-editor.cf-photo-choice .cf-photo-choice__dialog {
+    width: min(100%, 420px);
+  }
+
+  .cf-photo-editor.cf-photo-choice .cf-photo-choice__preview {
+    max-height: 40vh !important;
+    max-height: 40dvh !important;
+  }
+
+  .cf-photo-editor.cf-photo-choice .cf-photo-choice__actions {
+    gap: 8px;
+  }
+
+  .cf-photo-editor.cf-photo-choice .cf-photo-choice__actions button {
+    min-height: 72px;
+    padding: 10px 7px;
+  }
+}
