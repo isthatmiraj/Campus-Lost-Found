@@ -78,7 +78,7 @@ Item item = (Item) request.getAttribute("item");
         </form>
     </section>
 </main>
-<script src="<%=request.getContextPath()%>/js/photo-editor.js?v=2" defer></script>
+<script src="<%=request.getContextPath()%>/js/photo-editor.js?v=3" defer></script>
 <div id="cf-loading-overlay" hidden style="display:none" role="status" aria-label="Loading" aria-hidden="true">
   <div class="cf-loader-content">
     <div class="cf-logo-wrap">
